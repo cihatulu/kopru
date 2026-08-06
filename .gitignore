@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+build/
+*.local
+
+# Env & sırlar — ASLA commit edilmez (CLAUDE.md Git Kuralları)
+.env
+.env.*
+!.env.example
+.mcp.local.json
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+**/supabase/.env
+
+# Test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude — kişisel ayar (proje settings.json paylaşılır)
+.claude/settings.local.json
+
+# Vercel
+.vercel
+
+# Geçici inceleme dosyaları
+scratch/

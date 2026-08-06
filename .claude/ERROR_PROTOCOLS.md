@@ -1,0 +1,116 @@
+# ERROR_PROTOCOLS.md — KÖPRÜ
+
+Projeye özgü sık hatalar ve **kesin çözüm adımları**. Şüphede önce buraya bak, tahmin etme.
+
+**Bu dosya canlı belgedir.** Listede olmayan bir hatayı çözdüğünde maddeyi buraya ekle.
+
+---
+
+### 1. PostgREST 409 — "ambiguous function" / "could not choose best candidate"
+**Sebep:** Aynı isimde birden çok RPC overload var (kilitli kural 6 ihlali).
+**Çözüm:**
+1. Eski imzayı tam tip listesiyle kaldır: `drop function if exists public.fn_name(uuid, jsonb);`
+2. Tek imzalı `create or replace function ...` ile yeniden tanımla.
+3. `notify pgrst, 'reload schema';`
+Kontrol: `select proname, pronargs from pg_proc where proname = '<ad>';` — tek satır dönmeli.
+
+### 2. PGRST202 — RPC bulunamadı / değişiklik görünmüyor
+**Sebep:** PostgREST şema cache'i bayat.
+**Çözüm:** SQL Editor'de `notify pgrst, 'reload schema';`. Lokalde `npm run db:reset`.
+
+### 3. RLS "infinite recursion detected in policy for relation ..."
+**Sebep:** Politika `using`/`with check` içinde aynı tabloyu (çoğunlukla `users`) sorguluyor.
+**Çözüm:** Sorguyu `SECURITY DEFINER STABLE` helper'a taşı: `get_my_user_id()`, `get_my_org_id()`,
+`get_my_org_kind()`, `is_platform_admin()` (hepsi `SET search_path = public`). Politika helper'ı çağırır.
+
+### 4. Migration drift — "remote/local schema differs"
+**Sebep:** DB elle değiştirilmiş (kilitli kural 1 ihlali) veya migration uygulanmamış.
+**Çözüm:** `npm run db:diff` ile farkı al → `supabase migration new <ad>` ile dosyaya çevir →
+`npm run db:reset` ile sıfır ortamda doğrula. Elle SQL'i kalıcılaştırma.
+
+### 5. TS hatası — "Property does not exist on type" / tipler eski
+**Sebep:** `database.generated.ts` şemayla senkron değil.
+**Çözüm:** `npm run gen:types`. Elle tip veya elle case-conversion katmanı yazma (kural 13).
+
+### 6. Supabase performans uyarısı — "auth_rls_initplan"
+**Sebep:** Politikada düz `auth.uid()`.
+**Çözüm:** `(select auth.uid())` ile sar (kural 4). `guard-write` hook'u zaten bunu bloklar.
+
+### 7. Edge Function — CORS hatası / preflight başarısız
+**Sebep:** `OPTIONS` handler veya CORS başlıkları eksik.
+**Çözüm:** `_shared/cors.ts` başlıklarını ekle; fonksiyon başında
+`if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });`
+
+### 8. Storage — 403 / erişim reddi
+**Sebep:** Bucket private (olması gereken) ama klasör-bazlı RLS politikası yok.
+**Çözüm:** Bucket private kalır (kural 17); `storage.objects` politikasını ekle — org kendi
+`<org_id>/` klasörüne yazar.
+
+### 9. Plan gating bypass — kısıtlı modüle erişim
+**Sebep:** Yalnız frontend gate var; sunucu açık.
+**Çözüm:** Çift katman (kural 15): frontend gate + RLS/Edge'de `organizations.plan` kontrolü.
+
+### 10. Şifre yazma reddi / hook blok
+**Sebep:** Frontend'den doğrudan şifre yazılmaya çalışılıyor (kural 2).
+**Çözüm:** Tüm şifre işlemleri `update-user-password` Edge Function (`auth.admin.*`).
+`password_hash` kolonu bu projede yoktur.
+
+### 11. Ledger testi kırmızı — "ilk debit değişti"
+**Sebep:** Kök siparişin ilk `debit` transaction'ına UPDATE/DELETE yapılmış (kural 7).
+**Çözüm:** Değişikliği geri al; iptal/iade/ödemeyi **yeni INSERT** (dengeleyici credit/debit)
+ile yap. Atomik RPC içinde tek transaction.
+
+---
+
+## KÖPRÜ'ye özgü
+
+### 12. `login` → `403 NO_ACTIVE_RELATIONSHIP`
+**Sebep:** Misafir org, verdiği sponsor VKN'si ile arasında `status='active'` ilişki olmadan giriyor.
+**Çözüm:** `relationships` satırını kontrol et — `pending` ise karşı taraf (abone) henüz
+onaylamamış, `passive` ise abone bağlantıyı kesmiş. **Elle `active` yapma;**
+`add_counterparty` / onay akışını kullan.
+
+### 13. Fiyat sızıntısı — `price-isolation.test.ts` kırmızı
+**Sebep:** Gizli kolon ana tabloya eklenmiş veya snapshot spread ile üretilmiş.
+**Çözüm:** Kolonu ayrı tabloya taşı (A4: `product_costs` / `retail_prices` /
+`order_item_retail_prices`). Snapshot'ı `features/orders/domain/snapshot.ts` allowlist
+serializer'ına çevir. `guard-write`'ın fiyat kontrolünü atlatma.
+
+### 14. `23505 duplicate key` — `organizations.vkn_tc`
+**Sebep:** Aynı VKN ile ikinci org açılmaya çalışılıyor.
+**Çözüm:** **Bu doğru davranıştır** — VKN yakınsama noktasıdır. `add_counterparty` önce
+mevcut org'u aramalı, bulursa yeni `relationships` kenarı açmalı. Yeni `organizations`
+satırı INSERT etme; köprü çağındaki "hayalet kayıt" mantığı geri gelmez.
+
+### 15. Yükseltme sonrası kullanıcı eski verisini görmüyor
+**Sebep:** `upgrade_org_to_subscriber` ilişkileri bozmuş veya yeni org açmış.
+**Çözüm:** RPC hiçbir `relationships` satırına dokunmaz, yeni `organizations` satırı açmaz.
+Yalnız `is_subscriber` + plan + subdomain + owner kullanıcı. `e2e/upgrade.spec.ts` bunu korur.
+
+### 16. Üretici↔üretici ilişki hatası
+**Sebep:** `add_counterparty` aynı `kind` ile çağrılmış.
+**Çözüm:** CHECK constraint doğru çalışıyor (A15). Çağıran org'un `kind`'ının **tersini** hedefle.
+
+### 17. Liste sorgusu yavaş / timeout
+**Sebep:** RLS `relationship_id IN (SELECT ...)` deseni, `OFFSET` sayfalama veya eksik index.
+**Çözüm:** (a) Politikayı denormalize `manufacturer_org_id`/`retailer_org_id` eşitliğine çevir (A16).
+(b) Keyset pagination'a geç (A17). (c) `(org_id, created_at DESC, id DESC)` bileşik index'i doğrula:
+`explain analyze` çıktısında `Index Scan` görmelisin, `Seq Scan` değil.
+5.000 üretici × 50.000 perakendeci ölçeğinde `Seq Scan` kabul edilemez.
+
+### 18. Cari bakiye tutmuyor / bakiye sorgusu yavaş
+**Sebep:** Bakiye `SUM(debit) - SUM(credit)` ile hesaplanıyor (A18 ihlali) veya eşzamanlı
+iki INSERT `balance_after` değerini yarıştırmış.
+**Çözüm:** Bakiye = ilişkinin **son** `transactions` satırındaki `balance_after`.
+Yeni satır atomik RPC içinde, önceki satır `FOR UPDATE` ile kilitlenerek yazılır.
+
+### 19. Hook blok etti — "dosya bütçesi aşıldı"
+**Sebep:** Dosya A19 sınırını geçti.
+**Çözüm:** Böl. Sayfa ise alt bileşen çıkar; api ise sorgu başına dosya aç; component ise
+saf mantığı `domain/`'e taşı. **Sınırı yükseltme** — bütçe tam olarak bunu engellemek için var.
+
+### 20. Hook blok etti — "katman ihlali"
+**Sebep:** `pages/`'de Supabase/useQuery, `domain/`'de react/supabase import'u veya çapraz
+feature iç import'u (A20).
+**Çözüm:** Veri erişimini `features/<ad>/api`'ye taşı; saf mantığı `domain/`'de bağımlılıksız
+tut; başka feature'a erişimi `@/features/<ad>` public yüzeyinden yap.
