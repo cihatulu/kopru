@@ -6,12 +6,43 @@ Kurallar yorumla değil, makineyle korunur — furniture-platform'daki 1700 sat�
 
 ## İlk kurulum
 
-1. **Sırları gir:** `.env.example` → `.env.local` kopyala ve doldur:
-   `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `GITHUB_TOKEN`.
-   `.env*` git'e girmez. Sırlar `.mcp.json`'a **yazılmaz** — dosya yalnız `${VAR}` okur.
-2. **MCP'leri etkinleştir:** Claude Code'u yeniden başlat → `/mcp` ile 5 sunucuyu doğrula:
-   `supabase` (read-only), `playwright`, `context7`, `chrome-devtools`, `github`.
-3. **Node gerekli:** Hook'lar `.mjs` (Node) scriptleridir.
+1. **Sırları PROJEYE bağla, makineye değil.** `.claude/settings.local.json` (git-ignored)
+   içindeki `env` bloğunu doldur:
+
+   ```json
+   {
+     "env": {
+       "SUPABASE_PROJECT_REF": "jlcbvvvcojilizdlycgw",
+       "SUPABASE_ACCESS_TOKEN": "sbp_...",
+       "GITHUB_TOKEN": "ghp_..."
+     }
+   }
+   ```
+
+   Değişiklik Claude Code yeniden başlatıldığında etkin olur.
+
+2. **Frontend değerleri:** `.env.example` → `.env.local` kopyala; yalnız
+   `VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY` (public değerler).
+
+3. **MCP'leri doğrula:** `/mcp` → `supabase` (read-only), `playwright`, `context7`,
+   `chrome-devtools`, `github`. `.mcp.json` sır içermez, yalnız `${VAR}` okur.
+
+4. **Node gerekli:** Hook'lar `.mjs` (Node) scriptleridir.
+
+### Makine geneli ortam değişkeni KULLANMA
+
+`SUPABASE_ACCESS_TOKEN` veya `GITHUB_TOKEN` Windows kullanıcı/sistem ortam
+değişkenlerinde tutulursa:
+
+- **Her projeye sızar.** Beş projeniz varsa beşi de aynı token'ı görür.
+- **Her CLI girişini ezer.** `supabase login` / `gh auth login` yapsanız bile
+  ortam değişkeni öncelikli olduğu için araçlar eski kimliği kullanır — ve hata
+  mesajı bunu söylemez, sadece `Unauthorized` der.
+- **Eski hesapların token'ları yıllarca dolaşır.** Bu depo kurulurken tam olarak
+  bu yaşandı: eski bir projeden kalan token yeni hesabın girişini eziyordu.
+
+Doğru yer proje başına `.claude/settings.local.json`'dır. Yeni bir proje açarken
+oraya o projenin kendi token'ını yaz; projeler birbirini kirletmez.
 
 ## İçerik
 

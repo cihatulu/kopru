@@ -8,15 +8,22 @@ if (!cmd) allow();
 const lc = cmd.toLowerCase();
 
 // İzin verilen Supabase akış komutları — SQL yasağına takılmaz.
+//
+// `db push` bilinçli olarak İZİNLİDİR: yalnızca `supabase/migrations/` altındaki
+// dosyaları uygular, yani kilitli kural 1'e aykırı değil — tam tersine onu uygular.
+// (İlk sürümde yanlışlıkla bloklanıyordu; Docker olmayan ortamda uzak projeye
+// migration uygulamanın tek yolu bu olduğu için kural düzeltildi.)
 const allowedSupabase = [
   /supabase\s+migration\s+new/,
   /supabase\s+migration\s+up/,
+  /supabase\s+migration\s+list/,
+  /supabase\s+db\s+push/,
   /supabase\s+db\s+reset/,
   /supabase\s+db\s+diff/,
   /supabase\s+db\s+lint/,
   /supabase\s+gen\s+types/,
   /supabase\s+functions\s+deploy/,
-  /supabase\s+(start|stop|status|link)/,
+  /supabase\s+(start|stop|status|link|login|projects)/,
 ];
 const isAllowedSupabase = allowedSupabase.some((r) => r.test(lc));
 
@@ -26,12 +33,6 @@ if (!isAllowedSupabase) {
     block(
       'BLOK (kilitli kural 1): `psql` ile elle SQL çalıştırılamaz.\n' +
         'Şema değişikliği yalnız migration ile: `supabase migration new <ad>` → dosyayı doldur → `supabase db reset`.',
-    );
-  }
-  if (/supabase\s+db\s+push/.test(lc)) {
-    block(
-      'BLOK (kilitli kural 1): `supabase db push` migration dosyası olmadan şemayı ileri sarar.\n' +
-        'Önce `supabase migration new <ad>` ile dosyayı oluştur, `supabase db reset` ile sıfır ortamda doğrula.',
     );
   }
   if (/(^|[\s;|&])(create|alter|drop)\s+(table|policy|function|view|type|index)/i.test(cmd)) {

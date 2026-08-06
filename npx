@@ -1,0 +1,7 @@
+      PID    PPID    PGID     WINPID   TTY         UID    STIME COMMAND
+     2775    2773    2773      24812  ?         197609 23:27:55 /usr/bin/PS
+     2768    2766    2766      20268  ?         197609 23:24:49 /c/Program Files/GitHub CLI/gh
+     1406    1398    1396       2436  ?         197609   Aug  4 /c/Program Files/nodejs/node
+     2766       1    2766       6372  ?         197609 23:24:49 /usr/bin/bash
+     1398    1396    1396      24116  ?         197609   Aug  4 /usr/bin/bash
+     2773       1    2773      23992  ?         197609 23:27:55 /usr/bin/bash
