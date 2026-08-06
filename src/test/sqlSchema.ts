@@ -83,3 +83,23 @@ export function policiesFor(table: string): string[] {
     new RegExp(`on public\\.${table}\\b`, 'i').test(p),
   );
 }
+
+/**
+ * Bir fonksiyonun ETKİN gövdesi — yani SON `create or replace` tanımı.
+ *
+ * ZORUNLU: migration'lar sırayla uygulandığı için veritabanında son tanım
+ * geçerlidir. İlk tanımı okumak iki yönde de yanıltır: sonraki bir migration
+ * hatayı düzeltmişse test boşuna kırmızı yanar; daha kötüsü, sonraki bir
+ * migration bir şeyi BOZMUŞSA test eski sağlam sürümü okuyup yeşil kalır.
+ */
+export function functionBody(name: string): string {
+  const all = [
+    ...loadMigrationSql().matchAll(
+      new RegExp(
+        `create\\s+or\\s+replace\\s+function\\s+public\\.${name}\\b[\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$;`,
+        'gi',
+      ),
+    ),
+  ];
+  return all.length ? (all[all.length - 1]![1] ?? '') : '';
+}

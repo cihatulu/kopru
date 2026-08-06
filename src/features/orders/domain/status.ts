@@ -39,12 +39,24 @@ export function isClosed(status: OrderStatus): boolean {
   return CLOSED.includes(status);
 }
 
-/** Üreticinin ilerletebileceği zincir. */
+/**
+ * Üreticinin ilerletebileceği zincir.
+ * `partially_shipped` → `shipped`: kalan kalemler için sevkiyat devam eder.
+ */
 const MANUFACTURER_FLOW: Partial<Record<OrderStatus, OrderStatus>> = {
   pending: 'confirmed',
   confirmed: 'in_production',
   in_production: 'shipped',
+  partially_shipped: 'shipped',
 };
+
+/**
+ * Bu adım sevkiyat mı? Öyleyse doğrudan durum değiştirmek yerine miktar
+ * seçtiren sevkiyat ekranı açılır (kısmi sevkiyat çocuk sipariş üretir).
+ */
+export function isShipmentStep(to: OrderStatus): boolean {
+  return to === 'shipped';
+}
 
 /**
  * Bu kullanıcının bu siparişte yapabileceği bir sonraki adım.
@@ -58,7 +70,8 @@ export function nextAction(
 
   if (myKind === ORG_KIND.manufacturer) {
     const to = MANUFACTURER_FLOW[status];
-    return to ? { to, label: ORDER_STATUS_META[to].label } : null;
+    if (!to) return null;
+    return { to, label: isShipmentStep(to) ? 'Sevk et' : ORDER_STATUS_META[to].label };
   }
 
   // Perakendeci yalnız sevk edilmiş siparişi teslim alındı olarak işaretler.

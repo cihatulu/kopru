@@ -6,20 +6,14 @@
  * edilmesi çok geç olan hatalardır.
  */
 import { describe, expect, test } from 'vitest';
-import { loadMigrationSql, policiesFor, schemaFromMigrations } from './sqlSchema';
+import { functionBody, loadMigrationSql, policiesFor, schemaFromMigrations } from './sqlSchema';
 
 const sql = loadMigrationSql();
 const schema = schemaFromMigrations();
 const cols = (t: string) => [...(schema.get(t) ?? [])];
 
-function fnBody(name: string): string {
-  return (
-    new RegExp(
-      `create or replace function public\\.${name}[\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$;`,
-      'i',
-    ).exec(sql)?.[1] ?? ''
-  );
-}
+// Etkin (son) tanımı okur — bkz. sqlSchema.functionBody.
+const fnBody = functionBody;
 
 describe('sipariş şeması — üç fiyat katmanı (A4)', () => {
   test('order_items yalnız KATMAN 2 fiyatını taşır', () => {
@@ -146,6 +140,55 @@ describe('durum akışı ve yetki ayrımı', () => {
 
   test('kapanmış sipariş yeniden ilerletilemez', () => {
     expect(fnBody('advance_order_status')).toMatch(/ORDER_CLOSED/);
+  });
+});
+
+describe('kısmi sevkiyat — cari defter korunur', () => {
+  const body = fnBody('ship_order_atomic');
+
+  test('fonksiyon mevcut', () => {
+    expect(body.length).toBeGreaterThan(0);
+  });
+
+  test('CARİ DEFTERE HİÇ DOKUNMUYOR', () => {
+    // Borç sipariş anında tam tutardan yazıldı; sevkiyat yalnız siparişi böler.
+    // Kök + çocukların toplamı sabit kaldığı için defterin düzeltilmesi gerekmez.
+    expect(body).not.toMatch(/insert into public\.transactions/i);
+    expect(body).not.toMatch(/update\s+public\.transactions/i);
+    expect(body).not.toMatch(/delete\s+from\s+public\.transactions/i);
+  });
+
+  test('sevkiyat üreticinin işidir', () => {
+    expect(body).toMatch(/v_order\.manufacturer_org_id <> v_me/);
+    expect(body).toMatch(/FORBIDDEN/);
+  });
+
+  test('kalan miktardan fazlası sevk edilemez', () => {
+    expect(body).toMatch(/v_qty > v_item\.quantity/);
+    expect(body).toMatch(/QUANTITY_EXCEEDS_REMAINING/);
+  });
+
+  test('çocuk sayısı DB den anlık okunuyor', () => {
+    // Yerel sayaçtan hesaplamak eşzamanlı sevkiyatlarda aynı numarayı üretir.
+    expect(body).toMatch(/select count\(\*\) into v_child_count[\s\S]*?parent_order_id = p_order_id/i);
+  });
+
+  test('KATMAN 3 fiyatı çocuk kaleme taşınıyor', () => {
+    expect(body).toMatch(/order_item_retail_prices/);
+  });
+
+  test('enum değerleri açıkça cast ediliyor', () => {
+    // `case ... then 'shipped' end` text üretir ve 42804 verir; canlıda yakalandı.
+    expect(body).toMatch(/'shipped'::public\.order_status/);
+    expect(body).toMatch(/'partially_shipped'::public\.order_status/);
+  });
+
+  test('kökte kalem kalmazsa durum shipped olur', () => {
+    expect(body).toMatch(/v_remaining = 0[\s\S]*?'shipped'::public\.order_status/);
+  });
+
+  test('kök tutarı negatife düşemez', () => {
+    expect(body).toMatch(/greatest\(v_order\.total_amount - v_child_total, 0\)/);
   });
 });
 

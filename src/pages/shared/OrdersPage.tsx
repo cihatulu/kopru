@@ -2,10 +2,13 @@ import { useState } from 'react';
 import {
   OrderDetailPanel,
   OrderTable,
+  ShipmentDialog,
+  isShipmentStep,
   useAdvanceOrderStatus,
   useCancelOrder,
   useOrderDetail,
   useOrders,
+  useShipOrder,
   type OrderStatus,
 } from '@/features/orders';
 import { useAuthSession } from '@/features/auth';
@@ -26,12 +29,19 @@ export default function OrdersPage() {
   const { data: user } = useAuthSession();
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [shipping, setShipping] = useState(false);
 
   const orgId = user?.org?.id ?? '';
   const list = useOrders(orgId, filter);
   const detail = useOrderDetail(selectedId, orgId);
   const advance = useAdvanceOrderStatus();
+  const ship = useShipOrder();
   const cancel = useCancelOrder();
+
+  const close = () => {
+    setSelectedId(null);
+    setShipping(false);
+  };
 
   if (!user?.org) return null;
   const orders = list.data?.pages.flat() ?? [];
@@ -88,20 +98,33 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {detail.data && (
+      {detail.data && !shipping && (
         <OrderDetailPanel
           order={detail.data}
           myKind={user.org.kind}
           pending={advance.isPending || cancel.isPending}
-          onClose={() => setSelectedId(null)}
-          onAdvance={(to) =>
-            advance.mutate(
-              { orderId: detail.data.id, status: to },
-              { onSuccess: () => setSelectedId(null) },
-            )
-          }
-          onCancel={() =>
-            cancel.mutate({ orderId: detail.data.id }, { onSuccess: () => setSelectedId(null) })
+          onClose={close}
+          onAdvance={(to) => {
+            // Sevkiyat miktar seçtirir (kısmi sevkiyat çocuk sipariş üretir),
+            // bu yüzden doğrudan durum değiştirmek yerine ayrı ekran açılır.
+            if (isShipmentStep(to)) {
+              setShipping(true);
+              return;
+            }
+            advance.mutate({ orderId: detail.data.id, status: to }, { onSuccess: close });
+          }}
+          onCancel={() => cancel.mutate({ orderId: detail.data.id }, { onSuccess: close })}
+        />
+      )}
+
+      {detail.data && shipping && (
+        <ShipmentDialog
+          order={detail.data}
+          pending={ship.isPending}
+          errorMessage={ship.isError ? 'Sevkiyat kaydedilemedi. Miktarları kontrol edin.' : undefined}
+          onClose={() => setShipping(false)}
+          onShip={(items) =>
+            ship.mutate({ orderId: detail.data.id, items }, { onSuccess: close })
           }
         />
       )}

@@ -3,6 +3,7 @@ import {
   ORDER_STATUS_META,
   canCancel,
   isClosed,
+  isShipmentStep,
   nextAction,
   type OrderStatus,
 } from './status';
@@ -41,6 +42,20 @@ describe('nextAction — yetki ayrımı', () => {
 
   test('üretici teslim onayı veremez', () => {
     expect(nextAction('shipped', 'manufacturer')).toBeNull();
+  });
+
+  test('kısmi sevkiyattan sonra sevkiyat devam edebilir', () => {
+    // Kalan kalemler için üretici yeniden sevk eder; her seferinde çocuk sipariş oluşur.
+    const a = nextAction('partially_shipped', 'manufacturer');
+    expect(a?.to).toBe('shipped');
+    expect(a?.label).toBe('Sevk et');
+  });
+
+  test('sevkiyat adımı ayrı bir ekran gerektirir', () => {
+    // Miktar seçtirmeden doğrudan durum değiştirmek kısmi sevkiyatı imkânsız kılardı.
+    expect(isShipmentStep('shipped')).toBe(true);
+    expect(isShipmentStep('confirmed')).toBe(false);
+    expect(isShipmentStep('delivered')).toBe(false);
   });
 
   test('kapalı siparişte hiçbir taraf ilerletemez', () => {

@@ -53,6 +53,32 @@ export function useAdvanceOrderStatus() {
   });
 }
 
+/**
+ * Sevkiyat. `items` null ise tamamı sevk edilir; aksi halde çocuk sipariş oluşur.
+ * CARİ DEFTERE DOKUNULMAZ — borç sipariş anında yazıldı, toplam sabit kalır.
+ */
+export function useShipOrder() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({
+      orderId,
+      items,
+    }: {
+      orderId: string;
+      items: { orderItemId: string; quantity: number }[] | null;
+    }) => {
+      const { error } = await supabase.rpc('ship_order_atomic', {
+        p_order_id: orderId,
+        p_items: items
+          ? items.map((i) => ({ order_item_id: i.orderItemId, quantity: i.quantity }))
+          : null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useCancelOrder() {
   const invalidate = useInvalidate();
   return useMutation({

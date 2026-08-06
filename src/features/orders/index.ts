@@ -3,7 +3,12 @@
 export { useOrders, useOrderDetail } from './api/useOrders';
 export type { OrderRow, OrderDetail, OrderItemRow } from './api/useOrders';
 
-export { usePlaceOrder, useAdvanceOrderStatus, useCancelOrder } from './api/useOrderMutations';
+export {
+  usePlaceOrder,
+  useAdvanceOrderStatus,
+  useShipOrder,
+  useCancelOrder,
+} from './api/useOrderMutations';
 export type { PlaceOrderInput } from './api/useOrderMutations';
 
 export {
@@ -11,6 +16,7 @@ export {
   nextAction,
   canCancel,
   isClosed,
+  isShipmentStep,
 } from './domain/status';
 export type { OrderStatus } from './domain/status';
 
@@ -26,4 +32,5 @@ export type { CartLine, CartTotals } from './domain/cart';
 
 export { OrderTable, OrderStatusBadge } from './components/OrderTable';
 export { CartPanel } from './components/CartPanel';
+export { ShipmentDialog } from './components/ShipmentDialog';
 export { OrderDetailPanel } from './components/OrderDetailPanel';
