@@ -2,9 +2,21 @@
 import { readInput, block, allow } from './_util.mjs';
 
 const input = await readInput();
-const cmd = (input?.tool_input?.command || '').trim();
-if (!cmd) allow();
+const raw = (input?.tool_input?.command || '').trim();
+if (!raw) allow();
 
+/**
+ * Heredoc gövdelerini tarama dışında bırak.
+ *
+ * Commit mesajları sıklıkla tehlikeli bayraklardan BAHSEDER ("--force artık
+ * bloklanıyor"). Gövdeyi komut sanmak, yazılanı yapılan sanmaktır — hook'un
+ * en can sıkıcı yanlış pozitif sınıfı buydu.
+ */
+function stripHeredocs(s) {
+  return s.replace(/<<-?\s*'?([A-Za-z_]\w*)'?[\s\S]*?^\1$/gm, '<<HEREDOC');
+}
+
+const cmd = stripHeredocs(raw);
 const lc = cmd.toLowerCase();
 
 // İzin verilen Supabase akış komutları — SQL yasağına takılmaz.
@@ -44,10 +56,22 @@ if (!isAllowedSupabase) {
 }
 
 // --- Git kuralları ---
+// `git push` UYARIR ama bloklamaz. Hook, kullanıcının push isteyip istemediğini
+// bilemez; meşru bir isteği sert bloklamak insanları hook'un tamamını kapatmaya
+// iter. Kuralın gerçek yaptırımı CLAUDE.md'deki talimattır, burası hatırlatmadır.
+// (`--force` hâlâ sert blok — o geri alınamaz.)
 if (/git\s+push/.test(lc)) {
-  block(
-    'BLOK (Git kuralı): `git push` yalnızca kullanıcı açıkça "push et" dediğinde çalıştırılır.\n' +
-      '"Commit et" yalnız `git add` + `git commit` demektir.',
+  // Bayrak, `git push`'un KENDİ segmentinde olmalı — başka bir komuttaki
+  // veya metindeki `--force` bu push'u ilgilendirmez.
+  if (/git\s+push[^\n|;&]*(--force(?!-with-lease)|(\s|^)-f(\s|$))/.test(cmd)) {
+    block(
+      'BLOK: `git push --force` uzaktaki geçmişi geri alınamaz şekilde ezer.\n' +
+        'Gerekiyorsa `--force-with-lease` kullan ve kullanıcıdan açık onay al.',
+    );
+  }
+  process.stderr.write(
+    'HATIRLATMA (Git kuralı): `git push` yalnızca kullanıcı açıkça istediğinde çalıştırılır.\n' +
+      '"Commit et" tek başına `git add` + `git commit` demektir.\n',
   );
 }
 if (/git\s+(commit|rebase|merge)[^\n]*--no-verify/.test(lc)) {
