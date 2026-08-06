@@ -96,7 +96,11 @@ RPC değişikliği sonrası (SQL Editor): `NOTIFY pgrst, 'reload schema';`
     `staleTime` her sorguda `STALE_TIME` sabitlerinden açıkça verilir.
 13. **TS strict + ESLint zorunlu.** DB tipleri `npm run gen:types` ile üretilir;
     elle tip veya elle case-conversion katmanı yazılmaz.
-14. **Stok** yazımı `update-stock` Edge Function (service role) ile; istemci doğrudan yazmaz.
+14. **Stok yazımı sunucu tarafındadır.** İstemci `manufacturer_stock` / `retailer_stock`
+    tablolarına **asla** doğrudan yazmaz (bu tablolarda INSERT/UPDATE politikası yoktur).
+    İki meşru yol vardır: (a) sipariş akışının parçasıysa ilgili **atomik RPC** içinde —
+    stok hareketi siparişle aynı transaction'da olmak zorundadır, (b) sipariş dışı
+    düzeltmelerde `update-stock` Edge Function (service role).
 15. **Plan gating çift katman:** frontend + RLS/Edge.
 16. **Soft delete varsayılan** (`is_active=false`). Gerçek DELETE yalnız admin'in
     cascade RPC'si ile ve yalnız pasifleştirilmiş kayıtlar için.
