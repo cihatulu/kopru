@@ -1,26 +1,24 @@
 import { useState } from 'react';
 import {
+  CreateOrgDialog,
   OrgTable,
   OrgToolbar,
   UpgradeDialog,
   normalizeSubdomain,
   toSubscriberFilter,
+  useCreateOrg,
   useDowngradeOrg,
   useOrgList,
   useSetOrgActive,
   useUpgradeOrg,
   type AdminOrg,
+  type CreateOrgForm,
   type SubscriberFilter,
   type UpgradeResult,
 } from '@/features/admin';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { ORG_KIND, type OrgKind } from '@/constants';
-
-const TITLES: Record<OrgKind, string> = {
-  [ORG_KIND.manufacturer]: 'Üretici Yönet',
-  [ORG_KIND.retailer]: 'Perakendeci Yönet',
-};
+import type { OrgKind, Plan } from '@/constants';
 
 /** Üretici/perakendeci yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
@@ -28,44 +26,52 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
   const [filter, setFilter] = useState<SubscriberFilter>('all');
   const [target, setTarget] = useState<AdminOrg | null>(null);
   const [result, setResult] = useState<UpgradeResult | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const list = useOrgList({ kind, search, ...toSubscriberFilter(filter) });
+  const create = useCreateOrg();
   const upgrade = useUpgradeOrg();
   const downgrade = useDowngradeOrg();
   const setActive = useSetOrgActive();
 
   const orgs = list.data?.pages.flat() ?? [];
+  const busy = upgrade.isPending || downgrade.isPending ? (target?.id ?? undefined) : undefined;
 
-  const closeDialog = () => {
+  const closeUpgrade = () => {
     setTarget(null);
     setResult(null);
     upgrade.reset();
   };
 
-  const confirmUpgrade = (plan: Parameters<typeof upgrade.mutate>[0]['plan'], subdomain: string) => {
-    if (!target) return;
-    upgrade.mutate(
-      { orgId: target.id, plan, subdomain: normalizeSubdomain(subdomain) },
-      { onSuccess: (r) => setResult(r) },
+  const submitCreate = (v: CreateOrgForm) => {
+    create.mutate(
+      {
+        kind,
+        companyName: v.companyName,
+        vknTc: v.vknTc,
+        ...(v.authorizedName ? { authorizedName: v.authorizedName } : {}),
+        ...(v.phone ? { phone: v.phone } : {}),
+        ...(v.email ? { email: v.email } : {}),
+      },
+      {
+        onSuccess: () => {
+          setCreating(false);
+          create.reset();
+        },
+      },
     );
   };
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">{TITLES[kind]}</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Abone ve misafir organizasyonlar aynı listede. Misafir bir kayıt tek tıkla aboneye
-          yükseltilir; mevcut ticari ilişkileri korunur.
-        </p>
-      </div>
-
       <OrgToolbar
+        kind={kind}
         search={search}
         onSearchChange={setSearch}
         filter={filter}
         onFilterChange={setFilter}
         total={orgs.length}
+        onCreate={() => setCreating(true)}
       />
 
       {list.isError && (
@@ -81,7 +87,7 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
       ) : (
         <OrgTable
           orgs={orgs}
-          busyId={upgrade.isPending || downgrade.isPending ? (target?.id ?? undefined) : undefined}
+          busyId={busy}
           onUpgrade={setTarget}
           onDowngrade={(org) => downgrade.mutate(org.id)}
           onToggleActive={(org) => setActive.mutate({ orgId: org.id, isActive: !org.isActive })}
@@ -100,13 +106,33 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         </div>
       )}
 
+      {creating && (
+        <CreateOrgDialog
+          kind={kind}
+          pending={create.isPending}
+          errorMessage={
+            create.isError ? 'Oluşturulamadı. Bu VKN zaten kayıtlı olabilir.' : undefined
+          }
+          onClose={() => {
+            setCreating(false);
+            create.reset();
+          }}
+          onSubmit={submitCreate}
+        />
+      )}
+
       {target && (
         <UpgradeDialog
           org={target}
           pending={upgrade.isPending}
           result={result}
-          onClose={closeDialog}
-          onConfirm={confirmUpgrade}
+          onClose={closeUpgrade}
+          onConfirm={(plan: Plan, subdomain: string) =>
+            upgrade.mutate(
+              { orgId: target.id, plan, subdomain: normalizeSubdomain(subdomain) },
+              { onSuccess: setResult },
+            )
+          }
         />
       )}
     </div>
