@@ -1,0 +1,102 @@
+import { Button } from '@/components/ui/Button';
+import { formatMoney } from '@/lib/format';
+import { marginPercent } from '../domain/productSchema';
+import type { CatalogProduct } from '../api/useProducts';
+
+interface Props {
+  products: CatalogProduct[];
+  /** Yalnız üretici görünümünde dolu gelir; perakendecide RLS boş döndürür. */
+  costs?: Record<string, number> | undefined;
+  busyId?: string | undefined;
+  onEdit: (p: CatalogProduct) => void;
+  onToggleActive: (p: CatalogProduct) => void;
+}
+
+const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
+const TD = 'px-4 py-3 align-middle';
+
+/** Üreticinin kendi katalog yönetimi. Maliyet ve marj sütunları yalnız burada. */
+export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }: Props) {
+  if (products.length === 0) {
+    return (
+      <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
+        Henüz ürün yok.
+      </p>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-inset ring-slate-200">
+      <table className="w-full min-w-[720px] border-collapse text-sm">
+        <thead className="border-b border-slate-200 bg-slate-50">
+          <tr>
+            <th className={TH}>Ürün</th>
+            <th className={`${TH} text-right`}>Satış fiyatı</th>
+            <th className={`${TH} text-right`}>Maliyetiniz</th>
+            <th className={`${TH} text-right`}>Marj</th>
+            <th className={TH}>Durum</th>
+            <th className={`${TH} text-right`}>İşlem</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {products.map((p) => {
+            const cost = costs?.[p.id];
+            const margin = marginPercent(p.supplierPrice, cost);
+            return (
+              <tr key={p.id} className="hover:bg-slate-50/60">
+                <td className={TD}>
+                  <span className="block font-medium text-slate-900">{p.name}</span>
+                  <span className="block font-mono text-xs text-slate-500">{p.code}</span>
+                </td>
+                <td className={`${TD} text-right font-medium text-slate-900`}>
+                  {formatMoney(p.supplierPrice)}
+                </td>
+                <td className={`${TD} text-right text-slate-600`}>
+                  {cost === undefined ? (
+                    <span className="text-slate-400">girilmedi</span>
+                  ) : (
+                    formatMoney(cost)
+                  )}
+                </td>
+                <td className={`${TD} text-right`}>
+                  {margin === null ? (
+                    <span className="text-slate-400">—</span>
+                  ) : (
+                    <span className={margin < 10 ? 'text-amber-700' : 'text-emerald-700'}>
+                      %{margin}
+                    </span>
+                  )}
+                </td>
+                <td className={TD}>
+                  {p.isActive ? (
+                    <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      Aktif
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      Pasif
+                    </span>
+                  )}
+                </td>
+                <td className={`${TD} text-right`}>
+                  <div className="inline-flex gap-1.5">
+                    <Button variant="secondary" onClick={() => onEdit(p)}>
+                      Düzenle
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      loading={busyId === p.id}
+                      onClick={() => onToggleActive(p)}
+                    >
+                      {p.isActive ? 'Pasifleştir' : 'Aktifleştir'}
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}

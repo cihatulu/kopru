@@ -10,10 +10,16 @@ interface Tab {
 }
 
 const MANUFACTURER_TABS: Tab[] = [
+  { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürünlerim' },
+  { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler' },
+  { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar' },
   { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşterilerim' },
 ];
 
 const RETAILER_TABS: Tab[] = [
+  { to: `${ROUTES.retailer}/katalog`, label: 'Katalog' },
+  { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim' },
+  { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesaplar' },
   { to: `${ROUTES.retailer}/tedarikcilerim`, label: 'Tedarikçilerim' },
 ];
 

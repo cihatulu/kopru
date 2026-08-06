@@ -7,8 +7,14 @@ import { RequireOrgKind, RequirePlatformAdmin } from './guards';
 // PLAN §17.2 — panel bazlı kod bölme. Her panel ayrı chunk.
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const PanelLayout = lazy(() => import('@/app/layout/PanelLayout'));
+
 const CounterpartiesPage = lazy(() => import('@/pages/shared/CounterpartiesPage'));
+const OrdersPage = lazy(() => import('@/pages/shared/OrdersPage'));
+const AccountsPage = lazy(() => import('@/pages/shared/AccountsPage'));
+
+const ProductsPage = lazy(() => import('@/pages/manufacturer/ProductsPage'));
 const ManufacturerHome = lazy(() => import('@/pages/manufacturer/ManufacturerHome'));
+const CatalogPage = lazy(() => import('@/pages/retailer/CatalogPage'));
 const RetailerHome = lazy(() => import('@/pages/retailer/RetailerHome'));
 
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
@@ -33,6 +39,9 @@ export const router = createBrowserRouter([
         element: lazyRoute(<PanelLayout />),
         children: [
           { index: true, element: lazyRoute(<ManufacturerHome />) },
+          { path: 'urunler', element: lazyRoute(<ProductsPage />) },
+          { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
+          { path: 'cari', element: lazyRoute(<AccountsPage />) },
           { path: 'musteriler', element: lazyRoute(<CounterpartiesPage />) },
         ],
       },
@@ -46,6 +55,9 @@ export const router = createBrowserRouter([
         element: lazyRoute(<PanelLayout />),
         children: [
           { index: true, element: lazyRoute(<RetailerHome />) },
+          { path: 'katalog', element: lazyRoute(<CatalogPage />) },
+          { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
+          { path: 'cari', element: lazyRoute(<AccountsPage />) },
           { path: 'tedarikcilerim', element: lazyRoute(<CounterpartiesPage />) },
         ],
       },

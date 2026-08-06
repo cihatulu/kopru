@@ -124,11 +124,21 @@ function checkPriceLeak() {
     }
   }
   if (isTs) {
-    if (/from\(\s*['"]products['"]\s*\)/.test(code) && /\bcost_price\b/.test(code)) {
-      block(
-        'BLOK (A4): `products` sorgusunda `cost_price` seçilemez — o kolon o tabloda yok.\n' +
-          'Üretici maliyeti için `product_costs` tablosunu sorgula (yalnız sahibi üretici görebilir).',
-      );
+    // Zincir bazlı analiz: yasak olan `cost_price`'ı PRODUCTS tablosundan seçmek.
+    // Aynı dosyanın hem `products` hem `product_costs` sorgulaması meşrudur —
+    // dosya genelinde birlikte geçmelerine bakmak yanlış pozitif üretiyordu.
+    for (const seg of code.split(/\.from\(/).slice(1)) {
+      const table = /^\s*['"`](\w+)['"`]\s*\)/.exec(seg)?.[1];
+      if (table !== 'products') continue;
+      // Bu zincirin sonu: bir sonraki `.from(` zaten ayrılmış durumda.
+      const chain = seg.split(/;\s*\n/)[0] ?? seg;
+      const bad = /\b(cost_price|retail_price)\b/.exec(chain);
+      if (bad) {
+        block(
+          `BLOK (A4): \`products\` sorgusunda \`${bad[1]}\` seçilemez — o kolon o tabloda yok.\n` +
+            'Üretici maliyeti `product_costs`, perakendeci fiyatı `retail_prices` tablosundadır.',
+        );
+      }
     }
     if (/\{\s*\.\.\.\s*(order|product|item)\b/.test(code) && /snapshot/i.test(code)) {
       block(

@@ -31,3 +31,4 @@ export { CounterpartyTable } from './components/CounterpartyTable';
 export { IncomingRequests } from './components/IncomingRequests';
 export { AddCounterpartyDialog } from './components/AddCounterpartyDialog';
 export { SubscriptionBanner } from './components/SubscriptionBanner';
+export { PartyPicker } from './components/PartyPicker';

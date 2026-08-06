@@ -1225,6 +1225,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_product: {
+        Args: {
+          p_code: string
+          p_cost_price?: number
+          p_description?: string
+          p_group_id?: string
+          p_id: string
+          p_name: string
+          p_supplier_price: number
+        }
+        Returns: string
+      }
       set_counterparty_discount: {
         Args: { p_discount_rate: number; p_relationship_id: string }
         Returns: {
@@ -1268,6 +1280,33 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "relationships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_product_active: {
+        Args: { p_active: boolean; p_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          group_id: string | null
+          id: string
+          images: string[]
+          is_active: boolean
+          name: string
+          owner_kind: Database["public"]["Enums"]["org_kind"] | null
+          owner_org_id: string
+          set_contents: Json
+          supplier_price: number
+          type: Database["public"]["Enums"]["product_type"]
+          updated_at: string
+          variants: Json
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
           isOneToOne: true
           isSetofReturn: false
         }
