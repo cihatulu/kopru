@@ -11,6 +11,10 @@ const PanelLayout = lazy(() => import('@/app/layout/PanelLayout'));
 const CounterpartiesPage = lazy(() => import('@/pages/shared/CounterpartiesPage'));
 const OrdersPage = lazy(() => import('@/pages/shared/OrdersPage'));
 const AccountsPage = lazy(() => import('@/pages/shared/AccountsPage'));
+const ServicePage = lazy(() => import('@/pages/shared/ServicePage'));
+const AnnouncementsPage = lazy(() => import('@/pages/shared/AnnouncementsPage'));
+const ReportsPage = lazy(() => import('@/pages/shared/ReportsPage'));
+const FinancePage = lazy(() => import('@/pages/retailer/FinancePage'));
 
 const ProductsPage = lazy(() => import('@/pages/manufacturer/ProductsPage'));
 const ManufacturerHome = lazy(() => import('@/pages/manufacturer/ManufacturerHome'));
@@ -42,6 +46,9 @@ export const router = createBrowserRouter([
           { path: 'urunler', element: lazyRoute(<ProductsPage />) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'servis', element: lazyRoute(<ServicePage />) },
+          { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
+          { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
           { path: 'musteriler', element: lazyRoute(<CounterpartiesPage />) },
         ],
       },
@@ -56,8 +63,12 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: lazyRoute(<RetailerHome />) },
           { path: 'katalog', element: lazyRoute(<CatalogPage />) },
+          { path: 'finans', element: lazyRoute(<FinancePage />) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'servis', element: lazyRoute(<ServicePage />) },
+          { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
+          { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
           { path: 'tedarikcilerim', element: lazyRoute(<CounterpartiesPage />) },
         ],
       },

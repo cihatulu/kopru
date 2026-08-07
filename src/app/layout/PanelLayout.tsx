@@ -13,6 +13,9 @@ const MANUFACTURER_TABS: Tab[] = [
   { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürünlerim' },
   { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler' },
   { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar' },
+  { to: `${ROUTES.manufacturer}/servis`, label: 'Servis & İade' },
+  { to: `${ROUTES.manufacturer}/duyurular`, label: 'Duyurular' },
+  { to: `${ROUTES.manufacturer}/raporlar`, label: 'Raporlar' },
   { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşterilerim' },
 ];
 
@@ -20,6 +23,10 @@ const RETAILER_TABS: Tab[] = [
   { to: `${ROUTES.retailer}/katalog`, label: 'Katalog' },
   { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim' },
   { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesaplar' },
+  { to: `${ROUTES.retailer}/servis`, label: 'Servis & İade' },
+  { to: `${ROUTES.retailer}/duyurular`, label: 'Duyurular' },
+  { to: `${ROUTES.retailer}/raporlar`, label: 'Raporlar' },
+  { to: `${ROUTES.retailer}/finans`, label: 'Finans' },
   { to: `${ROUTES.retailer}/tedarikcilerim`, label: 'Tedarikçilerim' },
 ];
 

@@ -14,6 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          read_at: string
+          retailer_org_id: string
+        }
+        Insert: {
+          announcement_id: string
+          read_at?: string
+          retailer_org_id: string
+        }
+        Update: {
+          announcement_id?: string
+          read_at?: string
+          retailer_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcement_reads_retailer_org_id_fkey"
+            columns: ["retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_active: boolean
+          owner_kind: Database["public"]["Enums"]["org_kind"] | null
+          owner_org_id: string
+          target_retailer_org_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_kind?: Database["public"]["Enums"]["org_kind"] | null
+          owner_org_id: string
+          target_retailer_org_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_kind?: Database["public"]["Enums"]["org_kind"] | null
+          owner_org_id?: string
+          target_retailer_org_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_owner_org_id_owner_kind_fkey"
+            columns: ["owner_org_id", "owner_kind"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id", "kind"]
+          },
+          {
+            foreignKeyName: "announcements_target_retailer_org_id_fkey"
+            columns: ["target_retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_entries: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          kind: Database["public"]["Enums"]["finance_kind"]
+          method: Database["public"]["Enums"]["payment_method"]
+          occurred_on: string
+          retailer_kind: Database["public"]["Enums"]["org_kind"] | null
+          retailer_org_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          kind: Database["public"]["Enums"]["finance_kind"]
+          method?: Database["public"]["Enums"]["payment_method"]
+          occurred_on?: string
+          retailer_kind?: Database["public"]["Enums"]["org_kind"] | null
+          retailer_org_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["finance_kind"]
+          method?: Database["public"]["Enums"]["payment_method"]
+          occurred_on?: string
+          retailer_kind?: Database["public"]["Enums"]["org_kind"] | null
+          retailer_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_entries_retailer_org_id_retailer_kind_fkey"
+            columns: ["retailer_org_id", "retailer_kind"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id", "kind"]
+          },
+        ]
+      }
       login_audit: {
         Row: {
           created_at: string
@@ -691,6 +822,170 @@ export type Database = {
           },
         ]
       }
+      return_requests: {
+        Row: {
+          approved_amount: number | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          items: Json
+          manufacturer_org_id: string
+          order_id: string
+          reason: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["return_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_amount?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          items?: Json
+          manufacturer_org_id: string
+          order_id: string
+          reason?: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_amount?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          items?: Json
+          manufacturer_org_id?: string
+          order_id?: string
+          reason?: string | null
+          relationship_id?: string
+          retailer_org_id?: string
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_requests_manufacturer_org_id_fkey"
+            columns: ["manufacturer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_requests_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_requests_retailer_org_id_fkey"
+            columns: ["retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ssh_requests: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          description: string | null
+          id: string
+          images: string[]
+          manufacturer_org_id: string
+          order_id: string | null
+          product_id: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["ssh_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          id?: string
+          images?: string[]
+          manufacturer_org_id: string
+          order_id?: string | null
+          product_id?: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status?: Database["public"]["Enums"]["ssh_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          id?: string
+          images?: string[]
+          manufacturer_org_id?: string
+          order_id?: string | null
+          product_id?: string | null
+          relationship_id?: string
+          retailer_org_id?: string
+          status?: Database["public"]["Enums"]["ssh_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssh_requests_manufacturer_org_id_fkey"
+            columns: ["manufacturer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_requests_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_requests_retailer_org_id_fkey"
+            columns: ["retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_requests: {
         Row: {
           created_at: string
@@ -1070,6 +1365,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      advance_ssh_status: {
+        Args: {
+          p_id: string
+          p_status: Database["public"]["Enums"]["ssh_status"]
+        }
+        Returns: {
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          description: string | null
+          id: string
+          images: string[]
+          manufacturer_org_id: string
+          order_id: string | null
+          product_id: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["ssh_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ssh_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -1096,6 +1419,45 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      confirm_return_atomic: {
+        Args: { p_approve: boolean; p_note?: string; p_return_id: string }
+        Returns: {
+          approved_amount: number | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          items: Json
+          manufacturer_org_id: string
+          order_id: string
+          reason: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["return_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "return_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_return_request: {
+        Args: { p_items: Json; p_order_id: string; p_reason?: string }
+        Returns: string
+      }
+      create_ssh_request: {
+        Args: {
+          p_customer?: Json
+          p_description?: string
+          p_order_id?: string
+          p_product_id?: string
+          p_relationship_id: string
+          p_title: string
+        }
+        Returns: string
       }
       current_balance: { Args: { p_relationship_id: string }; Returns: number }
       decide_subscription_request: {
@@ -1171,6 +1533,10 @@ export type Database = {
       is_valid_tckn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn_tc: { Args: { p: string }; Returns: boolean }
+      manufacturer_summary: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: Json
+      }
       my_relationship_ids: { Args: never; Returns: string[] }
       next_order_no: {
         Args: { p_manufacturer_org_id: string }
@@ -1179,6 +1545,10 @@ export type Database = {
       place_order_atomic: {
         Args: { p_customer?: Json; p_items: Json; p_relationship_id: string }
         Returns: string
+      }
+      relationship_has_module: {
+        Args: { p_module: string; p_relationship_id: string }
+        Returns: boolean
       }
       request_subscription: {
         Args: {
@@ -1224,6 +1594,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      retailer_summary: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: Json
       }
       save_product: {
         Args: {
@@ -1312,6 +1686,10 @@ export type Database = {
         }
       }
       shares_relationship_with: { Args: { p_org_id: string }; Returns: boolean }
+      ship_order_atomic: {
+        Args: { p_items?: Json; p_order_id: string }
+        Returns: string
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       track_order: { Args: { p_token: string }; Returns: Json }
@@ -1350,6 +1728,7 @@ export type Database = {
       }
     }
     Enums: {
+      finance_kind: "income" | "expense"
       order_status:
         | "pending"
         | "confirmed"
@@ -1362,9 +1741,17 @@ export type Database = {
         | "returned"
       org_kind: "manufacturer" | "retailer"
       org_role: "owner" | "staff" | "accountant"
+      payment_method: "cash" | "pos_own" | "pos_manufacturer" | "bank_transfer"
       plan_tier: "free" | "basic" | "pro"
       product_type: "single" | "set"
       relationship_status: "pending" | "active" | "passive"
+      return_status: "pending" | "approved" | "rejected"
+      ssh_status:
+        | "bekliyor"
+        | "inceleniyor"
+        | "parca_gonderildi"
+        | "tamamlandi"
+        | "iptal"
       subscription_request_status: "pending" | "approved" | "rejected"
       transaction_type: "debit" | "credit"
     }
@@ -1500,6 +1887,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      finance_kind: ["income", "expense"],
       order_status: [
         "pending",
         "confirmed",
@@ -1513,9 +1901,18 @@ export const Constants = {
       ],
       org_kind: ["manufacturer", "retailer"],
       org_role: ["owner", "staff", "accountant"],
+      payment_method: ["cash", "pos_own", "pos_manufacturer", "bank_transfer"],
       plan_tier: ["free", "basic", "pro"],
       product_type: ["single", "set"],
       relationship_status: ["pending", "active", "passive"],
+      return_status: ["pending", "approved", "rejected"],
+      ssh_status: [
+        "bekliyor",
+        "inceleniyor",
+        "parca_gonderildi",
+        "tamamlandi",
+        "iptal",
+      ],
       subscription_request_status: ["pending", "approved", "rejected"],
       transaction_type: ["debit", "credit"],
     },
