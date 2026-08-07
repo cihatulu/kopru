@@ -8,12 +8,14 @@ interface Props {
   onUpgrade: (org: AdminOrg) => void;
   onDowngrade: (org: AdminOrg) => void;
   onToggleActive: (org: AdminOrg) => void;
+  onResetPassword: (org: AdminOrg) => void;
 }
 
 const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
 const TD = 'px-4 py-3 align-middle';
 
-export function OrgTable({ orgs, busyId, onUpgrade, onDowngrade, onToggleActive }: Props) {
+export function OrgTable(props: Props) {
+  const { orgs, busyId, onUpgrade, onDowngrade, onToggleActive, onResetPassword } = props;
   if (orgs.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -68,6 +70,15 @@ export function OrgTable({ orgs, busyId, onUpgrade, onDowngrade, onToggleActive 
                       Aboneye yükselt
                     </Button>
                   )}
+                  {/* Şifre yenileme yalnız girişi olan org'lar için anlamlı;
+                      misafirin owner hesabı henüz açılmamış olabilir. */}
+                  <Button
+                    variant="secondary"
+                    loading={busyId === org.id}
+                    onClick={() => onResetPassword(org)}
+                  >
+                    Şifre yenile
+                  </Button>
                   <Button variant="secondary" onClick={() => onToggleActive(org)}>
                     {org.isActive ? 'Pasifleştir' : 'Aktifleştir'}
                   </Button>

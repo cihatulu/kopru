@@ -6,6 +6,9 @@ export type { AdminOrg, OrgListFilters } from './api/useOrgList';
 export { useCreateOrg } from './api/useCreateOrg';
 export type { CreateOrgInput } from './api/useCreateOrg';
 
+export { useResetOrgPassword, ResetPasswordError } from './api/useResetPassword';
+export type { ResetPasswordResult } from './api/useResetPassword';
+
 export {
   useUpgradeOrg,
   useDowngradeOrg,
@@ -31,6 +34,8 @@ export { toSubscriberFilter, SUBSCRIBER_FILTERS } from './domain/filters';
 export type { SubscriberFilter } from './domain/filters';
 export { UpgradeDialog } from './components/UpgradeDialog';
 export { CreateOrgDialog } from './components/CreateOrgDialog';
+export { CredentialsDialog } from './components/CredentialsDialog';
+export { OrgDialogs } from './components/OrgDialogs';
 export { createOrgSchema } from './domain/orgSchema';
 export type { CreateOrgForm } from './domain/orgSchema';
 export { SubscriberBadge, ActiveBadge, RelationshipBadge } from './components/StatusBadges';

@@ -74,18 +74,28 @@ Katman ve dosya bütçesi kuralları `CLAUDE.md`'de; hook'lar zorlar.
 
 ## Giriş akışı
 
-Açılışta hiçbir form alanı yoktur — yalnız üç buton: **Üretici · Perakendeci · Admin**.
-Her portalın altında iki yol:
+Beş sekme: **ÜYE ÜRETİCİ · ÜYE PERAKENDECİ · MİSAFİR ÜRETİCİ · MİSAFİR PERAKENDECİ · ADMIN**
 
-- **Abone**: kendi VKN/TCKN + şifre
-- **Misafir**: kendisini ekleyen abonenin VKN'si + kendi kodu + şifre
+- **Üye**: vergi numarası (kullanıcı kodu) + şifre
+- **Misafir**: kendisini ekleyen üyenin vergi numarası + kendi vergi numarası + şifre
+- **Admin**: e-posta + şifre — yalnız admin e-posta kullanır, çünkü platform admini
+  bir organizasyona bağlı değildir ve vergi numarasıyla tanımlanmaz
 
-Sponsor VKN bir kolaylık değil, **kimlik faktörüdür**; sunucuda aktif ilişkiye karşı
-doğrulanır. Tüm doğrulama `login` Edge Function'ındadır — istemci `users` tablosunu
-sorgulamaz.
+Sponsor vergi numarası bir kolaylık değil, **kimlik faktörüdür**; sunucuda aktif
+ilişkiye karşı doğrulanır. Tüm doğrulama `login` Edge Function'ındadır — istemci
+`users` tablosunu sorgulamaz.
 
-Admin `admincyo` subdomain'inden ve e-posta ile girer (platform admini bir org'a
-bağlı değildir, dolayısıyla VKN'si yoktur).
+Admin paneli ayrıca rezerve `admincyo` subdomain'i ister.
+
+### Şifre yönetimi
+
+Şifre yazımının tek yetkili yolu `update-user-password` Edge Function'dır
+(kilitli kural 2); veritabanında `password_hash` kolonu yoktur.
+
+- **Admin**, her üretici ve perakendecinin şifresini yenileyebilir. Yeni şifre
+  bir kez gösterilir ve hiçbir yere kaydedilmez.
+- **Kullanıcı**, mevcut şifresini doğrulayarak kendi şifresini değiştirebilir —
+  çalınmış bir oturumla hesabın ele geçirilmesini engelleyen kontrol budur.
 
 ## Yayın
 

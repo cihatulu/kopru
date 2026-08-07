@@ -7,12 +7,10 @@ export type { SessionUser, SessionOrg } from './api/useAuthSession';
 export { useLogin, useLogout, LoginError } from './api/useLogin';
 export type { LoginRequest } from './api/useLogin';
 
-export { PORTALS, MODES, modesFor, portalTitle } from './domain/portals';
-export type { Portal, LoginMode, PortalMeta, ModeMeta } from './domain/portals';
+export { LOGIN_TABS, tabById, usesEmail, isGuestTab } from './domain/portals';
+export type { Portal, LoginMode, LoginTab, TabId } from './domain/portals';
 export { schemaFor, sponsorConflict } from './domain/loginSchema';
 export type { LoginForm } from './domain/loginSchema';
 
-export { PortalPicker } from './components/PortalPicker';
-export { ModePicker } from './components/ModePicker';
+export { LoginTabs } from './components/LoginTabs';
 export { LoginFormFields } from './components/LoginFormFields';
-export { BrandPanel } from './components/BrandPanel';

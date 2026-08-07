@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import {
-  CreateOrgDialog,
+  OrgDialogs,
   OrgTable,
   OrgToolbar,
-  UpgradeDialog,
+  ResetPasswordError,
   normalizeSubdomain,
   toSubscriberFilter,
   useCreateOrg,
   useDowngradeOrg,
   useOrgList,
+  useResetOrgPassword,
   useSetOrgActive,
   useUpgradeOrg,
   type AdminOrg,
   type CreateOrgForm,
+  type ResetPasswordResult,
   type SubscriberFilter,
   type UpgradeResult,
 } from '@/features/admin';
@@ -27,21 +29,19 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
   const [target, setTarget] = useState<AdminOrg | null>(null);
   const [result, setResult] = useState<UpgradeResult | null>(null);
   const [creating, setCreating] = useState(false);
+  const [credentials, setCredentials] = useState<
+    (ResetPasswordResult & { companyName: string }) | null
+  >(null);
+  const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
   const list = useOrgList({ kind, search, ...toSubscriberFilter(filter) });
   const create = useCreateOrg();
   const upgrade = useUpgradeOrg();
   const downgrade = useDowngradeOrg();
   const setActive = useSetOrgActive();
+  const resetPassword = useResetOrgPassword();
 
   const orgs = list.data?.pages.flat() ?? [];
-  const busy = upgrade.isPending || downgrade.isPending ? (target?.id ?? undefined) : undefined;
-
-  const closeUpgrade = () => {
-    setTarget(null);
-    setResult(null);
-    upgrade.reset();
-  };
 
   const submitCreate = (v: CreateOrgForm) => {
     create.mutate(
@@ -53,13 +53,16 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         ...(v.phone ? { phone: v.phone } : {}),
         ...(v.email ? { email: v.email } : {}),
       },
-      {
-        onSuccess: () => {
-          setCreating(false);
-          create.reset();
-        },
-      },
+      { onSuccess: () => { setCreating(false); create.reset(); } },
     );
+  };
+
+  const doReset = (org: AdminOrg) => {
+    setBusyId(org.id);
+    resetPassword.mutate(org.id, {
+      onSuccess: (r) => setCredentials({ ...r, companyName: org.companyName }),
+      onSettled: () => setBusyId(undefined),
+    });
   };
 
   return (
@@ -80,6 +83,14 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         </p>
       )}
 
+      {resetPassword.isError && (
+        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {resetPassword.error instanceof ResetPasswordError
+            ? resetPassword.error.message
+            : 'Şifre yenilenemedi.'}
+        </p>
+      )}
+
       {list.isPending ? (
         <div className="flex justify-center py-12">
           <Spinner />
@@ -87,10 +98,11 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
       ) : (
         <OrgTable
           orgs={orgs}
-          busyId={busy}
+          busyId={busyId ?? (upgrade.isPending || downgrade.isPending ? target?.id : undefined)}
           onUpgrade={setTarget}
           onDowngrade={(org) => downgrade.mutate(org.id)}
           onToggleActive={(org) => setActive.mutate({ orgId: org.id, isActive: !org.isActive })}
+          onResetPassword={doReset}
         />
       )}
 
@@ -106,35 +118,27 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         </div>
       )}
 
-      {creating && (
-        <CreateOrgDialog
-          kind={kind}
-          pending={create.isPending}
-          errorMessage={
-            create.isError ? 'Oluşturulamadı. Bu VKN zaten kayıtlı olabilir.' : undefined
-          }
-          onClose={() => {
-            setCreating(false);
-            create.reset();
-          }}
-          onSubmit={submitCreate}
-        />
-      )}
-
-      {target && (
-        <UpgradeDialog
-          org={target}
-          pending={upgrade.isPending}
-          result={result}
-          onClose={closeUpgrade}
-          onConfirm={(plan: Plan, subdomain: string) =>
-            upgrade.mutate(
-              { orgId: target.id, plan, subdomain: normalizeSubdomain(subdomain) },
-              { onSuccess: setResult },
-            )
-          }
-        />
-      )}
+      <OrgDialogs
+        kind={kind}
+        creating={creating}
+        createPending={create.isPending}
+        createFailed={create.isError}
+        onCreateClose={() => { setCreating(false); create.reset(); }}
+        onCreateSubmit={submitCreate}
+        upgradeTarget={target}
+        upgradePending={upgrade.isPending}
+        upgradeResult={result}
+        onUpgradeClose={() => { setTarget(null); setResult(null); upgrade.reset(); }}
+        onUpgradeConfirm={(plan: Plan, subdomain: string) =>
+          target &&
+          upgrade.mutate(
+            { orgId: target.id, plan, subdomain: normalizeSubdomain(subdomain) },
+            { onSuccess: setResult },
+          )
+        }
+        credentials={credentials}
+        onCredentialsClose={() => { setCredentials(null); resetPassword.reset(); }}
+      />
     </div>
   );
 }

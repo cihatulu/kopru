@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { guestSchema, schemaFor, sponsorConflict, subscriberSchema } from './loginSchema';
-import { MODES, PORTALS, modesFor, portalTitle } from './portals';
+import { LOGIN_TABS, isGuestTab, tabById, usesEmail } from './portals';
 
 // Gerçek checksum'ı geçen test değerleri (bkz. src/lib/tckn.test.ts).
 const VKN = '1234567890';
@@ -88,35 +88,37 @@ describe('sponsorConflict', () => {
   });
 });
 
-describe('portals', () => {
-  test('açılışta tam üç portal butonu vardır', () => {
-    expect(PORTALS.map((p) => p.id)).toEqual(['manufacturer', 'retailer', 'admin']);
+describe('sekmeler', () => {
+  test('beş giriş yolu vardır', () => {
+    expect(LOGIN_TABS.map((t) => t.id)).toEqual([
+      'member-manufacturer',
+      'member-retailer',
+      'guest-manufacturer',
+      'guest-retailer',
+      'admin',
+    ]);
   });
 
-  test('üretici ve perakendecinin ikişer giriş yolu vardır', () => {
-    expect(modesFor('manufacturer').map((m) => m.id)).toEqual(['subscriber', 'guest']);
-    expect(modesFor('retailer').map((m) => m.id)).toEqual(['subscriber', 'guest']);
-  });
-
-  test('adminin mod seçimi yoktur', () => {
-    expect(modesFor('admin')).toEqual([]);
-  });
-
-  test('misafir modu sponsor etiketi taşır, abone modu taşımaz', () => {
-    for (const kind of ['manufacturer', 'retailer'] as const) {
-      const [subscriber, guest] = MODES[kind];
-      expect(subscriber!.sponsorLabel).toBeUndefined();
-      expect(guest!.sponsorLabel).toBeTruthy();
+  test('YALNIZ admin e-posta kullanır', () => {
+    for (const tab of LOGIN_TABS) {
+      expect(usesEmail(tab)).toBe(tab.id === 'admin');
     }
   });
 
-  test('üreticinin sponsoru perakendeci, perakendecininki üreticidir', () => {
-    expect(MODES.manufacturer[1]!.sponsorLabel).toContain('perakendeci');
-    expect(MODES.retailer[1]!.sponsorLabel).toContain('üretici');
+  test('misafir sekmeleri sponsor etiketi taşır, üye sekmeleri taşımaz', () => {
+    for (const tab of LOGIN_TABS) {
+      if (isGuestTab(tab)) expect(tab.sponsorLabel).toBeTruthy();
+      else expect(tab.sponsorLabel).toBeUndefined();
+    }
   });
 
-  test('portalTitle bilinen portal için başlık döner', () => {
-    expect(portalTitle('manufacturer')).toBe('Üretici Üye Girişi');
-    expect(portalTitle('admin')).toBe('Admin');
+  test('misafir üreticinin sponsoru perakendeci, tersi de öyledir', () => {
+    expect(tabById('guest-manufacturer').sponsorLabel).toContain('perakendeci');
+    expect(tabById('guest-retailer').sponsorLabel).toContain('üretici');
+  });
+
+  test('bilinmeyen sekme sessizce geçilmez', () => {
+    // @ts-expect-error kasıtlı geçersiz id
+    expect(() => tabById('yok')).toThrow();
   });
 });

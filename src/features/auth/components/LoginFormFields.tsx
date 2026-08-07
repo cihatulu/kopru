@@ -1,30 +1,27 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
-import { modesFor, portalTitle, type LoginMode, type Portal } from '../domain/portals';
+import { isGuestTab, usesEmail, type LoginTab } from '../domain/portals';
 import { schemaFor, sponsorConflict, type LoginForm } from '../domain/loginSchema';
-import { BackLink } from './ModePicker';
 
 interface Props {
-  portal: Portal;
-  mode: LoginMode;
+  tab: LoginTab;
   pending: boolean;
   errorMessage?: string | undefined;
-  onBack: () => void;
   onSubmit: (values: LoginForm) => void;
 }
 
-export function LoginFormFields({
-  portal,
-  mode,
-  pending,
-  errorMessage,
-  onBack,
-  onSubmit,
-}: Props) {
-  const isAdmin = portal === 'admin';
-  const isGuest = mode === 'guest' && !isAdmin;
-  const meta = modesFor(portal).find((m) => m.id === mode);
+/**
+ * Aktif sekmenin formu.
+ *
+ * Alanlar sekmeye göre değişir ama sunucuya giden sözleşme aynıdır:
+ * yalnız ADMIN e-posta ile girer; diğer herkes VERGİ NUMARASI (kullanıcı kodu)
+ * ile. Misafir sekmelerinde ayrıca sponsorun vergi numarası istenir — bu bir
+ * kolaylık değil, sunucuda aktif ilişkiye karşı doğrulanan kimlik faktörüdür.
+ */
+export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props) {
+  const email = usesEmail(tab);
+  const guest = isGuestTab(tab);
 
   const {
     register,
@@ -32,107 +29,96 @@ export function LoginFormFields({
     setError,
     formState: { errors },
   } = useForm<LoginForm>({
-    resolver: zodResolver(schemaFor(portal, mode)),
+    resolver: zodResolver(schemaFor(tab.portal, tab.mode)),
   });
 
   const submit = (values: LoginForm) => {
-    // Misafir kendi kendinin sponsoru olamaz — sunucu da reddeder, burada erken yakalıyoruz.
-    if (isGuest && sponsorConflict({ userCode: values.userCode ?? '', ...values })) {
-      setError('sponsorVkn', {
-        message: 'Sponsor VKN’si kendi numaranızla aynı olamaz.',
-      });
+    if (guest && sponsorConflict({ userCode: values.userCode ?? '', ...values })) {
+      setError('sponsorVkn', { message: 'Sponsor vergi numarası kendi numaranızla aynı olamaz.' });
       return;
     }
     onSubmit(values);
   };
 
   return (
-    <div>
-      <BackLink onClick={onBack} />
-      <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-        {portalTitle(portal)}
-      </h1>
-      {meta && <p className="mt-1.5 text-sm text-slate-500">{meta.title}</p>}
+    <form onSubmit={(e) => void handleSubmit(submit)(e)} className="space-y-4">
+      <p className="text-center text-sm text-slate-500">{tab.hint}</p>
 
-      <form onSubmit={(e) => void handleSubmit(submit)(e)} className="mt-8 space-y-5">
-        {/* Misafir girişinde ilk alan sponsorun VKN'sidir: kim tarafından eklendiğini
-            kanıtlar. Bu bir kolaylık değil, kimlik faktörüdür. */}
-        {isGuest && meta?.sponsorLabel && (
-          <div>
-            <label className="label" htmlFor="sponsorVkn">
-              {meta.sponsorLabel}
-            </label>
-            <input
-              id="sponsorVkn"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="10 haneli vergi numarası"
-              className="input"
-              {...register('sponsorVkn')}
-            />
-            {errors.sponsorVkn && <p className="field-error">{errors.sponsorVkn.message}</p>}
-          </div>
-        )}
-
-        {isAdmin ? (
-          <div>
-            <label className="label" htmlFor="email">
-              E-posta
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="username"
-              placeholder="ekip@kopru.com"
-              className="input"
-              {...register('email')}
-            />
-            {errors.email && <p className="field-error">{errors.email.message}</p>}
-          </div>
-        ) : (
-          <div>
-            <label className="label" htmlFor="userCode">
-              Kullanıcı kodu (VKN / T.C. No)
-            </label>
-            <input
-              id="userCode"
-              inputMode="numeric"
-              autoComplete="username"
-              placeholder="Vergi veya T.C. Kimlik numaranız"
-              className="input"
-              {...register('userCode')}
-            />
-            {errors.userCode && <p className="field-error">{errors.userCode.message}</p>}
-          </div>
-        )}
-
+      {guest && tab.sponsorLabel && (
         <div>
-          <label className="label" htmlFor="password">
-            Şifre
+          <label className="label uppercase tracking-wide" htmlFor="sponsorVkn">
+            {tab.sponsorLabel}
           </label>
           <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
+            id="sponsorVkn"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="10 haneli vergi numarası"
             className="input"
-            {...register('password')}
+            {...register('sponsorVkn')}
           />
-          {errors.password && <p className="field-error">{errors.password.message}</p>}
+          {errors.sponsorVkn && <p className="field-error">{errors.sponsorVkn.message}</p>}
         </div>
+      )}
 
-        {errorMessage && (
-          <div
-            role="alert"
-            className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-100"
-          >
-            {errorMessage}
-          </div>
-        )}
+      {email ? (
+        <div>
+          <label className="label uppercase tracking-wide" htmlFor="email">
+            E-posta
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="username"
+            placeholder="admin@ornek.com"
+            className="input"
+            {...register('email')}
+          />
+          {errors.email && <p className="field-error">{errors.email.message}</p>}
+        </div>
+      ) : (
+        <div>
+          <label className="label uppercase tracking-wide" htmlFor="userCode">
+            Vergi No / Kullanıcı Kodu
+          </label>
+          <input
+            id="userCode"
+            inputMode="numeric"
+            autoComplete="username"
+            placeholder="Vergi numaranız veya T.C. kimlik numaranız"
+            className="input"
+            {...register('userCode')}
+          />
+          {errors.userCode && <p className="field-error">{errors.userCode.message}</p>}
+        </div>
+      )}
 
-        <Button type="submit" loading={pending} className="w-full">
-          Giriş yap
-        </Button>
-      </form>
-    </div>
+      <div>
+        <label className="label uppercase tracking-wide" htmlFor="password">
+          Şifre
+        </label>
+        <input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          className="input"
+          {...register('password')}
+        />
+        {errors.password && <p className="field-error">{errors.password.message}</p>}
+      </div>
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-100"
+        >
+          {errorMessage}
+        </div>
+      )}
+
+      <Button type="submit" loading={pending} className="w-full py-3">
+        Giriş Yap
+      </Button>
+    </form>
   );
 }
