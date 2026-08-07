@@ -4,6 +4,7 @@
 // demek olduğu için 11 kural burada adlandırılmış kontrol fonksiyonlarında toplandı.
 // Davranış aynı, maliyet 1/6.
 import { readInput, block, allow, norm, stripComments } from './_util.mjs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const input = await readInput();
 const ti = input?.tool_input || {};
@@ -172,9 +173,30 @@ const BUDGETS = [
   [/\/src\/(components|features)\/.*\.tsx$/, 200, 'component'],
 ];
 
+/**
+ * Yazım sonrası dosyanın TOPLAM satır sayısı.
+ *
+ * Edit'te yalnız `new_string` ölçmek yetmez: küçük eklemelerle dosya sessizce
+ * bütçeyi aşar (gerçekten yaşandı — bir api dosyası 163 satıra çıktı ve hook
+ * hiç uyarmadı). Mevcut içerik okunup fark hesaplanır.
+ */
+function resultingLineCount() {
+  const added = raw.split('\n').length;
+  if (ti.content !== undefined) return added; // Write: içerik dosyanın tamamı
+  if (!existsSync(path)) return added;
+
+  try {
+    const current = readFileSync(path, 'utf8');
+    const removed = (ti.old_string ?? '').split('\n').length;
+    return current.split('\n').length - removed + added;
+  } catch {
+    return added;
+  }
+}
+
 function checkFileSize() {
   if (isTest) return;
-  const lines = raw.split('\n').length;
+  const lines = resultingLineCount();
   for (const [re, limit, kind] of BUDGETS) {
     if (re.test(path) && lines > limit) {
       block(

@@ -3,8 +3,10 @@
 export { useOrgList } from './api/useOrgList';
 export type { AdminOrg, OrgListFilters } from './api/useOrgList';
 
+export { useCreateOrg } from './api/useCreateOrg';
+export type { CreateOrgInput } from './api/useCreateOrg';
+
 export {
-  useCreateOrg,
   useUpgradeOrg,
   useDowngradeOrg,
   useSetOrgActive,
