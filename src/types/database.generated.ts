@@ -1048,6 +1048,39 @@ export type Database = {
           },
         ]
       }
+      staff_scope: {
+        Row: {
+          created_at: string
+          retailer_org_id: string
+          staff_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          retailer_org_id: string
+          staff_user_id: string
+        }
+        Update: {
+          created_at?: string
+          retailer_org_id?: string
+          staff_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_scope_retailer_org_id_fkey"
+            columns: ["retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_scope_staff_user_id_fkey"
+            columns: ["staff_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_requests: {
         Row: {
           created_at: string
@@ -1455,6 +1488,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      bulk_update_stock: { Args: { p_rows: Json }; Returns: number }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -1748,6 +1782,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      set_staff_scope: {
+        Args: { p_retailer_org_ids: string[]; p_staff_user_id: string }
+        Returns: undefined
       }
       shares_relationship_with: { Args: { p_org_id: string }; Returns: boolean }
       ship_order_atomic: {

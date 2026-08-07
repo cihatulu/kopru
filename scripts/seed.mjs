@@ -52,7 +52,22 @@ async function api(path, init = {}) {
   return body;
 }
 
+/**
+ * Tohum şifresi.
+ *
+ * Varsayılan SABİTTİR. Her çalıştırmada rastgele üretmek, geliştirirken
+ * elinizdeki şifreyi sessizce geçersiz kılıyordu — tekrar tekrar "giriş
+ * bilgileri hatalı" ile karşılaşmanın sebebi buydu.
+ *
+ * Rastgele istenirse: SEED_PASSWORD=random
+ */
+const FIXED_PASSWORD = 'kopru2026test';
+
 function password() {
+  const requested = process.env.SEED_PASSWORD;
+  if (!requested) return FIXED_PASSWORD;
+  if (requested !== 'random') return requested;
+
   const abc = 'abcdefghjkmnpqrstuvwxyz';
   const num = '23456789';
   const b = randomBytes(16);
