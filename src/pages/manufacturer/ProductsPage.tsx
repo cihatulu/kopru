@@ -9,11 +9,14 @@ import {
   type CatalogProduct,
   type ProductForm,
 } from '@/features/catalog';
+import { useAuthSession } from '@/features/auth';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 
 /** Üreticinin katalog yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export default function ProductsPage() {
+  const { data: user } = useAuthSession();
+  const orgId = user?.org?.id ?? '';
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<CatalogProduct | null>(null);
   const [creating, setCreating] = useState(false);
@@ -32,7 +35,7 @@ export default function ProductsPage() {
     save.reset();
   };
 
-  const submit = (v: ProductForm) => {
+  const submit = (v: ProductForm, images: string[]) => {
     save.mutate(
       {
         ...(editing ? { id: editing.id } : {}),
@@ -43,6 +46,7 @@ export default function ProductsPage() {
           ? {}
           : { costPrice: Number(v.costPrice) }),
         ...(v.description ? { description: v.description } : {}),
+        images,
       },
       { onSuccess: close },
     );
@@ -106,6 +110,7 @@ export default function ProductsPage() {
         <ProductDialog
           product={editing ?? undefined}
           initialCost={editing ? costs.data?.[editing.id] : undefined}
+          orgId={orgId}
           pending={save.isPending}
           errorMessage={save.isError ? 'Kaydedilemedi. Ürün kodu benzersiz olmalı.' : undefined}
           onClose={close}

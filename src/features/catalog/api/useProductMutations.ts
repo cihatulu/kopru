@@ -9,6 +9,8 @@ export interface SaveProductInput {
   /** undefined = maliyet bilinmiyor; kayıt silinir. 0 ile aynı şey DEĞİLDİR. */
   costPrice?: number | undefined;
   description?: string | undefined;
+  /** Storage'a önceden yüklenmiş görsellerin public URL'leri. */
+  images?: string[] | undefined;
 }
 
 function useInvalidate() {
@@ -32,6 +34,7 @@ export function useSaveProduct() {
         p_cost_price: input.costPrice ?? null,
         p_group_id: null,
         p_description: input.description ?? null,
+        p_images: input.images ?? null,
       });
       if (error) throw error;
       return data;

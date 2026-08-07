@@ -1,20 +1,27 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
 import { productSchema, type ProductForm } from '../domain/productSchema';
+import { ImageUploader } from './ImageUploader';
 import type { CatalogProduct } from '../api/useProducts';
 
 interface Props {
   product?: CatalogProduct | undefined;
   initialCost?: number | undefined;
+  orgId: string;
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;
-  onSubmit: (values: ProductForm) => void;
+  onSubmit: (values: ProductForm, images: string[]) => void;
 }
 
 export function ProductDialog(props: Props) {
-  const { product, initialCost, pending, errorMessage, onClose, onSubmit } = props;
+  const { product, initialCost, orgId, pending, errorMessage, onClose, onSubmit } = props;
+  const [images, setImages] = useState<string[]>(product?.images ?? []);
+  // Yeni üründe henüz id yok; görseller kaydetmeden önce yüklendiği için
+  // geçici ve kararlı bir klasör adı gerekiyor.
+  const [draftId] = useState(() => product?.id ?? `draft-${Date.now()}`);
 
   const {
     register,
@@ -43,7 +50,10 @@ export function ProductDialog(props: Props) {
           {product ? 'Ürünü düzenle' : 'Ürün ekle'}
         </h2>
 
-        <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="mt-5 space-y-4">
+        <form
+          onSubmit={(e) => void handleSubmit((v) => onSubmit(v, images))(e)}
+          className="mt-5 space-y-4"
+        >
           <Field label="Ürün adı" error={errors.name?.message}>
             <input className="input" autoFocus {...register('name')} />
           </Field>
@@ -70,6 +80,13 @@ export function ProductDialog(props: Props) {
           <Field label="Açıklama" error={errors.description?.message}>
             <textarea className="input min-h-20" {...register('description')} />
           </Field>
+
+          <ImageUploader
+            orgId={orgId}
+            productId={draftId}
+            images={images}
+            onChange={setImages}
+          />
 
           {errorMessage && (
             <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">

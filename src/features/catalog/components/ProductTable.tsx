@@ -45,8 +45,30 @@ export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }
             return (
               <tr key={p.id} className="hover:bg-slate-50/60">
                 <td className={TD}>
-                  <span className="block font-medium text-slate-900">{p.name}</span>
-                  <span className="block font-mono text-xs text-slate-500">{p.code}</span>
+                  <div className="flex items-center gap-3">
+                    {p.images[0] ? (
+                      <img
+                        src={p.images[0]}
+                        alt=""
+                        className="size-11 shrink-0 rounded-lg border border-slate-100 object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 text-slate-300"
+                        aria-hidden="true"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="size-5">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <span className="block font-medium text-slate-900">{p.name}</span>
+                      <span className="block font-mono text-xs text-slate-500">{p.code}</span>
+                    </div>
+                  </div>
                 </td>
                 <td className={`${TD} text-right font-medium text-slate-900`}>
                   {formatMoney(p.supplierPrice)}

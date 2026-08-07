@@ -5,7 +5,8 @@ import { PAGE_SIZE, STALE_TIME } from '@/constants';
 // Açık kolon listesi (kilitli kural 19). Maliyet burada YOKTUR ve olamaz —
 // üreticinin maliyeti ayrı `product_costs` tablosunda (A4).
 const PRODUCT_COLUMNS =
-  'id, name, code, description, supplier_price, currency, is_active, owner_org_id, created_at';
+  'id, name, code, description, supplier_price, currency, is_active, owner_org_id, ' +
+  'images, created_at';
 
 export interface CatalogProduct {
   id: string;
@@ -16,6 +17,8 @@ export interface CatalogProduct {
   currency: string;
   isActive: boolean;
   ownerOrgId: string;
+  /** Public URL listesi; en fazla 3 (bkz. lib/storage). */
+  images: string[];
   createdAt: string;
 }
 
@@ -30,6 +33,7 @@ function toProduct(raw: unknown): CatalogProduct {
     currency: (r.currency as string) ?? 'TRY',
     isActive: r.is_active as boolean,
     ownerOrgId: r.owner_org_id as string,
+    images: Array.isArray(r.images) ? (r.images as string[]) : [],
     createdAt: r.created_at as string,
   };
 }

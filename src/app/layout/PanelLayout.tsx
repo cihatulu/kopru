@@ -1,90 +1,46 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useAuthSession, useLogout } from '@/features/auth';
-import { Button } from '@/components/ui/Button';
-import { SubscriberBadge } from '@/features/admin';
-import { ORG_KIND, ROUTES } from '@/constants';
+import { ORG_KIND } from '@/constants';
+import { navFor } from './navigation';
+import { Sidebar } from './Sidebar';
+import { TopBar } from './TopBar';
 
-interface Tab {
-  to: string;
-  label: string;
-}
-
-const MANUFACTURER_TABS: Tab[] = [
-  { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürünlerim' },
-  { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler' },
-  { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar' },
-  { to: `${ROUTES.manufacturer}/servis`, label: 'Servis & İade' },
-  { to: `${ROUTES.manufacturer}/duyurular`, label: 'Duyurular' },
-  { to: `${ROUTES.manufacturer}/raporlar`, label: 'Raporlar' },
-  { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşterilerim' },
-];
-
-const RETAILER_TABS: Tab[] = [
-  { to: `${ROUTES.retailer}/katalog`, label: 'Katalog' },
-  { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim' },
-  { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesaplar' },
-  { to: `${ROUTES.retailer}/servis`, label: 'Servis & İade' },
-  { to: `${ROUTES.retailer}/duyurular`, label: 'Duyurular' },
-  { to: `${ROUTES.retailer}/raporlar`, label: 'Raporlar' },
-  { to: `${ROUTES.retailer}/finans`, label: 'Finans' },
-  { to: `${ROUTES.retailer}/tedarikcilerim`, label: 'Tedarikçilerim' },
-];
-
-/** Üretici ve perakendeci panellerinin ortak iskeleti. */
+/** Üretici ve perakendeci panellerinin ortak iskeleti — sol menü + üst çubuk. */
 export default function PanelLayout() {
   const { data: user } = useAuthSession();
   const logout = useLogout();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const isManufacturer = user?.org?.kind === ORG_KIND.manufacturer;
-  const tabs = isManufacturer ? MANUFACTURER_TABS : RETAILER_TABS;
+  const org = user?.org;
+  if (!org) return null;
+
+  const isManufacturer = org.kind === ORG_KIND.manufacturer;
+  const items = navFor(org.kind, org.enabledModules);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="truncate text-base font-bold text-slate-900">
-                {user?.org?.companyName ?? 'KÖPRÜ'}
-              </h1>
-              {user?.org && (
-                <SubscriberBadge
-                  isSubscriber={user.org.isSubscriber}
-                  plan={user.org.plan}
-                />
-              )}
-            </div>
-            <p className="text-xs text-slate-500">
-              {isManufacturer ? 'Üretici paneli' : 'Perakendeci paneli'}
-            </p>
-          </div>
-          <Button variant="secondary" loading={logout.isPending} onClick={() => logout.mutate()}>
-            Çıkış
-          </Button>
-        </div>
+    <div className="flex min-h-screen bg-slate-50">
+      <Sidebar
+        items={items}
+        companyName={org.companyName}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
 
-        <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-6">
-          {tabs.map((tab) => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              className={({ isActive }) =>
-                `whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'border-brand-600 text-brand-700'
-                    : 'border-transparent text-slate-500 hover:text-slate-900'
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
-      </header>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar
+          panelLabel={isManufacturer ? 'Üretici Paneli' : 'Perakendeci Paneli'}
+          userName={user.fullName ?? org.companyName}
+          badge={org.isSubscriber ? `Abone · ${org.plan ?? ''}` : 'Misafir'}
+          loggingOut={logout.isPending}
+          onMenu={() => setMenuOpen(true)}
+          onLogout={() => logout.mutate()}
+        />
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <Outlet />
-      </main>
+        <main className="flex-1 overflow-x-hidden px-4 py-6 md:px-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

@@ -1522,6 +1522,7 @@ export type Database = {
         Returns: string
       }
       current_balance: { Args: { p_relationship_id: string }; Returns: number }
+      dashboard_summary: { Args: never; Returns: Json }
       decide_subscription_request: {
         Args: {
           p_approve: boolean
@@ -1668,6 +1669,7 @@ export type Database = {
           p_description?: string
           p_group_id?: string
           p_id: string
+          p_images?: string[]
           p_name: string
           p_supplier_price: number
         }
