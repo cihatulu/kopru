@@ -26,6 +26,7 @@ const AdminManufacturersPage = lazy(() => import('@/pages/admin/AdminManufacture
 const AdminRetailersPage = lazy(() => import('@/pages/admin/AdminRetailersPage'));
 const AdminRelationshipsPage = lazy(() => import('@/pages/admin/AdminRelationshipsPage'));
 const AdminRequestsPage = lazy(() => import('@/pages/admin/AdminRequestsPage'));
+const AdminLeadsPage = lazy(() => import('@/pages/admin/AdminLeadsPage'));
 
 function lazyRoute(element: ReactNode) {
   return <Suspense fallback={<PageLoader />}>{element}</Suspense>;
@@ -87,6 +88,7 @@ export const router = createBrowserRouter([
           { path: 'perakendeci', element: lazyRoute(<AdminRetailersPage />) },
           { path: 'iliskiler', element: lazyRoute(<AdminRelationshipsPage />) },
           { path: 'talepler', element: lazyRoute(<AdminRequestsPage />) },
+          { path: 'adaylar', element: lazyRoute(<AdminLeadsPage />) },
         ],
       },
     ],

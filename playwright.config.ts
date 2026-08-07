@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:5173';
+// vite.config.ts ile aynı port; orada strictPort:true olduğu için başka bir
+// projenin sunucusuna bağlanma ihtimali yok.
+const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:5180';
 
 export default defineConfig({
   testDir: './e2e',

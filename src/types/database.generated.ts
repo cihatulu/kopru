@@ -145,6 +145,68 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          city: string | null
+          company_name: string
+          created_at: string
+          email: string | null
+          id: string
+          kind: Database["public"]["Enums"]["org_kind"] | null
+          last_contacted_at: string | null
+          matched_org_id: string | null
+          note: string | null
+          phone: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+          vkn_tc: string | null
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          company_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["org_kind"] | null
+          last_contacted_at?: string | null
+          matched_org_id?: string | null
+          note?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+          vkn_tc?: string | null
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          company_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["org_kind"] | null
+          last_contacted_at?: string | null
+          matched_org_id?: string | null
+          note?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+          vkn_tc?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_matched_org_id_fkey"
+            columns: ["matched_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_audit: {
         Row: {
           created_at: string
@@ -1729,6 +1791,7 @@ export type Database = {
     }
     Enums: {
       finance_kind: "income" | "expense"
+      lead_status: "new" | "contacted" | "interested" | "converted" | "rejected"
       order_status:
         | "pending"
         | "confirmed"
@@ -1888,6 +1951,7 @@ export const Constants = {
   public: {
     Enums: {
       finance_kind: ["income", "expense"],
+      lead_status: ["new", "contacted", "interested", "converted", "rejected"],
       order_status: [
         "pending",
         "confirmed",

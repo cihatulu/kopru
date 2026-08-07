@@ -16,6 +16,8 @@
     "test:e2e": "playwright test",
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
+    "db:push": "supabase db push --include-all",
+    "seed": "node scripts/seed.mjs",
     "gen:types": "supabase gen types typescript --linked > src/types/database.generated.ts",
     "deploy:functions": "supabase functions deploy login && supabase functions deploy update-user-password && supabase functions deploy update-stock"
   },

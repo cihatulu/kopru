@@ -52,6 +52,7 @@ export const ROUTES = {
   adminRetailers: '/admin/perakendeci',
   adminRelationships: '/admin/iliskiler',
   adminRequests: '/admin/talepler',
+  adminLeads: '/admin/adaylar',
 
   manufacturer: '/m',
   retailer: '/r',

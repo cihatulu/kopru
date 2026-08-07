@@ -6,6 +6,13 @@ import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    // Kendi portumuz. `strictPort` ZORUNLU: port doluysa Vite sessizce başka bir
+    // porta kayardı ve e2e, makinede açık olan BAŞKA bir projeye bağlanabilirdi —
+    // bu gerçekten yaşandı ve testler eski projenin giriş ekranını gördü.
+    port: 5180,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

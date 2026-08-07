@@ -8,6 +8,7 @@ const TABS = [
   { to: ROUTES.adminRetailers, label: 'Perakendeci Yönet' },
   { to: ROUTES.adminRelationships, label: 'İlişkiler' },
   { to: ROUTES.adminRequests, label: 'Abonelik Talepleri' },
+  { to: ROUTES.adminLeads, label: 'Adaylar' },
 ] as const;
 
 export default function AdminLayout() {
