@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import type { NavItem } from './navigation';
 
@@ -6,10 +7,17 @@ interface Props {
   companyName: string;
   open: boolean;
   onClose: () => void;
+  /**
+   * Menü maddelerinin altına yerleştirilecek dinamik içerik.
+   *
+   * Layout veri çekmez (A20); ağaç gibi içerikler ilgili feature'da üretilir
+   * ve buraya hazır düğüm olarak verilir.
+   */
+  slots?: Partial<Record<NonNullable<NavItem['slot']>, ReactNode>>;
 }
 
 /** Koyu sol menü. Mobilde kayarak açılır, masaüstünde sabittir. */
-export function Sidebar({ items, companyName, open, onClose }: Props) {
+export function Sidebar({ items, companyName, open, onClose, slots }: Props) {
   return (
     <>
       {open && (
@@ -44,33 +52,37 @@ export function Sidebar({ items, companyName, open, onClose }: Props) {
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6">
           {items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to.split('/').length === 2}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-slate-700/80 text-white'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                }`
-              }
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5 shrink-0"
-                aria-hidden="true"
+            <div key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.to.split('/').length === 2}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-slate-700/80 text-white'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`
+                }
               >
-                <path d={item.icon} />
-              </svg>
-              <span className="truncate">{item.label}</span>
-            </NavLink>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.7}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5 shrink-0"
+                  aria-hidden="true"
+                >
+                  <path d={item.icon} />
+                </svg>
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+
+              {/* Dinamik içerik (ör. katalog ağacı) maddenin hemen altında. */}
+              {item.slot && slots?.[item.slot]}
+            </div>
           ))}
         </nav>
       </aside>

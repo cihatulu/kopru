@@ -14,6 +14,13 @@ export interface NavItem {
   icon: string;
   /** Bu maddeyi görebilmek için gereken modül (plan gating, kilitli kural 15). */
   module?: string;
+  /**
+   * Bu maddenin altına yerleştirilecek yuva adı.
+   *
+   * Menü SAF veridir ve veri çekmez (A20); ağaç gibi dinamik içerik ilgili
+   * feature'ın bileşeni tarafından üretilip layout'a yuva olarak verilir.
+   */
+  slot?: 'catalog-tree';
 }
 
 const ICONS = {
@@ -34,6 +41,12 @@ const ICONS = {
 export const MANUFACTURER_NAV: readonly NavItem[] = [
   { to: ROUTES.manufacturer, label: 'Anasayfa', icon: ICONS.home },
   { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürün Yönetimi', icon: ICONS.box },
+  {
+    to: `${ROUTES.manufacturer}/katalog`,
+    label: 'Ürün Kataloğu',
+    icon: ICONS.catalog,
+    slot: 'catalog-tree',
+  },
   { to: `${ROUTES.manufacturer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşteri Yönetimi', icon: ICONS.users },
   { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },

@@ -15,6 +15,9 @@ export type { ProductGroup } from './api/useProductGroups';
 
 export { useProductStock } from './api/useProductStock';
 
+export { useCatalogTree } from './api/useCatalogTree';
+export type { TreeGroup, TreeProduct } from './api/useCatalogTree';
+
 export { productSchema, marginPercent, discountedPrice } from './domain/productSchema';
 export type { ProductForm } from './domain/productSchema';
 
@@ -29,3 +32,7 @@ export type { ProductSubmit } from './components/ProductDialog';
 export { CatalogRow } from './components/CatalogRow';
 export { GroupManager } from './components/GroupManager';
 export { ProductToolbar } from './components/ProductToolbar';
+export { CatalogTree } from './components/CatalogTree';
+export { CatalogGrid } from './components/CatalogGrid';
+export { ProductCard } from './components/ProductCard';
+export { ProductPreview } from './components/ProductPreview';

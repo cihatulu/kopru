@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuthSession, useLogout } from '@/features/auth';
+import { CatalogTree } from '@/features/catalog';
 import { ORG_KIND } from '@/constants';
 import { navFor } from './navigation';
 import { Sidebar } from './Sidebar';
@@ -25,6 +26,10 @@ export default function PanelLayout() {
         companyName={org.companyName}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
+        slots={
+          // Ağaç veriyi KENDİ çeker; layout yalnız yerleştirir (A20).
+          isManufacturer ? { 'catalog-tree': <CatalogTree ownerOrgId={org.id} /> } : {}
+        }
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
