@@ -14,6 +14,8 @@ export {
 export type { ProductGroup } from './api/useProductGroups';
 
 export { useProductStock } from './api/useProductStock';
+export { useAssignProductsToGroup, useAssignToNewGroup, useSetGroupProducts } from './api/useGroupMembership';
+export { useCatalogAdmin } from './api/useCatalogAdmin';
 
 export { useCatalogTree } from './api/useCatalogTree';
 export type { TreeGroup, TreeProduct } from './api/useCatalogTree';
@@ -26,6 +28,27 @@ export type { Variant, SetLine, Dimensions } from './domain/variants';
 
 export { toSavePayload, optionalNumber } from './domain/submitMapping';
 
+export {
+  CRITICAL_STOCK,
+  MARGIN_LABEL,
+  compactMoney,
+  computeStats,
+  marginBand,
+  matchesStockFilter,
+  netProfit,
+  stockLevel,
+} from './domain/productStats';
+export type { ProductStats, StockFilter, MarginBand, StockLevel } from './domain/productStats';
+
+export {
+  canBuildSet,
+  clampQuantity,
+  describeSet,
+  suggestedCost,
+  suggestedPrice,
+} from './domain/setBuilder';
+export type { SetLineInput } from './domain/setBuilder';
+
 export { ProductTable } from './components/ProductTable';
 export { ProductDialog } from './components/ProductDialog';
 export type { ProductSubmit } from './components/ProductDialog';
@@ -36,3 +59,12 @@ export { CatalogTree } from './components/CatalogTree';
 export { CatalogGrid } from './components/CatalogGrid';
 export { ProductCard } from './components/ProductCard';
 export { ProductPreview } from './components/ProductPreview';
+export { ProductManager } from './components/ProductManager';
+export { ProductStatCards } from './components/ProductStatCards';
+export { ProductFilterBar } from './components/ProductFilterBar';
+export { ProductRow } from './components/ProductRow';
+export { SetBuilderDialog } from './components/SetBuilderDialog';
+export type { SetSubmit } from './components/SetBuilderDialog';
+export { GroupAssignDialog } from './components/GroupAssignDialog';
+export { GroupManagerDialog } from './components/GroupManagerDialog';
+export { DeleteProductDialog } from './components/DeleteProductDialog';
