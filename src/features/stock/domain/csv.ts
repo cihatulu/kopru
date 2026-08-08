@@ -6,6 +6,7 @@
  * başına BOM eklenir. Bunların hiçbiri varsayılan CSV kabullerine uymaz;
  * hesaba katılmazsa içe aktarma sessizce sıfır satır işler.
  */
+import { parseDecimal } from '@/lib/format';
 
 export interface StockCsvRow {
   productId: string;
@@ -116,23 +117,9 @@ function detectSeparator(headerLine: string): string {
  * binlik ayıracıdır ve atılır.
  */
 export function parseQuantity(raw: string): number | null {
-  const text = raw.trim();
-  if (text === '') return null;
-
-  const lastComma = text.lastIndexOf(',');
-  const lastDot = text.lastIndexOf('.');
-
-  let normalized: string;
-  if (lastComma > lastDot) {
-    normalized = text.replace(/\./g, '').replace(',', '.');
-  } else if (lastDot > lastComma) {
-    normalized = text.replace(/,/g, '');
-  } else {
-    normalized = text;
-  }
-
-  const n = Number(normalized);
-  if (!Number.isFinite(n) || n < 0) return null;
+  const n = parseDecimal(raw);
+  // Negatif stok anlamlı değil; ayrıştırma ortak, kısıt buraya ait.
+  if (n === null || n < 0) return null;
   return n;
 }
 

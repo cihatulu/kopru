@@ -3,7 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
 
 // Açık kolon listesi (kilitli kural 19). Cari YALNIZ KATMAN 2 tutarlarından oluşur (A5).
-const TX_COLUMNS =
+// Dışa aktarım da aynı kolonları çeker; iki liste ayrışırsa dosya ekrandan
+// farklı veri gösterirdi.
+export const TX_COLUMNS =
   'id, type, amount, balance_after, description, created_at, order_id, relationship_id';
 
 type Row = Record<string, unknown>;
@@ -20,7 +22,7 @@ export interface LedgerEntry {
   orderId: string | null;
 }
 
-function toEntry(raw: unknown): LedgerEntry {
+export function toEntry(raw: unknown): LedgerEntry {
   const r = raw as Row;
   return {
     id: str(r.id),

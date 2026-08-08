@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { LedgerTable, useBalance, useLedger } from '@/features/accounts';
+import { LedgerPanel } from '@/features/accounts';
 import { PartyPicker, useCounterparties, otherParty, type Edge } from '@/features/counterparties';
 import { useAuthSession } from '@/features/auth';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { formatMoney } from '@/lib/format';
 import { ORG_KIND } from '@/constants';
 
 /** Cari hesaplar — karşı taraf seç, ekstreyi gör. YALNIZ KOMPOZİSYON (A20). */
@@ -13,14 +11,16 @@ export default function AccountsPage() {
   const [relId, setRelId] = useState<string | null>(null);
 
   const list = useCounterparties();
-  const ledger = useLedger(relId);
-  const balance = useBalance(relId);
 
   if (!user?.org) return null;
   const orgId = user.org.id;
   const edges: Edge[] = (list.data?.pages.flat() ?? []).filter((e) => e.status === 'active');
   const isManufacturer = user.org.kind === ORG_KIND.manufacturer;
   const selected = edges.find((e) => e.id === relId);
+
+  // KİLİTLİ KURAL 8: cari hareketi perakendeci veya muhasebeci girer;
+  // üretici yalnızca izler. Sunucu da aynı kontrolü yapar.
+  const canWrite = !isManufacturer && (user.orgRole === 'owner' || user.orgRole === 'accountant');
 
   return (
     <div className="space-y-5">
@@ -49,39 +49,12 @@ export default function AccountsPage() {
       )}
 
       {selected && (
-        <>
-          <div className="rounded-xl bg-white p-5 ring-1 ring-inset ring-slate-200">
-            <p className="text-xs font-semibold text-slate-500">
-              {otherParty(selected, orgId).companyName} — güncel bakiye
-            </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">
-              {balance.isPending ? '…' : formatMoney(balance.data ?? 0)}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              {isManufacturer ? 'Pozitif = müşteriniz borçlu' : 'Pozitif = borçlusunuz'}
-            </p>
-          </div>
-
-          {ledger.isPending ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
-            </div>
-          ) : (
-            <LedgerTable entries={ledger.data?.pages.flat() ?? []} />
-          )}
-
-          {ledger.hasNextPage && (
-            <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                loading={ledger.isFetchingNextPage}
-                onClick={() => void ledger.fetchNextPage()}
-              >
-                Daha fazla yükle
-              </Button>
-            </div>
-          )}
-        </>
+        <LedgerPanel
+          relationshipId={selected.id}
+          counterpartyName={otherParty(selected, orgId).companyName}
+          isManufacturer={isManufacturer}
+          canWrite={canWrite}
+        />
       )}
     </div>
   );

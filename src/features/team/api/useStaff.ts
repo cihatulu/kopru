@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
-import type { StaffMember, StaffRole } from '../domain/staff';
+import type { StaffMember } from '../domain/staff';
 
 // Açık kolon listesi (kilitli kural 19).
 const COLUMNS = 'id, user_code, full_name, email, phone, org_role, is_active, created_at';
@@ -46,10 +46,10 @@ export function useStaff() {
       return rows.map((r) => ({
         id: String(r.id),
         userCode: String(r.user_code),
-        fullName: (r.full_name as string | null) ?? null,
-        email: (r.email as string | null) ?? null,
-        phone: (r.phone as string | null) ?? null,
-        role: r.org_role as StaffRole,
+        fullName: r.full_name ?? null,
+        email: r.email ?? null,
+        phone: r.phone ?? null,
+        role: r.org_role,
         isActive: Boolean(r.is_active),
         createdAt: String(r.created_at),
         scopeCount: scopeCounts.get(String(r.id)) ?? 0,

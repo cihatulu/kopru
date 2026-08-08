@@ -153,3 +153,16 @@ istemcideki `loginSchema` yalnız 10/11 haneli VKN/TCKN kabul ediyorsa personel 
 forma bile girilemez.
 **Çözüm:** Personel kodu tümüyle rakamdır: `<vkn><iki haneli sıra>`. İstemci şeması
 `isValidVknTc(v) || isStaffCode(v)` ile her ikisini kabul eder.
+
+### 25. Cari özet gerçek bakiyenin İKİ KATINI gösteriyor
+**Sebep:** Dönem özetinde açılış bakiyesi koşulu `(p_from is null or created_at < p_from)`
+biçimindeydi. `p_from` null olduğunda bu koşul **tüm** satırlar için doğru olur ve sorgu
+SON hareketin `balance_after` değerini "açılış" diye döndürür; kapanış
+`açılış + borç − alacak` ile hesaplanınca aynı hareketler ikinci kez eklenir.
+**Çözüm:** Alt sınır yoksa "dönemden önce" diye bir şey yoktur — açılış **sıfırdır** ve
+devir sorgusu hiç çalıştırılmaz.
+
+**Ders:** Şema testleri sorgunun `balance_after` okuduğunu ve `SUM()` kullanmadığını
+doğruluyordu; ikisi de doğruydu. Yanlış olan **semantikti**. Parasal bir hesaplama
+yazdığında sonucu her zaman bağımsız bir kaynakla karşılaştır — burada doğru kontrol
+"sınırsız özetin kapanışı, son satırın `balance_after` değerine EŞİT olmalı" idi.
