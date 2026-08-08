@@ -12,6 +12,16 @@ const money = z.coerce
   .min(0, 'Negatif olamaz')
   .max(99_999_999, 'Çok büyük');
 
+/**
+ * Boş bırakılabilen sayı. Boşluk kontrolü coercion'dan ÖNCE yapılır —
+ * `z.coerce.number()` boş dizeyi 0'a çevirir ve "girilmedi" ile "sıfır"
+ * birbirine karışır (maliyet alanında tam olarak bu hata yaşandı).
+ */
+const optionalNumber = z.preprocess(
+  (v) => (v === '' || v === null ? undefined : v),
+  z.coerce.number().min(0, 'Negatif olamaz').max(99_999).optional(),
+);
+
 export const productSchema = z
   .object({
     name: z.string().trim().min(2, 'En az 2 karakter').max(200),
@@ -39,6 +49,12 @@ export const productSchema = z
       .max(2000)
       .optional()
       .transform((v) => (v === '' ? undefined : v)),
+
+    // Boyut ve stok isteğe bağlı; girilmezse kayıt güncellenmez.
+    width: optionalNumber,
+    depth: optionalNumber,
+    height: optionalNumber,
+    stock: optionalNumber,
   })
   .refine((v) => v.costPrice === undefined || v.costPrice <= v.supplierPrice, {
     message: 'Maliyet, satış fiyatından büyük olamaz',

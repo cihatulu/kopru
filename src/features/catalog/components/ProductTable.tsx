@@ -1,12 +1,14 @@
 import { Button } from '@/components/ui/Button';
-import { formatMoney } from '@/lib/format';
+import { formatMoney, formatQuantity } from '@/lib/format';
 import { marginPercent } from '../domain/productSchema';
+import { formatDimensions } from '../domain/variants';
 import type { CatalogProduct } from '../api/useProducts';
 
 interface Props {
   products: CatalogProduct[];
   /** Yalnız üretici görünümünde dolu gelir; perakendecide RLS boş döndürür. */
   costs?: Record<string, number> | undefined;
+  stock?: Record<string, number> | undefined;
   busyId?: string | undefined;
   onEdit: (p: CatalogProduct) => void;
   onToggleActive: (p: CatalogProduct) => void;
@@ -16,7 +18,8 @@ const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
 const TD = 'px-4 py-3 align-middle';
 
 /** Üreticinin kendi katalog yönetimi. Maliyet ve marj sütunları yalnız burada. */
-export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }: Props) {
+export function ProductTable(props: Props) {
+  const { products, costs, stock, busyId, onEdit, onToggleActive } = props;
   if (products.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -34,6 +37,7 @@ export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }
             <th className={`${TH} text-right`}>Satış fiyatı</th>
             <th className={`${TH} text-right`}>Maliyetiniz</th>
             <th className={`${TH} text-right`}>Marj</th>
+            <th className={`${TH} text-right`}>Stok</th>
             <th className={TH}>Durum</th>
             <th className={`${TH} text-right`}>İşlem</th>
           </tr>
@@ -65,8 +69,18 @@ export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }
                       </div>
                     )}
                     <div className="min-w-0">
-                      <span className="block font-medium text-slate-900">{p.name}</span>
-                      <span className="block font-mono text-xs text-slate-500">{p.code}</span>
+                      <span className="block font-medium text-slate-900">
+                        {p.name}
+                        {p.type === 'set' && (
+                          <span className="ml-1.5 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
+                            SET
+                          </span>
+                        )}
+                      </span>
+                      <span className="block font-mono text-xs text-slate-500">
+                        {p.code}
+                        {formatDimensions(p.dimensions) && ` · ${formatDimensions(p.dimensions)}`}
+                      </span>
                     </div>
                   </div>
                 </td>
@@ -86,6 +100,15 @@ export function ProductTable({ products, costs, busyId, onEdit, onToggleActive }
                   ) : (
                     <span className={margin < 10 ? 'text-amber-700' : 'text-emerald-700'}>
                       %{margin}
+                    </span>
+                  )}
+                </td>
+                <td className={`${TD} text-right`}>
+                  {stock?.[p.id] === undefined ? (
+                    <span className="text-slate-400">—</span>
+                  ) : (
+                    <span className={stock[p.id]! <= 0 ? 'text-rose-600' : 'text-slate-700'}>
+                      {formatQuantity(stock[p.id]!)}
                     </span>
                   )}
                 </td>

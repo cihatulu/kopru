@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import {
+  GroupManager,
   ProductDialog,
   ProductTable,
+  ProductToolbar,
+  toSavePayload,
+  useDeleteProductGroup,
   useProductCosts,
+  useProductGroups,
+  useProductStock,
   useProducts,
   useSaveProduct,
+  useSaveProductGroup,
   useSetProductActive,
   type CatalogProduct,
-  type ProductForm,
+  type ProductSubmit,
 } from '@/features/catalog';
 import { useAuthSession } from '@/features/auth';
 import { Button } from '@/components/ui/Button';
@@ -17,17 +24,25 @@ import { Spinner } from '@/components/ui/Spinner';
 export default function ProductsPage() {
   const { data: user } = useAuthSession();
   const orgId = user?.org?.id ?? '';
+
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<CatalogProduct | null>(null);
   const [creating, setCreating] = useState(false);
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
   const list = useProducts({ search });
   const products = list.data?.pages.flat() ?? [];
-  // Maliyetler ayrı tablodan gelir (A4); perakendecide bu sorgu 0 satır döner.
-  const costs = useProductCosts(products.map((p) => p.id));
+  const ids = products.map((p) => p.id);
+  // Maliyet ve stok ayrı tablolardan gelir (A4).
+  const costs = useProductCosts(ids);
+  const stock = useProductStock(ids);
+  const groups = useProductGroups();
+
   const save = useSaveProduct();
   const setActive = useSetProductActive();
+  const saveGroup = useSaveProductGroup();
+  const deleteGroup = useDeleteProductGroup();
 
   const close = () => {
     setEditing(null);
@@ -35,43 +50,13 @@ export default function ProductsPage() {
     save.reset();
   };
 
-  const submit = (v: ProductForm, images: string[]) => {
-    save.mutate(
-      {
-        ...(editing ? { id: editing.id } : {}),
-        name: v.name,
-        code: v.code,
-        supplierPrice: Number(v.supplierPrice),
-        ...(v.costPrice === '' || v.costPrice === undefined
-          ? {}
-          : { costPrice: Number(v.costPrice) }),
-        ...(v.description ? { description: v.description } : {}),
-        images,
-      },
-      { onSuccess: close },
-    );
-  };
-
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Ürünlerim</h2>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Satış fiyatını müşterileriniz görür. Maliyetiniz ayrı tutulur ve hiçbir
-            perakendeciye gösterilmez.
-          </p>
-        </div>
-        <Button onClick={() => setCreating(true)}>Yeni ürün</Button>
-      </div>
-
-      <input
-        type="search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Ürün adı veya kodu"
-        aria-label="Ürün ara"
-        className="input max-w-xs"
+      <ProductToolbar
+        search={search}
+        onSearchChange={setSearch}
+        onOpenGroups={() => setGroupsOpen(true)}
+        onCreate={() => setCreating(true)}
       />
 
       {list.isPending ? (
@@ -82,6 +67,7 @@ export default function ProductsPage() {
         <ProductTable
           products={products}
           costs={costs.data}
+          stock={stock.data}
           busyId={busyId}
           onEdit={setEditing}
           onToggleActive={(p) => {
@@ -110,11 +96,26 @@ export default function ProductsPage() {
         <ProductDialog
           product={editing ?? undefined}
           initialCost={editing ? costs.data?.[editing.id] : undefined}
+          initialStock={editing ? stock.data?.[editing.id] : undefined}
           orgId={orgId}
+          groups={groups.data ?? []}
+          allProducts={products}
           pending={save.isPending}
           errorMessage={save.isError ? 'Kaydedilemedi. Ürün kodu benzersiz olmalı.' : undefined}
           onClose={close}
-          onSubmit={submit}
+          onSubmit={(p: ProductSubmit) =>
+            save.mutate(toSavePayload(p, editing?.id), { onSuccess: close })
+          }
+        />
+      )}
+
+      {groupsOpen && (
+        <GroupManager
+          groups={groups.data ?? []}
+          pending={saveGroup.isPending || deleteGroup.isPending}
+          onSave={(input) => saveGroup.mutate(input)}
+          onDelete={(id) => deleteGroup.mutate(id)}
+          onClose={() => setGroupsOpen(false)}
         />
       )}
     </div>

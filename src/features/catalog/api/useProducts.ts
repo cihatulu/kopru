@@ -1,12 +1,13 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import type { Dimensions, SetLine, Variant } from '../domain/variants';
 
 // Açık kolon listesi (kilitli kural 19). Maliyet burada YOKTUR ve olamaz —
 // üreticinin maliyeti ayrı `product_costs` tablosunda (A4).
 const PRODUCT_COLUMNS =
   'id, name, code, description, supplier_price, currency, is_active, owner_org_id, ' +
-  'images, created_at';
+  'images, type, variants, set_contents, width_cm, depth_cm, height_cm, group_id, created_at';
 
 export interface CatalogProduct {
   id: string;
@@ -19,7 +20,32 @@ export interface CatalogProduct {
   ownerOrgId: string;
   /** Public URL listesi; en fazla 3 (bkz. lib/storage). */
   images: string[];
+  type: 'single' | 'set';
+  variants: Variant[];
+  setContents: SetLine[];
+  dimensions: Dimensions;
+  groupId: string | null;
   createdAt: string;
+}
+
+// jsonb kolonların içeriği tip sisteminden geçmez; alan alan ayrıştırılır ki
+// bozuk bir kayıt tüm listeyi çökertmesin.
+function parseVariants(value: unknown): Variant[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((v) => {
+    const o = v as Record<string, unknown>;
+    if (typeof o?.name !== 'string' || !Array.isArray(o.options)) return [];
+    return [{ name: o.name, options: o.options.filter((x): x is string => typeof x === 'string') }];
+  });
+}
+
+function parseSetContents(value: unknown): SetLine[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((v) => {
+    const o = v as Record<string, unknown>;
+    if (typeof o?.product_id !== 'string') return [];
+    return [{ productId: o.product_id, quantity: Number(o.quantity ?? 1) }];
+  });
 }
 
 function toProduct(raw: unknown): CatalogProduct {
@@ -34,6 +60,15 @@ function toProduct(raw: unknown): CatalogProduct {
     isActive: r.is_active as boolean,
     ownerOrgId: r.owner_org_id as string,
     images: Array.isArray(r.images) ? (r.images as string[]) : [],
+    type: r.type === 'set' ? 'set' : 'single',
+    variants: parseVariants(r.variants),
+    setContents: parseSetContents(r.set_contents),
+    dimensions: {
+      width: r.width_cm == null ? undefined : Number(r.width_cm),
+      depth: r.depth_cm == null ? undefined : Number(r.depth_cm),
+      height: r.height_cm == null ? undefined : Number(r.height_cm),
+    },
+    groupId: typeof r.group_id === 'string' ? r.group_id : null,
     createdAt: r.created_at as string,
   };
 }

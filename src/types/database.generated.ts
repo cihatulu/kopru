@@ -672,8 +672,10 @@ export type Database = {
           code: string
           created_at: string
           currency: string
+          depth_cm: number | null
           description: string | null
           group_id: string | null
+          height_cm: number | null
           id: string
           images: string[]
           is_active: boolean
@@ -685,13 +687,16 @@ export type Database = {
           type: Database["public"]["Enums"]["product_type"]
           updated_at: string
           variants: Json
+          width_cm: number | null
         }
         Insert: {
           code: string
           created_at?: string
           currency?: string
+          depth_cm?: number | null
           description?: string | null
           group_id?: string | null
+          height_cm?: number | null
           id?: string
           images?: string[]
           is_active?: boolean
@@ -703,13 +708,16 @@ export type Database = {
           type?: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           variants?: Json
+          width_cm?: number | null
         }
         Update: {
           code?: string
           created_at?: string
           currency?: string
+          depth_cm?: number | null
           description?: string | null
           group_id?: string | null
+          height_cm?: number | null
           id?: string
           images?: string[]
           is_active?: boolean
@@ -721,6 +729,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           variants?: Json
+          width_cm?: number | null
         }
         Relationships: [
           {
@@ -1586,6 +1595,7 @@ export type Database = {
         Args: { p_plan: Database["public"]["Enums"]["plan_tier"] }
         Returns: Json
       }
+      delete_product_group: { Args: { p_id: string }; Returns: undefined }
       downgrade_org_to_guest: {
         Args: { p_org_id: string }
         Returns: {
@@ -1700,13 +1710,24 @@ export type Database = {
         Args: {
           p_code: string
           p_cost_price?: number
+          p_depth?: number
           p_description?: string
           p_group_id?: string
+          p_height?: number
           p_id: string
           p_images?: string[]
           p_name: string
+          p_set_contents?: Json
+          p_stock?: number
           p_supplier_price: number
+          p_type?: Database["public"]["Enums"]["product_type"]
+          p_variants?: Json
+          p_width?: number
         }
+        Returns: string
+      }
+      save_product_group: {
+        Args: { p_id: string; p_name: string; p_sort_order?: number }
         Returns: string
       }
       set_counterparty_discount: {
@@ -1762,8 +1783,10 @@ export type Database = {
           code: string
           created_at: string
           currency: string
+          depth_cm: number | null
           description: string | null
           group_id: string | null
+          height_cm: number | null
           id: string
           images: string[]
           is_active: boolean
@@ -1775,6 +1798,7 @@ export type Database = {
           type: Database["public"]["Enums"]["product_type"]
           updated_at: string
           variants: Json
+          width_cm: number | null
         }
         SetofOptions: {
           from: "*"
