@@ -9,9 +9,10 @@ interface Props {
   busyId?: string | undefined;
   onAdvance: (r: SshRequest) => void;
   onCancel: (r: SshRequest) => void;
+  onOpen: (r: SshRequest) => void;
 }
 
-export function SshList({ requests, myOrgId, busyId, onAdvance, onCancel }: Props) {
+export function SshList({ requests, myOrgId, busyId, onAdvance, onCancel, onOpen }: Props) {
   if (requests.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -51,18 +52,24 @@ export function SshList({ requests, myOrgId, busyId, onAdvance, onCancel }: Prop
               )}
             </div>
 
-            {!isSshClosed(r.status) && (
-              <div className="flex gap-2">
-                <Button variant="ghost" disabled={busyId === r.id} onClick={() => onCancel(r)}>
-                  İptal
-                </Button>
-                {next && (
-                  <Button loading={busyId === r.id} onClick={() => onAdvance(r)}>
-                    {SSH_STATUS_META[next].label}
+            <div className="flex gap-2">
+              {/* Detay kapalı talepte de açılır: geçmiş ve fotoğraflar okunabilir kalmalı. */}
+              <Button variant="secondary" onClick={() => onOpen(r)}>
+                Detay
+              </Button>
+              {!isSshClosed(r.status) && (
+                <>
+                  <Button variant="ghost" disabled={busyId === r.id} onClick={() => onCancel(r)}>
+                    İptal
                   </Button>
-                )}
-              </div>
-            )}
+                  {next && (
+                    <Button loading={busyId === r.id} onClick={() => onAdvance(r)}>
+                      {SSH_STATUS_META[next].label}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
           </li>
         );
       })}

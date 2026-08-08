@@ -1,19 +1,8 @@
 import { useState } from 'react';
-import {
-  ReturnList,
-  SshDialog,
-  SshList,
-  nextSshStatus,
-  useAdvanceSsh,
-  useCreateSsh,
-  useDecideReturn,
-  useReturnRequests,
-  useSshRequests,
-} from '@/features/service';
-import { PartyPicker, useCounterparties, type Edge } from '@/features/counterparties';
+import { ReturnPanel, SshDialog, SshPanel, useCreateSsh } from '@/features/service';
+import { PartyPicker, otherParty, useCounterparties, type Edge } from '@/features/counterparties';
 import { useAuthSession } from '@/features/auth';
 import { Button } from '@/components/ui/Button';
-import { Spinner } from '@/components/ui/Spinner';
 
 /** SSH ve iade — her iki taraf için ortak. YALNIZ KOMPOZİSYON (A20). */
 export default function ServicePage() {
@@ -21,20 +10,25 @@ export default function ServicePage() {
   const [tab, setTab] = useState<'ssh' | 'returns'>('ssh');
   const [creating, setCreating] = useState(false);
   const [relId, setRelId] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
   const orgId = user?.org?.id ?? '';
-  const ssh = useSshRequests(orgId);
-  const returns = useReturnRequests(orgId);
   const edges: Edge[] = (useCounterparties().data?.pages.flat() ?? []).filter(
     (e) => e.status === 'active',
   );
-
   const createSsh = useCreateSsh();
-  const advanceSsh = useAdvanceSsh();
-  const decideReturn = useDecideReturn();
 
   if (!user?.org) return null;
+  const myKind = user.org.kind;
+
+  // Filtre listesi karşı taraflardan kurulur; aynı firma iki kez görünmesin.
+  const partyOptions: [string, string][] = [
+    ...new Map(
+      edges.map((e) => {
+        const p = otherParty(e, orgId);
+        return [p.id, p.companyName] as [string, string];
+      }),
+    ),
+  ];
 
   return (
     <div className="space-y-5">
@@ -66,50 +60,9 @@ export default function ServicePage() {
       </div>
 
       {tab === 'ssh' ? (
-        ssh.isPending ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
-        ) : (
-          <SshList
-            requests={ssh.data?.pages.flat() ?? []}
-            myOrgId={orgId}
-            busyId={busyId}
-            onAdvance={(r) => {
-              const to = nextSshStatus(r.status);
-              if (!to) return;
-              setBusyId(r.id);
-              advanceSsh.mutate(
-                { id: r.id, status: to },
-                { onSettled: () => setBusyId(undefined) },
-              );
-            }}
-            onCancel={(r) => {
-              setBusyId(r.id);
-              advanceSsh.mutate(
-                { id: r.id, status: 'iptal' },
-                { onSettled: () => setBusyId(undefined) },
-              );
-            }}
-          />
-        )
-      ) : returns.isPending ? (
-        <div className="flex justify-center py-12">
-          <Spinner />
-        </div>
+        <SshPanel myOrgId={orgId} myKind={myKind} partyOptions={partyOptions} />
       ) : (
-        <ReturnList
-          requests={returns.data?.pages.flat() ?? []}
-          myOrgId={orgId}
-          busyId={busyId}
-          onDecide={(r, approve) => {
-            setBusyId(r.id);
-            decideReturn.mutate(
-              { id: r.id, approve },
-              { onSettled: () => setBusyId(undefined) },
-            );
-          }}
-        />
+        <ReturnPanel myOrgId={orgId} myKind={myKind} partyOptions={partyOptions} />
       )}
 
       {creating && (

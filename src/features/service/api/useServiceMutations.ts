@@ -35,11 +35,45 @@ export function useCreateSsh() {
   });
 }
 
+/**
+ * Durum ilerletme. Not isteğe bağlıdır ama geçmişin asıl değeri odur —
+ * "neden iptal edildi" sorusunun cevabı başka hiçbir yerde durmuyor.
+ */
 export function useAdvanceSsh() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: SshStatus }) => {
-      const { error } = await supabase.rpc('advance_ssh_status', { p_id: id, p_status: status });
+    mutationFn: async ({
+      id,
+      status,
+      note,
+    }: {
+      id: string;
+      status: SshStatus;
+      note?: string;
+    }) => {
+      const { error } = await supabase.rpc('advance_ssh_status', {
+        p_id: id,
+        p_status: status,
+        p_note: note ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/**
+ * Fotoğraf yollarını kayda işler.
+ *
+ * Yükleme Storage'a, kayıt buraya: iki adım ayrıdır çünkü dosya kaydedilmeden
+ * önce de yüklenebilmeli. Sunucu tarafın ilişkiye taraf olduğunu ve talebin
+ * kapanmadığını yeniden doğrular.
+ */
+export function useSetSshImages() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ id, paths }: { id: string; paths: string[] }) => {
+      const { error } = await supabase.rpc('set_ssh_images', { p_ssh_id: id, p_paths: paths });
       if (error) throw error;
     },
     onSuccess: invalidate,

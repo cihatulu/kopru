@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import { filterOps, type ServiceFilters } from '../domain/filters';
 import {
   RETURN_COLUMNS,
   counterpartyName,
@@ -40,19 +41,25 @@ function toReturn(raw: unknown, myOrgId: string): ReturnRequest {
   };
 }
 
-/** İade talepleri — keyset sayfalama (A17). */
-export function useReturnRequests(myOrgId: string) {
+/** İade talepleri — keyset sayfalama (A17), filtreler sorgu anahtarında. */
+export function useReturnRequests(myOrgId: string, myKind: string, filters: ServiceFilters) {
   return useInfiniteQuery({
-    queryKey: ['service', 'returns', myOrgId],
+    queryKey: ['service', 'returns', myOrgId, filters],
     staleTime: STALE_TIME.transactional,
     initialPageParam: undefined as Cursor | undefined,
     queryFn: async ({ pageParam }) => {
+      const ops = filterOps(filters, myKind);
+
       let q = supabase
         .from('return_requests')
         .select(RETURN_COLUMNS)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(PAGE_SIZE);
+
+      for (const [column, value] of ops.equals) q = q.eq(column, value);
+      if (ops.gte) q = q.gte('created_at', ops.gte);
+      if (ops.lt) q = q.lt('created_at', ops.lt);
       if (pageParam) q = q.or(keyset(pageParam));
 
       const { data, error } = await q;

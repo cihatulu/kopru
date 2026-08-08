@@ -1133,6 +1133,67 @@ export type Database = {
           },
         ]
       }
+      ssh_status_logs: {
+        Row: {
+          actor_org_id: string
+          actor_user_id: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["ssh_status"] | null
+          id: string
+          manufacturer_org_id: string
+          note: string | null
+          retailer_org_id: string
+          ssh_id: string
+          to_status: Database["public"]["Enums"]["ssh_status"]
+        }
+        Insert: {
+          actor_org_id: string
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["ssh_status"] | null
+          id?: string
+          manufacturer_org_id: string
+          note?: string | null
+          retailer_org_id: string
+          ssh_id: string
+          to_status: Database["public"]["Enums"]["ssh_status"]
+        }
+        Update: {
+          actor_org_id?: string
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["ssh_status"] | null
+          id?: string
+          manufacturer_org_id?: string
+          note?: string | null
+          retailer_org_id?: string
+          ssh_id?: string
+          to_status?: Database["public"]["Enums"]["ssh_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssh_status_logs_actor_org_id_fkey"
+            columns: ["actor_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_status_logs_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_status_logs_ssh_id_fkey"
+            columns: ["ssh_id"]
+            isOneToOne: false
+            referencedRelation: "ssh_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_scope: {
         Row: {
           created_at: string
@@ -1548,6 +1609,7 @@ export type Database = {
       advance_ssh_status: {
         Args: {
           p_id: string
+          p_note?: string
           p_status: Database["public"]["Enums"]["ssh_status"]
         }
         Returns: {
@@ -1746,6 +1808,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["org_role"]
       }
       get_my_user_id: { Args: never; Returns: string }
+      is_my_relationship: {
+        Args: { p_relationship_id: string }
+        Returns: boolean
+      }
       is_platform_admin: { Args: never; Returns: boolean }
       is_valid_tckn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn: { Args: { p: string }; Returns: boolean }
@@ -1917,6 +1983,31 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_ssh_images: {
+        Args: { p_paths: string[]; p_ssh_id: string }
+        Returns: {
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          description: string | null
+          id: string
+          images: string[]
+          manufacturer_org_id: string
+          order_id: string | null
+          product_id: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["ssh_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ssh_requests"
           isOneToOne: true
           isSetofReturn: false
         }
