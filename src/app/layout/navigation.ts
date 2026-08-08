@@ -28,11 +28,13 @@ const ICONS = {
   report: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   megaphone: 'M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1zM16 8a5 5 0 010 8',
   stock: 'M4 7h16v13H4zM4 7l2-4h12l2 4M9 12h6',
+  team: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
 } as const;
 
 export const MANUFACTURER_NAV: readonly NavItem[] = [
   { to: ROUTES.manufacturer, label: 'Anasayfa', icon: ICONS.home },
   { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürün Yönetimi', icon: ICONS.box },
+  { to: `${ROUTES.manufacturer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşteri Yönetimi', icon: ICONS.users },
   { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },
   { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler', icon: ICONS.cart },
@@ -44,6 +46,7 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
     icon: ICONS.megaphone,
     module: 'announcements',
   },
+  { to: `${ROUTES.manufacturer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
 ] as const;
 
 export const RETAILER_NAV: readonly NavItem[] = [

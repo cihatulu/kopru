@@ -31,6 +31,37 @@ export async function requirePlatformAdmin(
   return { userId: data.user.id };
 }
 
+/**
+ * Çağıranın bir organizasyonun SAHİBİ olduğunu doğrular.
+ *
+ * `requirePlatformAdmin` ile aynı gerekçe: service role RLS'i bypass eder, bu
+ * yüzden "hangi org, hangi rol" sorusu burada elle cevaplanır. Org kimliği
+ * İSTEMCİDEN ALINMAZ — token'daki kullanıcının `users` satırından okunur;
+ * aksi halde bir sahip, başka bir org'a personel ekleyebilirdi.
+ */
+export async function requireOrgOwner(
+  req: Request,
+  admin: SupabaseClient,
+): Promise<{ userId: string; orgId: string } | Response> {
+  const header = req.headers.get('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (!token) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data.user) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data: row } = await admin
+    .from('users')
+    .select('id, org_id, org_role, is_active')
+    .eq('id', data.user.id)
+    .maybeSingle();
+
+  if (!row || !row.is_active || row.org_role !== 'owner') {
+    return json({ error: 'FORBIDDEN' }, 403);
+  }
+  return { userId: String(row.id), orgId: String(row.org_id) };
+}
+
 export function generateTempPassword(): string {
   return 'kopru2026test';
 }

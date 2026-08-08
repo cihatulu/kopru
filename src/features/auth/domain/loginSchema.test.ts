@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { guestSchema, schemaFor, sponsorConflict, subscriberSchema } from './loginSchema';
+import {
+  guestSchema,
+  isStaffCode,
+  schemaFor,
+  sponsorConflict,
+  subscriberSchema,
+} from './loginSchema';
 import { LOGIN_TABS, isGuestTab, tabById, usesEmail } from './portals';
 
 // Gerçek checksum'ı geçen test değerleri (bkz. src/lib/tckn.test.ts).
@@ -24,6 +30,29 @@ describe('subscriberSchema', () => {
 
   test('kısa şifre reddedilir', () => {
     expect(subscriberSchema.safeParse({ userCode: VKN, password: 'kisa' }).success).toBe(false);
+  });
+
+  test('PERSONEL KODU da kabul edilir', () => {
+    // Personel kodu org VKN'si + iki haneli sıra (`<vkn>01`) — 12 hane.
+    // Yalnız VKN kabul edilseydi personel giriş ekranını hiç geçemezdi.
+    expect(subscriberSchema.safeParse({ userCode: '198192989601', password: 'sifre123' }).success)
+      .toBe(true);
+    expect(isStaffCode('198192989601')).toBe(true);
+  });
+
+  test('personel kodunda tire YOKTUR', () => {
+    // `login` Edge Function gelen kodu `[\s.-]` ayraçlarından temizler; tireli
+    // bir kod normalize edildikten sonra hiçbir zaman eşleşmezdi. Bu yüzden
+    // tireli yazım da normalize edilip aynı rakam dizisine düşer.
+    const r = subscriberSchema.safeParse({ userCode: '1981929896-01', password: 'sifre123' });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.userCode).toBe('198192989601');
+  });
+
+  test('anlamsız uzunluktaki kodlar hâlâ reddedilir', () => {
+    expect(subscriberSchema.safeParse({ userCode: '123456789012345', password: 'sifre123' })
+      .success).toBe(false);
+    expect(isStaffCode('12345678901234')).toBe(false);
   });
 
   test('boşluk ve tire normalize edilir', () => {

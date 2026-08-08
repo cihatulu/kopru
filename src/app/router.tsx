@@ -18,6 +18,8 @@ const ReportsPage = lazy(() => import('@/pages/shared/ReportsPage'));
 const FinancePage = lazy(() => import('@/pages/retailer/FinancePage'));
 
 const ProductsPage = lazy(() => import('@/pages/manufacturer/ProductsPage'));
+const StockPage = lazy(() => import('@/pages/manufacturer/StockPage'));
+const TeamPage = lazy(() => import('@/pages/manufacturer/TeamPage'));
 const ManufacturerHome = lazy(() => import('@/pages/manufacturer/ManufacturerHome'));
 const CatalogPage = lazy(() => import('@/pages/retailer/CatalogPage'));
 const RetailerHome = lazy(() => import('@/pages/retailer/RetailerHome'));
@@ -48,6 +50,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: lazyRoute(<ManufacturerHome />) },
           { path: 'urunler', element: lazyRoute(<ProductsPage />) },
+          { path: 'stok', element: lazyRoute(<StockPage />) },
+          { path: 'ekip', element: lazyRoute(<TeamPage />) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },

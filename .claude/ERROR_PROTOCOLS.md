@@ -133,3 +133,23 @@ zaten kurulu olduğundan ifade sessizce hiçbir şey yapmaz.
 **Çözüm:** `extensions.` ile nitelemek yerine bağımlılığı kaldır. Rastgele değer gerekiyorsa
 `gen_random_uuid()` kullan — PostgreSQL 13+ çekirdeğindedir (`pg_catalog`), search_path ne
 olursa olsun görünür. Token için: `replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '')`.
+
+### 23. `INSERT has more target columns than expressions`
+**Sebep:** RPC içindeki `insert ... select` ifadesinde hedef kolon sayısı, SELECT'in
+ürettiği kolon sayısıyla uyuşmuyor. `set_staff_scope`'ta yaşandı: iki kolona yazılıyor
+ama SELECT tek kolon üretiyordu; personel kapsamı hiçbir zaman kaydedilemiyordu.
+**Çözüm:** Sabit değeri de SELECT listesine yaz (`select p_staff_user_id, r.retailer_org_id ...`).
+
+**Bu hatanın asıl dersi testlerle ilgili:** fonksiyon gövdesini metin olarak denetleyen
+şema testleri bunu YAKALAYAMAZ — SQL sözdizimsel olarak dosyada duruyordu, yalnız
+çalışma anında patlıyordu. Yeni bir RPC yazdığında şema testine ek olarak **canlıda bir
+kez çağır**; dönen hatayı görmeden "yazıldı" sayma.
+
+### 24. Personel giriş ekranını geçemiyor
+**Sebep:** `login` Edge Function gelen kullanıcı kodunu `[\s.-]` ayraçlarından temizler
+(VKN'yi "123-456 7890" diye yazan kullanıcı için). Personel koduna tire konursa
+normalize edildikten sonra `users.user_code` ile **hiçbir zaman** eşleşmez. Ayrıca
+istemcideki `loginSchema` yalnız 10/11 haneli VKN/TCKN kabul ediyorsa personel kodu
+forma bile girilemez.
+**Çözüm:** Personel kodu tümüyle rakamdır: `<vkn><iki haneli sıra>`. İstemci şeması
+`isValidVknTc(v) || isStaffCode(v)` ile her ikisini kabul eder.

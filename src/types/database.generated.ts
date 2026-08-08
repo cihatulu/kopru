@@ -1460,6 +1460,7 @@ export type Database = {
           locked_until: string | null
           org_id: string
           org_role: Database["public"]["Enums"]["org_role"]
+          phone: string | null
           updated_at: string
           user_code: string
         }
@@ -1474,6 +1475,7 @@ export type Database = {
           locked_until?: string | null
           org_id: string
           org_role?: Database["public"]["Enums"]["org_role"]
+          phone?: string | null
           updated_at?: string
           user_code: string
         }
@@ -1488,6 +1490,7 @@ export type Database = {
           locked_until?: string | null
           org_id?: string
           org_role?: Database["public"]["Enums"]["org_role"]
+          phone?: string | null
           updated_at?: string
           user_code?: string
         }
@@ -1987,6 +1990,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_product_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
       set_ssh_images: {
         Args: { p_paths: string[]; p_ssh_id: string }
         Returns: {
@@ -2011,6 +2018,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      set_staff_active: {
+        Args: { p_is_active: boolean; p_user_id: string }
+        Returns: undefined
+      }
+      set_staff_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["org_role"]
+          p_user_id: string
+        }
+        Returns: undefined
       }
       set_staff_scope: {
         Args: { p_retailer_org_ids: string[]; p_staff_user_id: string }

@@ -16,13 +16,36 @@ const vknTc = z
   .transform(normalizeVknTc)
   .refine(isValidVknTc, 'Geçerli bir VKN veya T.C. Kimlik No girin');
 
+/** Personel kodu: org VKN'si + iki haneli sıra (`<vkn>01`). Tümüyle rakam. */
+export function isStaffCode(value: string): boolean {
+  return /^\d{12,13}$/.test(value);
+}
+
+/**
+ * Giriş kimliği alanı.
+ *
+ * Sahip kendi VKN/TCKN'sini yazar, personel ise ondan türetilen kodu
+ * (`<vkn>01`). Yalnız VKN kabul edilseydi personel giriş ekranını HİÇ
+ * geçemezdi — form onu 12 haneli diye reddederdi. Sunucu zaten kodu
+ * `users.user_code` ile birebir eşleştirir; buradaki kontrol biçim
+ * kontrolüdür, yetki kontrolü değil.
+ */
+const userCode = z
+  .string()
+  .trim()
+  .transform(normalizeVknTc)
+  .refine(
+    (v) => isValidVknTc(v) || isStaffCode(v),
+    'Geçerli bir VKN, T.C. Kimlik No veya personel kodu girin',
+  );
+
 const password = z
   .string()
   .min(PASSWORD_MIN_LENGTH, `Şifre en az ${PASSWORD_MIN_LENGTH} karakter olmalı`);
 
-/** Abone girişi: kendi VKN/TCKN + şifre. */
+/** Abone girişi: kendi VKN/TCKN (veya personel kodu) + şifre. */
 export const subscriberSchema = z.object({
-  userCode: vknTc,
+  userCode,
   password,
 });
 
