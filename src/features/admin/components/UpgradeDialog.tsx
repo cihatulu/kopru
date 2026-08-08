@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { PLAN, PLAN_MODULES, type Plan } from '@/constants';
 import {
   SUBDOMAIN_MESSAGES,
   normalizeSubdomain,
@@ -15,7 +14,7 @@ interface Props {
   pending: boolean;
   result: UpgradeResult | null;
   onClose: () => void;
-  onConfirm: (plan: Plan, subdomain: string) => void;
+  onConfirm: (subdomain: string) => void;
 }
 
 /**
@@ -25,7 +24,6 @@ interface Props {
  * KORUNUR. Bu, köprüsüz mimarinin doğrudan sonucu — misafir zaten grafın içinde.
  */
 export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Props) {
-  const [plan, setPlan] = useState<Plan>(PLAN.basic);
   const [subdomain, setSubdomain] = useState(() => suggestSubdomain(org.companyName));
   const [touched, setTouched] = useState(false);
 
@@ -50,24 +48,6 @@ export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Prop
             </p>
 
             <div className="mt-5 space-y-4">
-              <div>
-                <label className="label" htmlFor="plan">
-                  Plan
-                </label>
-                <select
-                  id="plan"
-                  className="input"
-                  value={plan}
-                  onChange={(e) => setPlan(e.target.value as Plan)}
-                >
-                  {Object.values(PLAN).map((p) => (
-                    <option key={p} value={p}>
-                      {p} — {PLAN_MODULES[p].length} modül
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <label className="label" htmlFor="subdomain">
                   Subdomain
@@ -100,7 +80,7 @@ export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Prop
                 disabled={!!error}
                 onClick={() => {
                   setTouched(true);
-                  if (!error) onConfirm(plan, normalizeSubdomain(subdomain));
+                if (!error) onConfirm(normalizeSubdomain(subdomain));
                 }}
               >
                 Yükselt

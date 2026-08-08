@@ -16,8 +16,9 @@ describe('subscriberSchema', () => {
     expect(subscriberSchema.safeParse({ userCode: TCKN, password: 'sifre123' }).success).toBe(true);
   });
 
-  test('checksum tutmayan kod reddedilir', () => {
-    expect(subscriberSchema.safeParse({ userCode: '1111111111', password: 'sifre123' }).success)
+  test('format hatalı kod reddedilir', () => {
+    // 10 hane dışı (9 hane) format olarak geçersiz.
+    expect(subscriberSchema.safeParse({ userCode: '111111111', password: 'sifre123' }).success)
       .toBe(false);
   });
 
@@ -43,9 +44,9 @@ describe('guestSchema', () => {
     ).toBe(true);
   });
 
-  test('geçersiz sponsor VKN reddedilir', () => {
+  test('format hatalı sponsor VKN reddedilir', () => {
     expect(
-      guestSchema.safeParse({ userCode: VKN, sponsorVkn: '9999999999', password: 'sifre123' })
+      guestSchema.safeParse({ userCode: VKN, sponsorVkn: '999999999', password: 'sifre123' }) // 9 hane
         .success,
     ).toBe(false);
   });

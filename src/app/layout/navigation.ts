@@ -66,11 +66,11 @@ export const RETAILER_NAV: readonly NavItem[] = [
 /**
  * Org'un görebileceği menü.
  *
- * Plan gating burada YALNIZCA görünürlüğü belirler; asıl yaptırım RLS ve
- * RPC'lerdedir (kilitli kural 15, çift katman). Misafir org'un modül listesi
- * boştur, bu yüzden temel maddeleri her zaman gösteririz.
+ * Plan gating kaldırıldı — tüm kullanıcılar tüm menü maddelerini görür.
+ * `enabledModules` parametresi geriye dönük uyumluluk için korunuyor.
  */
-export function navFor(kind: OrgKind, enabledModules: string[]): NavItem[] {
-  const items = kind === ORG_KIND.manufacturer ? MANUFACTURER_NAV : RETAILER_NAV;
-  return items.filter((i) => !i.module || enabledModules.includes(i.module));
+export function navFor(kind: OrgKind, _enabledModules: string[]): NavItem[] {
+  return kind === ORG_KIND.manufacturer
+    ? [...MANUFACTURER_NAV]
+    : [...RETAILER_NAV];
 }

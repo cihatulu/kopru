@@ -28,24 +28,32 @@ export type RelationshipStatus =
 export const PLAN = { free: 'free', basic: 'basic', pro: 'pro' } as const;
 export type Plan = (typeof PLAN)[keyof typeof PLAN];
 
-/** Plan bazlı modül erişimi — KİLİTLİ KURAL 15 gereği RLS/Edge tarafında da doğrulanır. */
+/** Tüm modüller — plan ayrımı kaldırıldı, tüm kullanıcılar tüm modüllere erişir. */
+export const ALL_MODULES = [
+  'dashboard', 'catalog', 'orders', 'accounts', 'counterparties', 'stock', 'reports',
+  'announcements', 'ssh', 'returns', 'team', 'finance', 'campaigns', 'roomStaging',
+] as const;
+
+/**
+ * Plan bazlı modül erişimi — tüm planlar için aynı (tam liste).
+ * Plan ayrımı kaldırıldı; eski tipler DB şemasıyla uyumluluk için korunuyor.
+ */
 export const PLAN_MODULES: Record<Plan, readonly string[]> = {
-  free: ['dashboard', 'catalog', 'orders', 'accounts', 'counterparties'],
-  basic: ['dashboard', 'catalog', 'orders', 'accounts', 'counterparties', 'stock', 'reports', 'announcements'],
-  pro: [
-    'dashboard', 'catalog', 'orders', 'accounts', 'counterparties', 'stock', 'reports',
-    'announcements', 'ssh', 'returns', 'team', 'finance', 'campaigns', 'roomStaging',
-  ],
+  free: ALL_MODULES,
+  basic: ALL_MODULES,
+  pro: ALL_MODULES,
 } as const;
 
-/** Misafir org'un görebileceği modüller — plandan bağımsız, sabit ve dar. */
-export const GUEST_MODULES = ['dashboard', 'catalog', 'orders', 'accounts'] as const;
+/** Misafir org'un görebileceği modüller — tüm modüller. */
+export const GUEST_MODULES = ALL_MODULES;
 
 export const ROUTES = {
   login: '/login',
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   track: '/track/:orderToken',
+  /** Davet linki — oturum gerektirmez. */
+  invite: '/davet/:token',
 
   admin: '/admin',
   adminManufacturers: '/admin/uretici',

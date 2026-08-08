@@ -16,6 +16,7 @@ import {
   type AddCounterpartyResult,
   type Edge,
 } from '@/features/counterparties';
+import { InvitationsPanel } from '@/features/invitations';
 import { useAuthSession } from '@/features/auth';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -110,6 +111,9 @@ export default function CounterpartiesPage() {
           onToggleStatus={toggleStatus}
         />
       )}
+
+      {/* Davet, karşı taraf eklemenin ikinci yolu — yalnız aboneler gönderir. */}
+      {org.isSubscriber && <InvitationsPanel myKind={org.kind} />}
 
       {list.hasNextPage && (
         <div className="flex justify-center">

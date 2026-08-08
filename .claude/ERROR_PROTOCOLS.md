@@ -114,3 +114,22 @@ saf mantığı `domain/`'e taşı. **Sınırı yükseltme** — bütçe tam olar
 feature iç import'u (A20).
 **Çözüm:** Veri erişimini `features/<ad>/api`'ye taşı; saf mantığı `domain/`'de bağımlılıksız
 tut; başka feature'a erişimi `@/features/<ad>` public yüzeyinden yap.
+
+### 21. `Could not find a relationship between '<tablo>' and '<kolon>' in the schema cache`
+**Sebep:** PostgREST gömme (embed) ipucu **kolon adıyla** verilmiş, ama o yabancı anahtar
+A15 gereği **bileşik**: `(org_id, kind) → organizations(id, kind)`. PostgREST bileşik bir
+kısıtı tek kolonluk ipuçtan çözemez. Hata sessizdir: `tsc` ve ESLint geçer, test yeşil kalır,
+liste canlıda **tamamen boş** görünür. `relationships` ve `announcements` sorgularında yaşandı.
+**Çözüm:** İpucunu **kısıt adıyla** ver:
+`retailer:organizations!relationships_retailer_org_id_retailer_kind_fkey(...)`.
+Kısıt adı `<tablo>_<kolon>_<kind_kolonu>_fkey` kalıbındadır. Yeni bir gömme yazdığında
+şema cache'ine güvenme — sorguyu canlıda bir kez çalıştırıp satır döndüğünü gör.
+
+### 22. `function gen_random_bytes(integer) does not exist`
+**Sebep:** `gen_random_bytes` pgcrypto'ya aittir ve Supabase pgcrypto'yu `extensions`
+şemasına kurar. Fonksiyon `set search_path = public` ile çalıştığı için (kilitli kural 4)
+o şema görünmez. `create extension if not exists pgcrypto` bunu **düzeltmez** — eklenti
+zaten kurulu olduğundan ifade sessizce hiçbir şey yapmaz.
+**Çözüm:** `extensions.` ile nitelemek yerine bağımlılığı kaldır. Rastgele değer gerekiyorsa
+`gen_random_uuid()` kullan — PostgreSQL 13+ çekirdeğindedir (`pg_catalog`), search_path ne
+olursa olsun görünür. Token için: `replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '')`.

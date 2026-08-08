@@ -1,4 +1,4 @@
-import type { OrgKind, Plan } from '@/constants';
+import type { OrgKind } from '@/constants';
 import { CreateOrgDialog } from './CreateOrgDialog';
 import { CredentialsDialog } from './CredentialsDialog';
 import { UpgradeDialog } from './UpgradeDialog';
@@ -20,7 +20,7 @@ interface Props {
   upgradePending: boolean;
   upgradeResult: UpgradeResult | null;
   onUpgradeClose: () => void;
-  onUpgradeConfirm: (plan: Plan, subdomain: string) => void;
+  onUpgradeConfirm: (subdomain: string) => void;
 
   credentials: (ResetPasswordResult & { companyName: string }) | null;
   onCredentialsClose: () => void;

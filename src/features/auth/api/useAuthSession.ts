@@ -8,7 +8,7 @@ export const AUTH_SESSION_KEY = ['auth-session'] as const;
 // Açık kolon listesi (kilitli kural 19) — select('*') yasak.
 const SESSION_COLUMNS =
   'id, org_id, org_role, full_name, email, is_active, ' +
-  'organizations!inner(id, kind, company_name, vkn_tc, is_subscriber, plan, ' +
+  'organizations!users_org_id_fkey!inner(id, kind, company_name, vkn_tc, is_subscriber, plan, ' +
   'enabled_modules, branding, subdomain, is_active)';
 
 export interface SessionOrg {

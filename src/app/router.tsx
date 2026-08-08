@@ -6,6 +6,7 @@ import { RequireOrgKind, RequirePlatformAdmin } from './guards';
 
 // PLAN §17.2 — panel bazlı kod bölme. Her panel ayrı chunk.
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const InvitePage = lazy(() => import('@/pages/auth/InvitePage'));
 const PanelLayout = lazy(() => import('@/app/layout/PanelLayout'));
 
 const CounterpartiesPage = lazy(() => import('@/pages/shared/CounterpartiesPage'));
@@ -35,6 +36,8 @@ function lazyRoute(element: ReactNode) {
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to={ROUTES.login} replace /> },
   { path: ROUTES.login, element: lazyRoute(<LoginPage />) },
+  // Davet linki oturum GEREKTİRMEZ — guard'ların dışında durur.
+  { path: ROUTES.invite, element: lazyRoute(<InvitePage />) },
 
   {
     path: ROUTES.manufacturer,

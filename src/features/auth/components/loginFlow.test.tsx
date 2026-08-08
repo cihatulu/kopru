@@ -94,7 +94,7 @@ describe('LoginFormFields — alanlar sekmeye göre değişir', () => {
     const onSubmit = vi.fn();
     render(<LoginFormFields {...base} tab={tabById('member-retailer')} onSubmit={onSubmit} />);
 
-    await userEvent.type(screen.getByLabelText(/Vergi No/), '1111111111');
+    await userEvent.type(screen.getByLabelText(/Vergi No/), '111111111'); // 9 hane — geçersiz format
     await userEvent.type(screen.getByLabelText('Şifre'), 'sifre123');
     await userEvent.click(screen.getByRole('button', { name: 'Giriş Yap' }));
 

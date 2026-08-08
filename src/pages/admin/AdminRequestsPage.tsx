@@ -6,7 +6,6 @@ import {
 } from '@/features/admin';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { PLAN, type Plan } from '@/constants';
 
 /** Misafirlerin "kendi panelimi açmak istiyorum" talepleri — tek tıkla onay. */
 export default function AdminRequestsPage() {
@@ -14,10 +13,10 @@ export default function AdminRequestsPage() {
   const decide = useDecideSubscriptionRequest();
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const approve = (id: string, plan: Plan, companyName: string) => {
+  const approve = (id: string, companyName: string) => {
     setBusyId(id);
     decide.mutate(
-      { requestId: id, approve: true, plan, subdomain: suggestSubdomain(companyName) },
+      { requestId: id, approve: true, subdomain: suggestSubdomain(companyName) },
       { onSettled: () => setBusyId(null) },
     );
   };
@@ -73,11 +72,9 @@ export default function AdminRequestsPage() {
                 </Button>
                 <Button
                   loading={busyId === req.id}
-                  onClick={() =>
-                    approve(req.id, req.requestedPlan ?? PLAN.basic, req.org.companyName)
-                  }
+                  onClick={() => approve(req.id, req.org.companyName)}
                 >
-                  Onayla ({req.requestedPlan ?? PLAN.basic})
+                  Onayla
                 </Button>
               </div>
             </li>

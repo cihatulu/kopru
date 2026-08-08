@@ -8,31 +8,52 @@
  *      ticari vaadi bu; bozulursa misafirin geçmişi kaybolur.
  */
 import { describe, expect, test } from 'vitest';
-import { loadMigrationSql } from './sqlSchema';
+import { functionBody, loadMigrationSql } from './sqlSchema';
 import { PLAN, PLAN_MODULES, type Plan } from '@/constants';
 
 const sql = loadMigrationSql();
 
-/** `default_modules_for_plan` içindeki jsonb dizisini okur. */
-function sqlModulesFor(plan: Plan): string[] {
-  const match = new RegExp(`when '${plan}' then\\s*'(\\[[^\\]]*\\])'::jsonb`, 'i').exec(sql);
-  expect(match, `${plan} için SQL modül listesi bulunamadı`).toBeTruthy();
-  return JSON.parse(match![1]!) as string[];
+/**
+ * `default_modules_for_plan` içindeki son tanımın modül listesini okur.
+ * Plan gating kaldırıldıktan sonra tüm planlar için aynı dizi döner.
+ */
+function sqlModulesFor(_plan: Plan): string[] {
+  const body = functionBody('default_modules_for_plan');
+  // Eski format: when 'pro' then '[...]'::jsonb
+  const caseMatch = /when\s+'[^']+' then\s+'(\[[^\]]+\])'::jsonb/gi;
+  const caseMatches = [...body.matchAll(caseMatch)];
+  if (caseMatches.length > 0) {
+    // Birden fazla when: planın kendi etiketini ara
+    const planMatch = new RegExp(`when\\s+'${_plan}'\\s+then\\s+'(\\[[^\\]]+\\])'::jsonb`, 'i').exec(body);
+    if (planMatch) return JSON.parse(planMatch[1]!) as string[];
+  }
+  // Yeni format: select '[...]'::jsonb (tüm planlar için tek liste)
+  const selectMatch = /select\s+'(\[[^\]]+\])'::jsonb/i.exec(body);
+  expect(selectMatch, `default_modules_for_plan içinde modül listesi bulunamadı`).toBeTruthy();
+  // Trim whitespace in the JSON before parsing
+  const raw = selectMatch![1]!.replace(/\s+/g, ' ');
+  return JSON.parse(raw) as string[];
 }
 
-describe('çift katmanlı plan gating — SQL ↔ TS parite', () => {
+describe('tüm planlar tüm modüllere erişir (plan gating kaldırıldı)', () => {
   for (const plan of Object.values(PLAN)) {
     test(`${plan} planının modülleri iki katmanda aynı`, () => {
-      // Sıra fark etmez, küme aynı olmalı.
+      // Plan gating kaldırıldı; tüm planlar için SQL ve TS aynı (tam) listeyi döner.
       expect([...sqlModulesFor(plan)].sort()).toEqual([...PLAN_MODULES[plan]].sort());
     });
   }
 
-  test('planlar birbirini kapsar: free ⊂ basic ⊂ pro', () => {
-    const free = new Set(PLAN_MODULES.free);
-    const basic = new Set(PLAN_MODULES.basic);
-    for (const m of free) expect(basic.has(m)).toBe(true);
-    for (const m of basic) expect(PLAN_MODULES.pro).toContain(m);
+  test('tüm planlar aynı modül kümesine sahip', () => {
+    // önceki free ⊂ basic ⊂ pro kuralı artık geçerli değil; hepsi eşit.
+    const freeSet = new Set(PLAN_MODULES.free);
+    const basicSet = new Set(PLAN_MODULES.basic);
+    const proSet = new Set(PLAN_MODULES.pro);
+    expect(freeSet.size).toBe(basicSet.size);
+    expect(basicSet.size).toBe(proSet.size);
+    for (const m of freeSet) {
+      expect(basicSet.has(m)).toBe(true);
+      expect(proSet.has(m)).toBe(true);
+    }
   });
 });
 

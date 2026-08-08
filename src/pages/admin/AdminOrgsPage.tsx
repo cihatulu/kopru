@@ -20,7 +20,7 @@ import {
 } from '@/features/admin';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import type { OrgKind, Plan } from '@/constants';
+import type { OrgKind } from '@/constants';
 
 /** Üretici/perakendeci yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
@@ -129,10 +129,10 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         upgradePending={upgrade.isPending}
         upgradeResult={result}
         onUpgradeClose={() => { setTarget(null); setResult(null); upgrade.reset(); }}
-        onUpgradeConfirm={(plan: Plan, subdomain: string) =>
+        onUpgradeConfirm={(subdomain: string) =>
           target &&
           upgrade.mutate(
-            { orgId: target.id, plan, subdomain: normalizeSubdomain(subdomain) },
+            { orgId: target.id, subdomain: normalizeSubdomain(subdomain) },
             { onSuccess: setResult },
           )
         }

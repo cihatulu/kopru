@@ -6,9 +6,16 @@ import type { Edge, Party } from '../domain/counterparty';
 // Açık kolon listesi (kilitli kural 19). İki uç da çekilir; "karşı taraf"
 // çevirisi domain/counterparty.ts içinde yapılır.
 const PARTY = 'id, company_name, vkn_tc, is_subscriber, phone, email';
+// Gömme ipucu KISIT ADIYLA verilir, kolon adıyla değil.
+// Sebep: A15 gereği `relationships` → `organizations` yabancı anahtarı BİLEŞİK
+// ((org_id, kind) → (id, kind)); PostgREST tek kolonluk ipucu ile bileşik bir
+// kısıtı çözemez ve "Could not find a relationship ... in the schema cache"
+// hatası döner. Canlıda liste tamamen boş kalıyordu.
+const MFR_FK = 'relationships_manufacturer_org_id_manufacturer_kind_fkey';
+const RTL_FK = 'relationships_retailer_org_id_retailer_kind_fkey';
 const EDGE_COLUMNS =
   `id, status, discount_rate, created_at, initiated_by_org_id, manufacturer_org_id, ` +
-  `manufacturer:manufacturer_org_id(${PARTY}), retailer:retailer_org_id(${PARTY})`;
+  `manufacturer:organizations!${MFR_FK}(${PARTY}), retailer:organizations!${RTL_FK}(${PARTY})`;
 
 export interface Cursor {
   createdAt: string;

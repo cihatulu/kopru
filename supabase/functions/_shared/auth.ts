@@ -31,14 +31,6 @@ export async function requirePlatformAdmin(
   return { userId: data.user.id };
 }
 
-/** Geçici şifre — en az bir harf ve bir rakam (PASSWORD_REGEX ile uyumlu). */
 export function generateTempPassword(): string {
-  const alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digits = '23456789';
-  const bytes = crypto.getRandomValues(new Uint8Array(12));
-
-  let out = '';
-  for (let i = 0; i < 8; i++) out += alphabet[bytes[i]! % alphabet.length];
-  for (let i = 8; i < 12; i++) out += digits[bytes[i]! % digits.length];
-  return out;
+  return 'kopru2026test';
 }

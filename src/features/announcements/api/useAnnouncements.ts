@@ -2,9 +2,14 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
 
+// Gömme ipucu KISIT ADIYLA verilir: `announcements` → `organizations` yabancı
+// anahtarı A15 gereği bileşiktir ((owner_org_id, owner_kind) → (id, kind)) ve
+// PostgREST bileşik kısıtı kolon adından çözemez. Kolon ipucu kullanıldığında
+// duyuru listesi hiç yüklenmiyordu.
+const OWNER_FK = 'announcements_owner_org_id_owner_kind_fkey';
 const COLUMNS =
   'id, title, body, is_active, created_at, owner_org_id, target_retailer_org_id, ' +
-  'owner:owner_org_id(company_name)';
+  `owner:organizations!${OWNER_FK}(company_name)`;
 
 type Row = Record<string, unknown>;
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');

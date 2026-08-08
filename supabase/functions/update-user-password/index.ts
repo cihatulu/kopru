@@ -38,7 +38,7 @@ async function adminReset(req: Request, orgId: string) {
 
   const { data: user } = await admin
     .from('users')
-    .select('id, user_code, org_id, organizations(company_name)')
+    .select('id, user_code, org_id, organizations!users_org_id_fkey(company_name)')
     .eq('org_id', orgId)
     .eq('org_role', 'owner')
     .maybeSingle();

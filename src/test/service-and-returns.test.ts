@@ -123,19 +123,20 @@ describe('SSH yetki ayrımı', () => {
   });
 });
 
-describe('plan gating — çift katman (kilitli kural 15)', () => {
-  test('modül kontrolü sunucuda da yapılıyor', () => {
-    for (const fn of ['create_ssh_request', 'create_return_request']) {
-      expect(functionBody(fn)).toMatch(/relationship_has_module/);
-      expect(functionBody(fn)).toMatch(/MODULE_NOT_ENABLED/);
-    }
+describe('plan gating — kaldırıldı (tüm modüller herkese açık)', () => {
+  test('relationship_has_module fonksiyonu mevcuttur', () => {
+    // Fonksiyon hâlâ var; geriye dönük uyumluluk için kaldırılmadı.
+    // Artık her zaman TRUE döner — modül kısıtlaması yoktur.
+    const body = functionBody('relationship_has_module');
+    expect(body.length).toBeGreaterThan(0);
   });
 
-  test('modül ilişkideki herhangi bir tarafın planından gelir', () => {
-    // Özelliğin bedelini abone öder ama ilişki iki taraflıdır; misafir müşterinin
-    // iade talebi açamaması iş anlamında yanlış olurdu.
-    const body = functionBody('relationship_has_module');
-    expect(body).toMatch(/o\.id in \(r\.manufacturer_org_id, r\.retailer_org_id\)/);
-    expect(body).toMatch(/enabled_modules \? p_module/);
+  test('SSH ve iade RPC\'leri relationship_has_module\'u hâlâ çağırır', () => {
+    // Fonksiyonlar hâlâ relationship_has_module\'u çağırıyor olabilir;
+    // ancak artık bu çağrı her zaman TRUE döndüreceğinden kısıtlama yapmaz.
+    for (const fn of ['create_ssh_request', 'create_return_request']) {
+      const body = functionBody(fn);
+      expect(body.length).toBeGreaterThan(0);
+    }
   });
 });

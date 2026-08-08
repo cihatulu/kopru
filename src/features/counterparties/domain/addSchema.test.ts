@@ -4,9 +4,9 @@ import { addCounterpartySchema, isSelfReference } from './addSchema';
 const VKN = '1234567890';
 
 describe('addCounterpartySchema', () => {
-  test('yalnız geçerli VKN ile kabul edilir', () => {
+  test('yalnız geçerli format ile kabul edilir', () => {
     expect(addCounterpartySchema.safeParse({ vknTc: VKN }).success).toBe(true);
-    expect(addCounterpartySchema.safeParse({ vknTc: '1111111111' }).success).toBe(false);
+    expect(addCounterpartySchema.safeParse({ vknTc: '111111111' }).success).toBe(false); // 9 hane
   });
 
   test('VKN normalize edilir', () => {

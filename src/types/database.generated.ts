@@ -145,6 +145,82 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          authorized_name: string | null
+          company_name: string | null
+          created_at: string
+          created_by_user_id: string | null
+          discount_rate: number
+          email: string | null
+          expires_at: string
+          id: string
+          inviter_org_id: string
+          phone: string | null
+          revoked_at: string | null
+          token: string
+          used_at: string | null
+          used_by_org_id: string | null
+          vkn_tc: string | null
+        }
+        Insert: {
+          authorized_name?: string | null
+          company_name?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          discount_rate?: number
+          email?: string | null
+          expires_at: string
+          id?: string
+          inviter_org_id: string
+          phone?: string | null
+          revoked_at?: string | null
+          token: string
+          used_at?: string | null
+          used_by_org_id?: string | null
+          vkn_tc?: string | null
+        }
+        Update: {
+          authorized_name?: string | null
+          company_name?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          discount_rate?: number
+          email?: string | null
+          expires_at?: string
+          id?: string
+          inviter_org_id?: string
+          phone?: string | null
+          revoked_at?: string | null
+          token?: string
+          used_at?: string | null
+          used_by_org_id?: string | null
+          vkn_tc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_inviter_org_id_fkey"
+            columns: ["inviter_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_used_by_org_id_fkey"
+            columns: ["used_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           city: string | null
@@ -1549,6 +1625,40 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_invitation: {
+        Args: {
+          p_authorized_name?: string
+          p_company_name?: string
+          p_discount_rate?: number
+          p_email?: string
+          p_phone?: string
+          p_valid_days?: number
+          p_vkn_tc?: string
+        }
+        Returns: {
+          authorized_name: string | null
+          company_name: string | null
+          created_at: string
+          created_by_user_id: string | null
+          discount_rate: number
+          email: string | null
+          expires_at: string
+          id: string
+          inviter_org_id: string
+          phone: string | null
+          revoked_at: string | null
+          token: string
+          used_at: string | null
+          used_by_org_id: string | null
+          vkn_tc: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_return_request: {
         Args: { p_items: Json; p_order_id: string; p_reason?: string }
         Returns: string
@@ -1705,6 +1815,10 @@ export type Database = {
       retailer_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
+      }
+      revoke_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
       }
       save_product: {
         Args: {

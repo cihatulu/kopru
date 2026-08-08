@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       .from('users')
       .select(
         'id, org_id, org_role, auth_email, is_active, failed_attempts, locked_until, ' +
-          'organizations!inner(id, kind, is_subscriber, is_active)',
+          'organizations!users_org_id_fkey!inner(id, kind, is_subscriber, is_active)',
       )
       .eq('user_code', userCode)
       .maybeSingle();

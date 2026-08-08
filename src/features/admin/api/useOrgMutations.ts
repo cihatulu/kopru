@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { Plan } from '@/constants';
 
 export interface UpgradeInput {
   orgId: string;
-  plan: Plan;
   subdomain: string;
 }
 
@@ -43,10 +41,10 @@ export function useUpgradeOrg() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orgId, plan, subdomain }: UpgradeInput): Promise<UpgradeResult> => {
+    mutationFn: async ({ orgId, subdomain }: UpgradeInput): Promise<UpgradeResult> => {
       const { error } = await supabase.rpc('upgrade_org_to_subscriber', {
         p_org_id: orgId,
-        p_plan: plan,
+        p_plan: 'pro',
         p_subdomain: subdomain,
       });
       if (error) throw error;
@@ -114,13 +112,12 @@ export function useDecideSubscriptionRequest() {
     mutationFn: async (input: {
       requestId: string;
       approve: boolean;
-      plan?: Plan;
       subdomain?: string;
     }) => {
       const { error } = await supabase.rpc('decide_subscription_request', {
         p_request_id: input.requestId,
         p_approve: input.approve,
-        p_plan: input.plan ?? null,
+        p_plan: input.approve ? 'pro' : null,
         p_subdomain: input.subdomain ?? null,
       });
       if (error) throw error;

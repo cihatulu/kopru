@@ -15,9 +15,10 @@ describe('createOrgSchema', () => {
     expect(createOrgSchema.safeParse({ companyName: 'Ali Usta', vknTc: TCKN }).success).toBe(true);
   });
 
-  test('checksum tutmayan numara reddedilir', () => {
-    expect(createOrgSchema.safeParse({ companyName: 'X Ltd', vknTc: '1111111111' }).success).toBe(
-      false,
+  test('format hatalı numara reddedilir', () => {
+    // Artık yalnız format kontrolü yapılıyor; 10 hane dışı sayılar reddedilir.
+    expect(createOrgSchema.safeParse({ companyName: 'X Ltd', vknTc: '111111111' }).success).toBe(
+      false,  // 9 hane
     );
   });
 
