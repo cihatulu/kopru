@@ -21,8 +21,16 @@ export function Sidebar({ items, companyName, open, onClose }: Props) {
         />
       )}
 
+      {/*
+        Masaüstünde `md:h-screen md:sticky` ZORUNLU.
+        Önceki `h-full` + `md:relative` yazımında koyu panel menü maddeleri
+        bitince kesiliyordu: `height: 100%`, yüksekliği `auto` olan bir
+        kapsayıcıya karşı çözülür ve içerik boyuna düşer — flex'in `stretch`
+        davranışını da ezer. Ekran yüksekliğine bağlamak hem paneli tam
+        doldurur hem uzun sayfalarda menüyü görünür tutar.
+      */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col bg-slate-900 transition-transform duration-300 md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 flex h-full w-64 shrink-0 flex-col bg-slate-900 transition-transform duration-300 md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
