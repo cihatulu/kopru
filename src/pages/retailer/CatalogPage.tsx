@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CatalogRow, discountedPrice, useProducts } from '@/features/catalog';
+import { RetailerCatalogGrid, useProducts } from '@/features/catalog';
 import { PartyPicker, useCounterparties, type Edge } from '@/features/counterparties';
 import {
   CartPanel,
@@ -10,7 +10,6 @@ import {
   type CartLine,
 } from '@/features/orders';
 import { useAuthSession } from '@/features/auth';
-import { Spinner } from '@/components/ui/Spinner';
 
 /** Perakendecinin katalog + sepet ekranı — YALNIZ KOMPOZİSYON (A20). */
 export default function CatalogPage() {
@@ -62,39 +61,23 @@ export default function CatalogPage() {
       )}
 
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-3">
-          {list.isPending && selected ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
-            </div>
-          ) : products.length === 0 ? (
-            <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
-              Bu tedarikçinin aktif ürünü yok.
-            </p>
-          ) : (
-            products.map((p) => {
-              const unit = discountedPrice(p.supplierPrice, selected?.discountRate ?? 0);
-              return (
-                <CatalogRow
-                  key={p.id}
-                  product={p}
-                  unitPrice={unit}
-                  onAdd={() =>
-                    setLines((prev) =>
-                      addLine(prev, {
-                        productId: p.id,
-                        name: p.name,
-                        code: p.code,
-                        unitPrice: unit,
-                        quantity: 1,
-                      }),
-                    )
-                  }
-                />
-              );
-            })
-          )}
-        </div>
+        <RetailerCatalogGrid
+          products={products}
+          discountRate={selected?.discountRate ?? 0}
+          isSubscriber={user.org.isSubscriber}
+          loading={list.isPending && !!selected}
+          onAdd={(p, unitPrice) =>
+            setLines((prev) =>
+              addLine(prev, {
+                productId: p.id,
+                name: p.name,
+                code: p.code,
+                unitPrice,
+                quantity: 1,
+              }),
+            )
+          }
+        />
 
         <CartPanel
           lines={lines}

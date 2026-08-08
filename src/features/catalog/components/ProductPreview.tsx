@@ -8,6 +8,13 @@ interface Props {
   product: CatalogProduct;
   groupName: string | null;
   stock: number | null;
+  /**
+   * Perakendeci görünümünde iskonto uygulanmış fiyat.
+   * Verilmezse ürünün liste fiyatı gösterilir (üretici görünümü).
+   */
+  priceOverride?: number | undefined;
+  /** Verilirse alt kısımda "Sepete ekle" çıkar — perakendeci görünümü. */
+  onAddToCart?: (() => void) | undefined;
   onClose: () => void;
 }
 
@@ -18,7 +25,14 @@ interface Props {
  * ekranda iki farklı düzenleme yolu olması, hangisinin kaydettiğini
  * belirsizleştirirdi. Maliyet ve marj da burada gösterilmez (A4).
  */
-export function ProductPreview({ product, groupName, stock, onClose }: Props) {
+export function ProductPreview({
+  product,
+  groupName,
+  stock,
+  priceOverride,
+  onAddToCart,
+  onClose,
+}: Props) {
   const [imageIndex, setImageIndex] = useState(0);
   const dimensions = formatDimensions(product.dimensions);
   const image = product.images[imageIndex];
@@ -70,7 +84,7 @@ export function ProductPreview({ product, groupName, stock, onClose }: Props) {
 
           <div className="flex flex-wrap items-center gap-4">
             <span className="text-2xl font-bold text-slate-900">
-              {formatMoney(product.supplierPrice)}
+              {formatMoney(priceOverride ?? product.supplierPrice)}
             </span>
             <span className="text-sm text-slate-500">
               Stok: {stock === null ? 'kayıt yok' : stock}
@@ -115,10 +129,11 @@ export function ProductPreview({ product, groupName, stock, onClose }: Props) {
             </div>
           )}
 
-          <div className="flex justify-end border-t border-slate-100 pt-4">
+          <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
             <Button variant="secondary" onClick={onClose}>
               Kapat
             </Button>
+            {onAddToCart && stock !== 0 && <Button onClick={onAddToCart}>Sepete ekle</Button>}
           </div>
         </div>
       </div>
