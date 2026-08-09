@@ -95,6 +95,7 @@ export function ProductDialogs(props: Props) {
           // Setin içine set konulamaz — sonsuz döngü demektir.
           selected={selected.filter((p) => p.type === 'single')}
           costs={costs}
+          categories={categories}
           pending={props.savePending}
           errorMessage={props.saveError ?? undefined}
           onClose={props.onClose}

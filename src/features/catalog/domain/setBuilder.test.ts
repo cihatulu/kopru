@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   canBuildSet,
+  composeSetDescription,
   clampQuantity,
   describeSet,
   suggestedCost,
@@ -83,5 +84,44 @@ describe('clampQuantity', () => {
 
   test('geçersiz sayı 1 olur', () => {
     expect(clampQuantity(Number.NaN)).toBe(1);
+  });
+});
+
+describe('composeSetDescription', () => {
+  const koltuk = line({ name: 'Koltuk', description: 'Gürgen iskelet, kadife kumaş.' });
+  const sehpa = line({
+    productId: 'p2',
+    name: 'Sehpa',
+    description: 'Mermer tabla, metal ayak.',
+  });
+
+  test('içerik listesi ile ürün açıklamalarını birleştirir', () => {
+    const out = composeSetDescription([koltuk, sehpa]);
+    expect(out).toContain('1 × Koltuk, 1 × Sehpa');
+    expect(out).toContain('Koltuk: Gürgen iskelet, kadife kumaş.');
+    expect(out).toContain('Sehpa: Mermer tabla, metal ayak.');
+  });
+
+  test('açıklaması olmayan ürün atlanır ama içerikte kalır', () => {
+    const out = composeSetDescription([koltuk, line({ productId: 'p3', name: 'Puf' })]);
+    expect(out).toContain('1 × Koltuk, 1 × Puf');
+    expect(out).not.toContain('Puf:');
+  });
+
+  test('hiç açıklama yoksa yalnız içerik listesi döner', () => {
+    const out = composeSetDescription([
+      line({ name: 'A', description: null }),
+      line({ productId: 'p2', name: 'B', description: '' }),
+    ]);
+    expect(out).toBe('1 × A, 1 × B');
+  });
+
+  test('miktarı sıfır olan ürün hiç girmez', () => {
+    const out = composeSetDescription([koltuk, line({ ...sehpa, quantity: 0 })]);
+    expect(out).not.toContain('Sehpa');
+  });
+
+  test('boş takım boş metin döner', () => {
+    expect(composeSetDescription([])).toBe('');
   });
 });

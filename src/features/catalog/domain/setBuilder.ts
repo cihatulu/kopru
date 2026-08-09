@@ -5,6 +5,8 @@ export interface SetLineInput {
   name: string;
   unitPrice: number;
   unitCost: number | undefined;
+  /** Ürünün kendi açıklaması — takım açıklaması bunlardan derlenir. */
+  description?: string | null;
   quantity: number;
 }
 
@@ -39,12 +41,31 @@ export function canBuildSet(lines: SetLineInput[]): boolean {
   return lines.filter((l) => l.quantity > 0).length >= 2;
 }
 
-/** Otomatik açıklama: "2 × Alanya Köşe Koltuk, 1 × Havana Sehpa". */
+/** Takımın içeriği: "2 × Alanya Köşe Koltuk, 1 × Havana Sehpa". */
 export function describeSet(lines: SetLineInput[]): string {
   return lines
     .filter((l) => l.quantity > 0)
     .map((l) => `${l.quantity} × ${l.name}`)
     .join(', ');
+}
+
+/**
+ * Takımın tam açıklaması: içerik listesi + her ürünün KENDİ açıklaması.
+ *
+ * Yalnız "1 × Koltuk, 1 × Berjer" yazmak perakendeciye hiçbir şey anlatmıyor;
+ * takımın içindeki ürünlerin malzeme ve ölçü bilgileri de gelmeli. Kullanıcı
+ * metni yine düzenleyebilir — bu bir başlangıç noktasıdır.
+ */
+export function composeSetDescription(lines: SetLineInput[]): string {
+  const included = lines.filter((l) => l.quantity > 0);
+  if (included.length === 0) return '';
+
+  const header = describeSet(included);
+  const details = included
+    .filter((l) => (l.description ?? '').trim() !== '')
+    .map((l) => `${l.name}: ${(l.description ?? '').trim()}`);
+
+  return details.length > 0 ? `${header}\n\n${details.join('\n\n')}` : header;
 }
 
 /** Miktar 1'in altına inemez; sıfır kalem takımdan çıkarmak demektir. */

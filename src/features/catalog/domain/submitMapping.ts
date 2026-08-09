@@ -70,6 +70,7 @@ export function toSavePayload(p: ProductSubmitPayload, editingId?: string): Save
 export interface SetPayloadInput {
   name: string;
   code: string;
+  category: string;
   price: number;
   cost: number | undefined;
   stock: number;
@@ -89,6 +90,7 @@ export function toSetSavePayload(v: SetPayloadInput): SaveProductPayload {
     code: v.code,
     supplierPrice: v.price,
     ...(v.cost !== undefined ? { costPrice: v.cost } : {}),
+    ...(v.category ? { category: v.category } : {}),
     description: v.description,
     images: [],
     groupId: null,

@@ -1,21 +1,24 @@
 import { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { formatMoney, parseDecimal } from '@/lib/format';
+import { useDerivedField } from '@/components/ui/useDerivedField';
+import { parseDecimal } from '@/lib/format';
 import {
   canBuildSet,
   clampQuantity,
-  describeSet,
+  composeSetDescription,
   suggestedCost,
   suggestedPrice,
   type SetLineInput,
 } from '../domain/setBuilder';
 import { SetLineList } from './SetLineList';
+import { SetPricingFields } from './SetPricingFields';
 import type { CatalogProduct } from '../api/useProducts';
 
 export interface SetSubmit {
   name: string;
   code: string;
+  category: string;
   price: number;
   cost: number | undefined;
   stock: number;
@@ -26,6 +29,8 @@ export interface SetSubmit {
 interface Props {
   selected: CatalogProduct[];
   costs: Record<string, number> | undefined;
+  /** Daha önce kullanılmış kategoriler — öneri listesi. */
+  categories: string[];
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;
@@ -34,17 +39,15 @@ interface Props {
 
 /** "Set Oluştur" — seçili tek ürünlerden takım kurar. */
 export function SetBuilderDialog(props: Props) {
-  const { selected, costs, pending, errorMessage, onClose, onSubmit } = props;
+  const { selected, costs, categories, pending, errorMessage, onClose, onSubmit } = props;
 
   const [quantities, setQuantities] = useState<Record<string, number>>(() =>
     Object.fromEntries(selected.map((p) => [p.id, 1])),
   );
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  const [category, setCategory] = useState('');
   const [stock, setStock] = useState('0');
-  const [priceText, setPriceText] = useState('');
-  const [descriptionEdited, setDescriptionEdited] = useState(false);
-  const [description, setDescription] = useState('');
 
   const lines: SetLineInput[] = useMemo(
     () =>
@@ -53,30 +56,33 @@ export function SetBuilderDialog(props: Props) {
         name: p.name,
         unitPrice: p.supplierPrice,
         unitCost: costs?.[p.id],
+        description: p.description,
         quantity: quantities[p.id] ?? 0,
       })),
     [selected, costs, quantities],
   );
 
   const total = suggestedPrice(lines);
-  const cost = suggestedCost(lines);
-  const auto = describeSet(lines);
+  const totalCost = suggestedCost(lines);
   const buildable = canBuildSet(lines);
   const ready = buildable && name.trim().length >= 2 && code.trim().length >= 1;
 
+  // Üçü de içerikten türetilir, kullanıcı yazana kadar.
+  const price = useDerivedField(String(total));
+  const cost = useDerivedField(totalCost === null ? '' : String(totalCost));
+  const description = useDerivedField(composeSetDescription(lines));
+
   return (
     <Modal
-      label={'Yeni set (takım) oluştur'}
-      panelClassName={
-        'flex max-h-[90vh] w-full max-w-lg flex-col overflow-y-auto rounded-2xl bg-white p-6 shadow-xl'
-      }
+      label="Yeni set (takım) oluştur"
+      panelClassName="flex max-h-[90vh] w-full max-w-lg flex-col overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
       onClose={onClose}
       closeDisabled={pending}
     >
       <h2 className="text-lg font-extrabold text-slate-800">Yeni Set (Takım) Oluştur</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Seçtiğiniz ürünlerden bir takım kurulur. Takım kendi stoğu ve fiyatıyla ayrı bir ürün olarak
-        listelenir.
+        Seçtiğiniz ürünlerden bir takım kurulur. Fiyat, maliyet ve açıklama içerikten otomatik
+        gelir; hepsini değiştirebilirsiniz.
       </p>
 
       <div className="mt-5">
@@ -92,47 +98,34 @@ export function SetBuilderDialog(props: Props) {
         <Field label="Takım adı">
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
-        <Field label="Model / kod">
+        <Field label="Model">
           <input className="input" value={code} onChange={(e) => setCode(e.target.value)} />
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Takım fiyatı (₺)">
-          <input
-            className="input"
-            inputMode="decimal"
-            placeholder={String(total)}
-            value={priceText}
-            onChange={(e) => setPriceText(e.target.value)}
-          />
-          {/* Boş bırakılırsa içerik toplamı kullanılır — kullanıcı elle toplamasın. */}
-          <p className="mt-1 text-xs text-slate-500">İçerik toplamı: {formatMoney(total)}</p>
-        </Field>
-        <Field label="Stok adedi">
-          <input
-            className="input"
-            inputMode="numeric"
-            value={stock}
-            onChange={(e) => setStock(e.target.value)}
-          />
-          <p className="mt-1 text-xs text-slate-500">
-            Maliyet: {cost === null ? 'hesaplanamıyor' : formatMoney(cost)}
-          </p>
-        </Field>
-      </div>
-
-      <Field label="Açıklama">
-        <textarea
+      <Field label="Kategori">
+        <input
           className="input"
-          rows={2}
-          value={descriptionEdited ? description : auto}
-          onChange={(e) => {
-            setDescriptionEdited(true);
-            setDescription(e.target.value);
-          }}
+          list="set-kategorileri"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         />
+        <datalist id="set-kategorileri">
+          {categories.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </Field>
+
+      <SetPricingFields
+        cost={cost}
+        price={price}
+        stock={stock}
+        onStock={setStock}
+        description={description}
+        total={total}
+        costUnknown={totalCost === null}
+      />
 
       {!buildable && (
         <p className="mt-3 text-xs font-medium text-amber-700">
@@ -157,10 +150,11 @@ export function SetBuilderDialog(props: Props) {
             onSubmit({
               name: name.trim(),
               code: code.trim(),
-              price: priceText.trim() === '' ? total : (parseDecimal(priceText) ?? total),
-              cost: cost ?? undefined,
+              category: category.trim(),
+              price: parseDecimal(price.value) ?? total,
+              cost: parseDecimal(cost.value) ?? undefined,
               stock: parseDecimal(stock) ?? 0,
-              description: descriptionEdited ? description : auto,
+              description: description.value,
               contents: lines
                 .filter((l) => l.quantity > 0)
                 .map((l) => ({ productId: l.productId, quantity: l.quantity })),
@@ -176,9 +170,9 @@ export function SetBuilderDialog(props: Props) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="mt-3">
-      <label className="label">{label}</label>
+    <label className="mt-3 block">
+      <span className="label">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
