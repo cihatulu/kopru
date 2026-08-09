@@ -5,12 +5,13 @@ import type { CatalogProduct } from '../api/useProducts';
 interface Props {
   product: CatalogProduct;
   pending: boolean;
+  errorMessage?: string | undefined;
   onClose: () => void;
   onConfirm: () => void;
 }
 
 /**
-* Ürün silme onayı — KALICI silme.
+ * Ürün silme onayı — KALICI silme.
  *
  * Bu pencere yalnız PASİF üründe açılır (aktif ürün önce pasife alınır) ve
  * yalnız org sahibi görür. Kayıt gerçekten silinir; geri alınamaz.
@@ -19,7 +20,7 @@ interface Props {
  * (product_snapshot) durur, yalnız canlı ürün bağlantısını kaybeder. Metin bunu
  * söylüyor — kullanıcı "geçmişim de gider mi" diye tereddüt etmemeli.
  */
-export function DeleteProductDialog({ product, pending, onClose, onConfirm }: Props) {
+export function DeleteProductDialog({ product, pending, errorMessage, onClose, onConfirm }: Props) {
   return (
     <Modal
       label={'Ürünü kaldır'}
@@ -53,6 +54,12 @@ export function DeleteProductDialog({ product, pending, onClose, onConfirm }: Pr
         Ürün veritabanından silinmez, pasife alınır — geçmiş siparişleriniz ve cari kayıtlarınız
         olduğu gibi kalır. İstediğiniz zaman yeniden aktif edebilirsiniz.
       </p>
+
+      {errorMessage && (
+        <p role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </p>
+      )}
 
       <div className="flex justify-end gap-3">
         <Button variant="secondary" onClick={onClose} disabled={pending}>

@@ -111,10 +111,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <label className="label">{label}</label>
+    <label className="block">
+      <span className="label">{label}</span>
       {children}
       {error && <p className="field-error">{error}</p>}
-    </div>
+    </label>
   );
 }

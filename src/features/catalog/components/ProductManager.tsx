@@ -6,6 +6,7 @@ import { useProductStock } from '../api/useProductStock';
 import { useProductGroups } from '../api/useProductGroups';
 import { useAuthSession } from '@/features/auth';
 import { useCatalogAdmin } from '../api/useCatalogAdmin';
+import { ProductError } from '../api/useProductMutations';
 import {
   collectCategories,
   computeStats,
@@ -157,7 +158,14 @@ export function ProductManager({ orgId }: { orgId: string }) {
         editing={editing}
         deleting={deleting}
         savePending={admin.saveProduct.isPending}
-        saveFailed={admin.saveProduct.isError}
+        saveError={
+          admin.saveProduct.error instanceof ProductError ? admin.saveProduct.error.message : null
+        }
+        deleteError={
+          admin.deleteProduct.error instanceof ProductError
+            ? admin.deleteProduct.error.message
+            : null
+        }
         groupPending={admin.groupPending}
         deletePending={admin.deleteProduct.isPending}
         onClose={close}

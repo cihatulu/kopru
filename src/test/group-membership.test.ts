@@ -78,3 +78,17 @@ describe('search_path sabitlenmiş (kilitli kural 4)', () => {
     });
   }
 });
+
+describe('ürün kodu (model) benzersiz DEĞİL', () => {
+  test('owner+code benzersizlik kısıtı kaldırıldı', () => {
+    // Yanlış varsayım: kodun bir ürünü tek başına tanımladığı. Mobilyada
+    // "Havana" bir MODEL ADIDIR; aynı model altında koltuk, sehpa, puf olur.
+    expect(loadMigrationSql()).toMatch(
+      /alter table public.products drop constraint if exists products_owner_code_key/i,
+    );
+  });
+
+  test('arama indeksi KALIYOR — yalnız benzersizlik gitti', () => {
+    expect(loadMigrationSql()).toMatch(/create index if not exists products_owner_code_idx/i);
+  });
+});

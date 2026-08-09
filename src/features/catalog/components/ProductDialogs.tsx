@@ -22,7 +22,9 @@ interface Props {
   deleting: CatalogProduct | null;
 
   savePending: boolean;
-  saveFailed: boolean;
+  /** Sunucudan gelen okunur hata mesajı; yoksa null. */
+  saveError: string | null;
+  deleteError: string | null;
   groupPending: boolean;
   deletePending: boolean;
 
@@ -59,7 +61,7 @@ export function ProductDialogs(props: Props) {
           allProducts={allProducts}
           categories={categories}
           pending={props.savePending}
-          errorMessage={props.saveFailed ? 'Kaydedilemedi. Bilgileri kontrol edin.' : undefined}
+          errorMessage={props.saveError ?? undefined}
           onClose={props.onClose}
           onSubmit={props.onSubmitProduct}
         />
@@ -94,7 +96,7 @@ export function ProductDialogs(props: Props) {
           selected={selected.filter((p) => p.type === 'single')}
           costs={costs}
           pending={props.savePending}
-          errorMessage={props.saveFailed ? 'Takım oluşturulamadı.' : undefined}
+          errorMessage={props.saveError ?? undefined}
           onClose={props.onClose}
           onSubmit={props.onSubmitSet}
         />
@@ -104,6 +106,7 @@ export function ProductDialogs(props: Props) {
         <DeleteProductDialog
           product={deleting}
           pending={props.deletePending}
+          errorMessage={props.deleteError ?? undefined}
           onClose={props.onCloseDelete}
           onConfirm={props.onConfirmDelete}
         />
