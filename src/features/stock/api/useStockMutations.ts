@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { StockCsvRow } from '../domain/csv';
 
@@ -22,10 +23,10 @@ export function useSetProductStock() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
-      const { error } = await supabase.rpc('set_product_stock', {
+      const { error } = await supabase.rpc('set_product_stock', rpcArgs({
         p_product_id: productId,
         p_quantity: quantity,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -44,7 +45,7 @@ export function useBulkUpdateStock() {
   return useMutation({
     mutationFn: async (rows: StockCsvRow[]): Promise<number> => {
       const payload = rows.map((r) => ({ product_id: r.productId, quantity: r.quantity }));
-      const { data, error } = await supabase.rpc('bulk_update_stock', { p_rows: payload });
+      const { data, error } = await supabase.rpc('bulk_update_stock', rpcArgs({ p_rows: payload }));
       if (error) throw error;
       return Number(data ?? 0);
     },

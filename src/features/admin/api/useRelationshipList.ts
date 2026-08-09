@@ -46,7 +46,7 @@ async function fetchRelationships(
   if (error) throw error;
 
   return (data ?? []).map((raw) => {
-    const row = raw as Record<string, unknown>;
+    const row = raw as unknown as Record<string, unknown>;
     return {
       id: row.id as string,
       createdAt: row.created_at as string,
@@ -92,8 +92,8 @@ export function usePendingSubscriptionRequests() {
       if (error) throw error;
 
       return (data ?? []).map((raw) => {
-        const row = raw as Record<string, unknown>;
-        const org = (row.organization ?? {}) as Record<string, unknown>;
+        const row = raw as unknown as Record<string, unknown>;
+        const org = (row.organization ?? {}) as unknown as Record<string, unknown>;
         return {
           id: row.id as string,
           note: (row.note as string | null) ?? null,

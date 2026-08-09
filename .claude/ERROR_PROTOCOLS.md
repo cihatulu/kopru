@@ -166,3 +166,29 @@ devir sorgusu hiç çalıştırılmaz.
 doğruluyordu; ikisi de doğruydu. Yanlış olan **semantikti**. Parasal bir hesaplama
 yazdığında sonucu her zaman bağımsız bir kaynakla karşılaştır — burada doğru kontrol
 "sınırsız özetin kapanışı, son satırın `balance_after` değerine EŞİT olmalı" idi.
+
+### 26. `npm run lint` yeşil ama tip hatası var — tip kontrolü hiç çalışmıyor
+**Sebep:** `tsconfig.json` bir **solution** dosyasıydı (`"files": []` + `references`).
+Bu yapıda `tsc --noEmit` referans edilen projeleri derlemez; hiçbir şey yapmadan
+**başarıyla çıkar**. Aylardır "lint 0" raporlarının ESLint kısmı gerçek, tip kontrolü
+kısmı boştu — 61 gizli tip hatası birikmişti ve eksik bir React prop'unu ancak esbuild
+yakaladı.
+**Çözüm:** `tsc --noEmit` yerine **`tsc -b`**. `package.json`'da hem `lint` hem `build`
+betiği bunu kullanır. Proje referansı kullanan her yerde kural budur.
+
+### 27. `exactOptionalPropertyTypes` ile RPC argümanları
+**Sebep:** Bu ayar açıkken "anahtar hiç yok" ile "anahtar var, değeri `undefined`"
+farklı şeylerdir. Supabase'in ürettiği tipler isteğe bağlı parametreleri `p_x?: string`
+diye yazar; `p_x: undefined` geçmek tip hatasıdır.
+**Çözüm:** `src/lib/rpc.ts` içindeki `rpcArgs()` yardımcısıyla sar. `undefined` değerli
+anahtarları siler; zorunlu alanlar tip düzeyinde zorunlu kalır.
+**DİKKAT:** Argümanı atlamak, fonksiyonun SQL varsayılanını devreye sokar. Parametrenin
+`DEFAULT`'u yoksa PostgREST hata verir — bu yüzden `save_product` ve `save_product_group`
+fonksiyonlarının `p_id` parametresine `default null` eklendi. Varsayılan eklemek imza
+kimliğini değiştirmez, `create or replace` yeterlidir (kilitli kural 6 ihlal olmaz).
+
+### 28. `save_product` çağrısı alanı boşaltıyor
+**Sebep:** Bu RPC **tam değiştirme** yapar: gönderilmeyen `p_category`, `p_description`,
+`p_group_id` alanları `null`'a çekilir. Kısmi güncelleme değildir.
+**Çözüm:** Formu her zaman tam gönder. Yalnız bir alanı değiştirmek için ürünün mevcut
+değerlerini okuyup hepsini birlikte gönder.

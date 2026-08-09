@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import { ORG_KIND, STALE_TIME, type OrgKind } from '@/constants';
 
@@ -32,7 +33,7 @@ export function useManufacturerSummary(enabled: boolean) {
     enabled,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<ManufacturerSummary> => {
-      const { data, error } = await supabase.rpc('manufacturer_summary', {});
+      const { data, error } = await supabase.rpc('manufacturer_summary', rpcArgs({}));
       if (error) throw error;
       const r = (data ?? {}) as Row;
       return {
@@ -51,7 +52,7 @@ export function useRetailerSummary(enabled: boolean) {
     enabled,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<RetailerSummary> => {
-      const { data, error } = await supabase.rpc('retailer_summary', {});
+      const { data, error } = await supabase.rpc('retailer_summary', rpcArgs({}));
       if (error) throw error;
       const r = (data ?? {}) as Row;
       return {

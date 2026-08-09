@@ -20,7 +20,7 @@ type Row = Record<string, unknown>;
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
 const num = (v: unknown): number => Number(v ?? 0);
 const nullable = (v: unknown): string | null => (typeof v === 'string' ? v : null);
-const nested = (v: unknown): Row => (v && typeof v === 'object' ? (v as Row) : {});
+const nested = (v: unknown): Row => (v && typeof v === 'object' ? (v as unknown as Row) : {});
 
 export interface OrderRow {
   id: string;
@@ -131,7 +131,7 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
       if (error) throw error;
       if (!data) return null;
 
-      const r = data as Row;
+      const r = data as unknown as Row;
       const items = Array.isArray(r.order_items) ? r.order_items : [];
       return {
         ...toRow(r, myOrgId),

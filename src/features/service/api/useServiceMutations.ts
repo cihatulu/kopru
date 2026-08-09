@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { SshStatus } from './shared';
 
@@ -21,14 +22,14 @@ export function useCreateSsh() {
       customerName?: string;
       customerPhone?: string;
     }) => {
-      const { error } = await supabase.rpc('create_ssh_request', {
+      const { error } = await supabase.rpc('create_ssh_request', rpcArgs({
         p_relationship_id: input.relationshipId,
         p_title: input.title,
-        p_description: input.description ?? null,
-        p_order_id: null,
-        p_product_id: null,
+        p_description: input.description ?? undefined,
+        p_order_id: undefined,
+        p_product_id: undefined,
         p_customer: { name: input.customerName ?? '', phone: input.customerPhone ?? '' },
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -51,11 +52,11 @@ export function useAdvanceSsh() {
       status: SshStatus;
       note?: string;
     }) => {
-      const { error } = await supabase.rpc('advance_ssh_status', {
+      const { error } = await supabase.rpc('advance_ssh_status', rpcArgs({
         p_id: id,
         p_status: status,
-        p_note: note ?? null,
-      });
+        p_note: note ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -73,7 +74,7 @@ export function useSetSshImages() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ id, paths }: { id: string; paths: string[] }) => {
-      const { error } = await supabase.rpc('set_ssh_images', { p_ssh_id: id, p_paths: paths });
+      const { error } = await supabase.rpc('set_ssh_images', rpcArgs({ p_ssh_id: id, p_paths: paths }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -88,11 +89,11 @@ export function useCreateReturn() {
       items: { orderItemId: string; quantity: number }[];
       reason?: string;
     }) => {
-      const { error } = await supabase.rpc('create_return_request', {
+      const { error } = await supabase.rpc('create_return_request', rpcArgs({
         p_order_id: input.orderId,
         p_items: input.items.map((i) => ({ order_item_id: i.orderItemId, quantity: i.quantity })),
-        p_reason: input.reason ?? null,
-      });
+        p_reason: input.reason ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -107,11 +108,11 @@ export function useDecideReturn() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ id, approve, note }: { id: string; approve: boolean; note?: string }) => {
-      const { error } = await supabase.rpc('confirm_return_atomic', {
+      const { error } = await supabase.rpc('confirm_return_atomic', rpcArgs({
         p_return_id: id,
         p_approve: approve,
-        p_note: note ?? null,
-      });
+        p_note: note ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,

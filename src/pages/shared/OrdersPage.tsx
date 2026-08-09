@@ -34,6 +34,8 @@ export default function OrdersPage() {
   const orgId = user?.org?.id ?? '';
   const list = useOrders(orgId, filter);
   const detail = useOrderDetail(selectedId, orgId);
+  // Geri çağrılarda daraltma kaybolur; seçili siparişi tek yerde sabitliyoruz.
+  const order = detail.data;
   const advance = useAdvanceOrderStatus();
   const ship = useShipOrder();
   const cancel = useCancelOrder();
@@ -98,9 +100,9 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {detail.data && !shipping && (
+      {order && !shipping && (
         <OrderDetailPanel
-          order={detail.data}
+          order={order}
           myKind={user.org.kind}
           pending={advance.isPending || cancel.isPending}
           onClose={close}
@@ -111,21 +113,21 @@ export default function OrdersPage() {
               setShipping(true);
               return;
             }
-            advance.mutate({ orderId: detail.data.id, status: to }, { onSuccess: close });
+            advance.mutate({ orderId: order.id, status: to }, { onSuccess: close });
           }}
-          onCancel={() => cancel.mutate({ orderId: detail.data.id }, { onSuccess: close })}
+          onCancel={() => cancel.mutate({ orderId: order.id }, { onSuccess: close })}
         />
       )}
 
-      {detail.data && shipping && (
+      {order && shipping && (
         <ShipmentDialog
-          order={detail.data}
+          order={order}
           pending={ship.isPending}
           errorMessage={
             ship.isError ? 'Sevkiyat kaydedilemedi. Miktarları kontrol edin.' : undefined
           }
           onClose={() => setShipping(false)}
-          onShip={(items) => ship.mutate({ orderId: detail.data.id, items }, { onSuccess: close })}
+          onShip={(items) => ship.mutate({ orderId: order.id, items }, { onSuccess: close })}
         />
       )}
     </div>

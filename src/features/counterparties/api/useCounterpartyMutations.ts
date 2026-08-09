@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { Plan, RelationshipStatus } from '@/constants';
 
@@ -42,14 +43,14 @@ export function useAddCounterparty() {
 
   return useMutation({
     mutationFn: async (input: AddCounterpartyInput): Promise<AddCounterpartyResult> => {
-      const { data, error } = await supabase.rpc('add_counterparty', {
+      const { data, error } = await supabase.rpc('add_counterparty', rpcArgs({
         p_vkn_tc: input.vknTc,
-        p_company_name: input.companyName ?? null,
-        p_email: input.email ?? null,
-        p_phone: input.phone ?? null,
-        p_authorized_name: input.authorizedName ?? null,
+        p_company_name: input.companyName ?? undefined,
+        p_email: input.email ?? undefined,
+        p_phone: input.phone ?? undefined,
+        p_authorized_name: input.authorizedName ?? undefined,
         p_discount_rate: input.discountRate ?? 0,
-      });
+      }));
       if (error) throw error;
 
       // RPC bileşik tip döner; gevşek yer tutucu tipler yüzünden alan alan okuyoruz.
@@ -71,10 +72,10 @@ export function useRespondToConnection() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ relationshipId, accept }: { relationshipId: string; accept: boolean }) => {
-      const { error } = await supabase.rpc('respond_to_connection_request', {
+      const { error } = await supabase.rpc('respond_to_connection_request', rpcArgs({
         p_relationship_id: relationshipId,
         p_accept: accept,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -91,10 +92,10 @@ export function useSetCounterpartyStatus() {
       relationshipId: string;
       status: 'active' | 'passive';
     }) => {
-      const { error } = await supabase.rpc('set_counterparty_status', {
+      const { error } = await supabase.rpc('set_counterparty_status', rpcArgs({
         p_relationship_id: relationshipId,
         p_status: status,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -112,10 +113,10 @@ export function useSetCounterpartyDiscount() {
       relationshipId: string;
       discountRate: number;
     }) => {
-      const { error } = await supabase.rpc('set_counterparty_discount', {
+      const { error } = await supabase.rpc('set_counterparty_discount', rpcArgs({
         p_relationship_id: relationshipId,
         p_discount_rate: discountRate,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -127,10 +128,10 @@ export function useRequestSubscription() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ plan, note }: { plan?: Plan; note?: string }) => {
-      const { error } = await supabase.rpc('request_subscription', {
-        p_plan: plan ?? null,
-        p_note: note ?? null,
-      });
+      const { error } = await supabase.rpc('request_subscription', rpcArgs({
+        p_plan: plan ?? undefined,
+        p_note: note ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,

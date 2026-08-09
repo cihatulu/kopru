@@ -22,6 +22,8 @@ export default function AnnouncementsPage() {
   const setActive = useSetAnnouncementActive();
 
   if (!user?.org) return null;
+  // Daraltma geri çağrıların içinde korunmaz; kimliği burada sabitliyoruz.
+  const myOrgId = user.org.id;
   const isManufacturer = user.org.kind === ORG_KIND.manufacturer;
 
   return (
@@ -79,7 +81,7 @@ export default function AnnouncementsPage() {
           }}
           onSubmit={(v) =>
             publish.mutate(
-              { ownerOrgId: user.org.id, ...v },
+              { ownerOrgId: myOrgId, ...v },
               { onSuccess: () => setCreating(false) },
             )
           }

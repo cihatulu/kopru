@@ -66,7 +66,7 @@ async function fetchPage(filters: OrgListFilters, cursor?: Cursor): Promise<Admi
 
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []).map((row) => toOrg(row as Record<string, unknown>));
+  return (data ?? []).map((row) => toOrg(row as unknown as Record<string, unknown>));
 }
 
 /** Admin org listesi — 55.000 satırda sabit maliyetli sayfalama. */

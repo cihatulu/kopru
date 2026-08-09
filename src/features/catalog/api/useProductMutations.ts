@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
+import type { Json } from '@/types/database.generated';
 import type { SetLine, Variant } from '../domain/variants';
 
 export interface SaveProductInput {
@@ -37,25 +39,28 @@ export function useSaveProduct() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (input: SaveProductInput) => {
-      const { data, error } = await supabase.rpc('save_product', {
-        p_id: input.id ?? null,
+      const { data, error } = await supabase.rpc('save_product', rpcArgs({
+        p_id: input.id ?? undefined,
         p_name: input.name,
         p_code: input.code,
         p_supplier_price: input.supplierPrice,
-        p_cost_price: input.costPrice ?? null,
-        p_group_id: input.groupId ?? null,
-        p_description: input.description ?? null,
-        p_images: input.images ?? null,
+        p_cost_price: input.costPrice ?? undefined,
+        p_group_id: input.groupId ?? undefined,
+        p_description: input.description ?? undefined,
+        p_images: input.images ?? undefined,
         p_type: input.type ?? 'single',
-        p_variants: input.variants ?? [],
-        p_set_contents:
-          input.setContents?.map((s) => ({ product_id: s.productId, quantity: s.quantity })) ?? [],
-        p_width: input.width ?? null,
-        p_depth: input.depth ?? null,
-        p_height: input.height ?? null,
-        p_stock: input.stock ?? null,
-        p_category: input.category ?? null,
-      });
+        // jsonb kolonlar: üretilen tip Json bekler, gönderdiğimiz biçim zaten o.
+        p_variants: (input.variants ?? []) as unknown as Json,
+        p_set_contents: input.setContents?.map((s) => ({
+          product_id: s.productId,
+          quantity: s.quantity,
+        })) ?? [],
+        p_width: input.width ?? undefined,
+        p_depth: input.depth ?? undefined,
+        p_height: input.height ?? undefined,
+        p_stock: input.stock ?? undefined,
+        p_category: input.category ?? undefined,
+      }));
       if (error) throw error;
       return data;
     },
@@ -68,10 +73,10 @@ export function useSetProductActive() {
   return useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
       // Soft delete (kilitli kural 16); gerçek DELETE yok.
-      const { error } = await supabase.rpc('set_product_active', {
+      const { error } = await supabase.rpc('set_product_active', rpcArgs({
         p_id: id,
         p_active: isActive,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -90,7 +95,7 @@ export function useDeleteProductPermanently() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('delete_product_permanently', { p_id: id });
+      const { error } = await supabase.rpc('delete_product_permanently', rpcArgs({ p_id: id }));
       if (error) throw error;
     },
     onSuccess: invalidate,

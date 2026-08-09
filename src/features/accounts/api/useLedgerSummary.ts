@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 import { toBounds, type LedgerSummary, type Period } from '../domain/period';
@@ -17,11 +18,11 @@ export function useLedgerSummary(relationshipId: string | null, period: Period) 
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<LedgerSummary> => {
       const bounds = toBounds(period);
-      const { data, error } = await supabase.rpc('ledger_period_summary', {
+      const { data, error } = await supabase.rpc('ledger_period_summary', rpcArgs({
         p_relationship_id: relationshipId!,
-        p_from: bounds.from,
-        p_to: bounds.to,
-      });
+        p_from: bounds.from ?? undefined,
+        p_to: bounds.to ?? undefined,
+      }));
       if (error) throw error;
 
       const r = (data ?? {}) as Record<string, unknown>;

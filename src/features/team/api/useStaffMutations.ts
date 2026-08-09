@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import { STAFF_ERROR_MESSAGES, type StaffRole } from '../domain/staff';
 
@@ -67,10 +68,10 @@ export function useSetStaffRole() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: 'staff' | 'accountant' }) => {
-      const { error } = await supabase.rpc('set_staff_role', {
+      const { error } = await supabase.rpc('set_staff_role', rpcArgs({
         p_user_id: userId,
         p_role: role,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -81,10 +82,10 @@ export function useSetStaffActive() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const { error } = await supabase.rpc('set_staff_active', {
+      const { error } = await supabase.rpc('set_staff_active', rpcArgs({
         p_user_id: userId,
         p_is_active: isActive,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -107,10 +108,10 @@ export function useSetStaffScope() {
       staffUserId: string;
       retailerOrgIds: string[];
     }) => {
-      const { error } = await supabase.rpc('set_staff_scope', {
+      const { error } = await supabase.rpc('set_staff_scope', rpcArgs({
         p_staff_user_id: staffUserId,
         p_retailer_org_ids: retailerOrgIds,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,

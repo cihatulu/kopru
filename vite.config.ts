@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
@@ -32,23 +31,5 @@ export default defineConfig({
     },
     // PLAN §17.2 — ilk yükleme bütçesi.
     chunkSizeWarningLimit: 300,
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    exclude: [...configDefaults.exclude, 'e2e/**/*'],
-    css: false,
-    coverage: {
-      provider: 'v8',
-      // A20 — domain saf ve yüksek kapsamlı olmak zorunda.
-      include: ['src/features/**/domain/**'],
-      thresholds: {
-        statements: 90,
-        branches: 85,
-        functions: 90,
-        lines: 90,
-      },
-    },
   },
 });

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 
 function useInvalidate() {
@@ -24,10 +25,10 @@ export function useAssignProductsToGroup() {
       productIds: string[];
       groupId: string | null;
     }): Promise<number> => {
-      const { data, error } = await supabase.rpc('assign_products_to_group', {
+      const { data, error } = await supabase.rpc('assign_products_to_group', rpcArgs({
         p_product_ids: productIds,
-        p_group_id: groupId,
-      });
+        p_group_id: groupId ?? undefined,
+      }));
       if (error) throw error;
       return Number(data ?? 0);
     },
@@ -53,17 +54,17 @@ export function useAssignToNewGroup() {
       name: string;
       productIds: string[];
     }): Promise<number> => {
-      const { data: groupId, error: groupError } = await supabase.rpc('save_product_group', {
-        p_id: null,
+      const { data: groupId, error: groupError } = await supabase.rpc('save_product_group', rpcArgs({
+        p_id: undefined,
         p_name: name,
         p_sort_order: 0,
-      });
+      }));
       if (groupError) throw groupError;
 
-      const { data, error } = await supabase.rpc('assign_products_to_group', {
+      const { data, error } = await supabase.rpc('assign_products_to_group', rpcArgs({
         p_product_ids: productIds,
         p_group_id: groupId,
-      });
+      }));
       if (error) throw error;
       return Number(data ?? 0);
     },
@@ -82,10 +83,10 @@ export function useSetGroupProducts() {
       groupId: string;
       productIds: string[];
     }): Promise<number> => {
-      const { data, error } = await supabase.rpc('set_group_products', {
+      const { data, error } = await supabase.rpc('set_group_products', rpcArgs({
         p_group_id: groupId,
         p_product_ids: productIds,
-      });
+      }));
       if (error) throw error;
       return Number(data ?? 0);
     },

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 
 export interface UpgradeInput {
@@ -42,11 +43,11 @@ export function useUpgradeOrg() {
 
   return useMutation({
     mutationFn: async ({ orgId, subdomain }: UpgradeInput): Promise<UpgradeResult> => {
-      const { error } = await supabase.rpc('upgrade_org_to_subscriber', {
+      const { error } = await supabase.rpc('upgrade_org_to_subscriber', rpcArgs({
         p_org_id: orgId,
-        p_plan: 'pro',
+        p_plan: 'pro' as const,
         p_subdomain: subdomain,
-      });
+      }));
       if (error) throw error;
 
       const { data, error: provisionError } = (await supabase.functions.invoke<ProvisionResponse>(
@@ -70,7 +71,7 @@ export function useDowngradeOrg() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (orgId: string) => {
-      const { error } = await supabase.rpc('downgrade_org_to_guest', { p_org_id: orgId });
+      const { error } = await supabase.rpc('downgrade_org_to_guest', rpcArgs({ p_org_id: orgId }));
       if (error) throw error;
     },
     onSuccess: () => invalidate(queryClient),
@@ -96,10 +97,10 @@ export function useSetRelationshipStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'active' | 'passive' }) => {
-      const { error } = await supabase.rpc('admin_set_relationship_status', {
+      const { error } = await supabase.rpc('admin_set_relationship_status', rpcArgs({
         p_relationship_id: id,
         p_status: status,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: () => invalidate(queryClient),
@@ -114,12 +115,13 @@ export function useDecideSubscriptionRequest() {
       approve: boolean;
       subdomain?: string;
     }) => {
-      const { error } = await supabase.rpc('decide_subscription_request', {
+      const { error } = await supabase.rpc('decide_subscription_request', rpcArgs({
         p_request_id: input.requestId,
         p_approve: input.approve,
-        p_plan: input.approve ? 'pro' : null,
-        p_subdomain: input.subdomain ?? null,
-      });
+        // Reddedilen talepte plan gönderilmez; SQL varsayılanı devreye girer.
+        p_plan: input.approve ? ('pro' as const) : undefined,
+        p_subdomain: input.subdomain ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: () => invalidate(queryClient),

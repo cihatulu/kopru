@@ -116,7 +116,8 @@ export function useSetLeadStatus() {
         .from('leads')
         .update({
           status,
-          last_contacted_at: status === 'contacted' ? new Date().toISOString() : undefined,
+          // Kolon nullable; 'temas edilmedi' durumu undefined değil NULL'dır.
+          last_contacted_at: status === 'contacted' ? new Date().toISOString() : null,
         })
         .eq('id', id);
       if (error) throw error;

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 
@@ -42,11 +43,11 @@ export function useSaveProductGroup() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ id, name }: { id?: string; name: string }) => {
-      const { error } = await supabase.rpc('save_product_group', {
-        p_id: id ?? null,
+      const { error } = await supabase.rpc('save_product_group', rpcArgs({
+        p_id: id ?? undefined,
         p_name: name,
         p_sort_order: 0,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -58,7 +59,7 @@ export function useDeleteProductGroup() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('delete_product_group', { p_id: id });
+      const { error } = await supabase.rpc('delete_product_group', rpcArgs({ p_id: id }));
       if (error) throw error;
     },
     onSuccess: invalidate,

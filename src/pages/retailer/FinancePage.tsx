@@ -21,6 +21,8 @@ export default function FinancePage() {
   const add = useAddFinanceEntry();
 
   if (!user?.org) return null;
+  // Daraltma geri çağrıların içinde korunmaz; kimliği burada sabitliyoruz.
+  const myOrgId = user.org.id;
   const entries = list.data?.pages.flat() ?? [];
   const totals = financeTotals(entries);
 
@@ -78,7 +80,7 @@ export default function FinancePage() {
           }}
           onSubmit={(v) =>
             add.mutate(
-              { retailerOrgId: user.org.id, ...v },
+              { retailerOrgId: myOrgId, ...v },
               { onSuccess: () => setCreating(false) },
             )
           }

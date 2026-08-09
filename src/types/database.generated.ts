@@ -1910,18 +1910,18 @@ export type Database = {
       save_product: {
         Args: {
           p_category?: string
-          p_code: string
+          p_code?: string
           p_cost_price?: number
           p_depth?: number
           p_description?: string
           p_group_id?: string
           p_height?: number
-          p_id: string
+          p_id?: string
           p_images?: string[]
-          p_name: string
+          p_name?: string
           p_set_contents?: Json
           p_stock?: number
-          p_supplier_price: number
+          p_supplier_price?: number
           p_type?: Database["public"]["Enums"]["product_type"]
           p_variants?: Json
           p_width?: number
@@ -1929,7 +1929,7 @@ export type Database = {
         Returns: string
       }
       save_product_group: {
-        Args: { p_id: string; p_name: string; p_sort_order?: number }
+        Args: { p_id?: string; p_name?: string; p_sort_order?: number }
         Returns: string
       }
       set_counterparty_discount: {

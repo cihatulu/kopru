@@ -72,7 +72,7 @@ export function useSshDetail(sshId: string | null) {
         .single();
       if (error) throw error;
 
-      const r = data as Row;
+      const r = data as unknown as Row;
       const paths = Array.isArray(r.images) ? (r.images as string[]) : [];
 
       const { data: logRows, error: logError } = await supabase

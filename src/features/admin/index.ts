@@ -16,7 +16,7 @@ export {
   useSetRelationshipStatus,
   useDecideSubscriptionRequest,
 } from './api/useOrgMutations';
-export type { CreateOrgInput, UpgradeInput, UpgradeResult } from './api/useOrgMutations';
+export type { UpgradeInput, UpgradeResult } from './api/useOrgMutations';
 
 export { useRelationshipList, usePendingSubscriptionRequests } from './api/useRelationshipList';
 export type { AdminRelationship, AdminSubscriptionRequest } from './api/useRelationshipList';

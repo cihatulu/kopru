@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
 
@@ -103,12 +104,12 @@ export function useAddManualTransaction() {
       amount: number;
       description: string;
     }) => {
-      const { error } = await supabase.rpc('add_manual_transaction', {
+      const { error } = await supabase.rpc('add_manual_transaction', rpcArgs({
         p_relationship_id: input.relationshipId,
         p_type: input.type,
         p_amount: input.amount,
         p_description: input.description,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounts'] }),

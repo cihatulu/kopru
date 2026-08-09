@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { Invitation } from '../domain/invitation';
 
@@ -31,15 +32,15 @@ export function useCreateInvitation() {
 
   return useMutation({
     mutationFn: async (input: CreateInviteInput): Promise<Invitation> => {
-      const { data, error } = await supabase.rpc('create_invitation', {
-        p_company_name: input.companyName ?? null,
-        p_email: input.email ?? null,
-        p_phone: input.phone ?? null,
-        p_authorized_name: input.authorizedName ?? null,
-        p_vkn_tc: input.vknTc ?? null,
+      const { data, error } = await supabase.rpc('create_invitation', rpcArgs({
+        p_company_name: input.companyName ?? undefined,
+        p_email: input.email ?? undefined,
+        p_phone: input.phone ?? undefined,
+        p_authorized_name: input.authorizedName ?? undefined,
+        p_vkn_tc: input.vknTc ?? undefined,
         p_discount_rate: input.discountRate ?? 0,
         p_valid_days: input.validDays ?? 14,
-      });
+      }));
       if (error) throw error;
 
       const row = data as Record<string, unknown>;
@@ -67,9 +68,9 @@ export function useRevokeInvitation() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (invitationId: string) => {
-      const { error } = await supabase.rpc('revoke_invitation', {
+      const { error } = await supabase.rpc('revoke_invitation', rpcArgs({
         p_invitation_id: invitationId,
-      });
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,

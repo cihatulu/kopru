@@ -54,17 +54,21 @@ async function fetchSession(): Promise<SessionUser | null> {
   if (error) throw error;
   if (!row) return null;
 
-  const org = row.organizations as unknown as Record<string, unknown>;
-  if (!row.is_active || !org.is_active) {
+  // PostgREST gömme ipuçlarını (A15 bileşik FK) üretilen tipler çözemiyor ve
+  // satırı hata tipine düşürüyor. Sorgunun canlıda doğru çalıştığı kanıtlı;
+  // burada bilinçli olarak unknown üzerinden dönüştürüyoruz.
+  const r = row as unknown as Record<string, unknown>;
+  const org = r.organizations as Record<string, unknown>;
+  if (!r.is_active || !org.is_active) {
     // Pasifleştirilmiş kullanıcı/org oturumu taşımaz.
     await supabase.auth.signOut();
     return null;
   }
 
   return {
-    id: row.id as string,
-    orgRole: row.org_role as OrgRole,
-    fullName: (row.full_name as string | null) ?? null,
+    id: r.id as string,
+    orgRole: r.org_role as OrgRole,
+    fullName: (r.full_name as string | null) ?? null,
     isPlatformAdmin: false,
     org: {
       id: org.id as string,
