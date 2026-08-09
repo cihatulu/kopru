@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
 import { productSchema, type ProductForm } from '../domain/productSchema';
@@ -67,7 +67,24 @@ export function ProductDialog(props: Props) {
     },
   });
 
+  /**
+   * Geçersiz gönderim ARTIK SESSİZ DEĞİL.
+   *
+   * react-hook-form, doğrulama düşerse onSubmit'i hiç çağırmaz. Alanın kendi
+   * hata satırı yoksa kullanıcı düğmeye basar ve HİÇBİR ŞEY olmaz — kaydetmiyor
+   * şikâyetinin sebebi tam olarak buydu (2000 karakteri aşan açıklama).
+   */
+  const [invalidMessage, setInvalidMessage] = useState<string | null>(null);
+
+  const onInvalid = (errors: FieldErrors<ProductForm>) => {
+    const first = Object.values(errors).find((e) => e?.message);
+    setInvalidMessage(
+      first?.message ? String(first.message) : 'Formda eksik veya hatalı alanlar var.',
+    );
+  };
+
   const submit = (values: ProductForm) => {
+    setInvalidMessage(null);
     onSubmit({
       values,
       images,
@@ -92,7 +109,7 @@ export function ProductDialog(props: Props) {
         {product ? 'Ürünü düzenle' : 'Ürün ekle'}
       </h2>
 
-      <form onSubmit={(e) => void form.handleSubmit(submit)(e)} className="mt-5 space-y-5">
+      <form onSubmit={(e) => void form.handleSubmit(submit, onInvalid)(e)} className="mt-5 space-y-5">
         <ProductBasicFields
           form={form}
           groups={groups}
@@ -117,11 +134,14 @@ export function ProductDialog(props: Props) {
         <div>
           <label className="label">Açıklama</label>
           <textarea className="input min-h-20" {...form.register('description')} />
+          {form.formState.errors.description && (
+            <p className="field-error">{form.formState.errors.description.message}</p>
+          )}
         </div>
 
-        {errorMessage && (
+        {(invalidMessage ?? errorMessage) && (
           <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-            {errorMessage}
+            {invalidMessage ?? errorMessage}
           </p>
         )}
 

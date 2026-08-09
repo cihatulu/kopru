@@ -56,10 +56,15 @@ export const productSchema = z
       (v) => (v === '' || v === null ? undefined : v),
       money.optional(),
     ),
+    /**
+     * Sınır 5000: mobilya açıklamaları (malzeme, ölçü, bakım) uzun olur ve
+     * 2000 karakterde kesiliyordu. DB kolonu 'text'; sınır yalnız kazara
+     * yapıştırılan devasa metni engellemek için var.
+     */
     description: z
       .string()
       .trim()
-      .max(2000)
+      .max(5000, 'Açıklama en fazla 5000 karakter olabilir')
       .optional()
       .transform((v) => (v === '' ? undefined : v)),
 

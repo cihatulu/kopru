@@ -192,3 +192,18 @@ kimliğini değiştirmez, `create or replace` yeterlidir (kilitli kural 6 ihlal 
 `p_group_id` alanları `null`'a çekilir. Kısmi güncelleme değildir.
 **Çözüm:** Formu her zaman tam gönder. Yalnız bir alanı değiştirmek için ürünün mevcut
 değerlerini okuyup hepsini birlikte gönder.
+
+### 29. "Kaydet"e basılıyor, hiçbir şey olmuyor (sessiz doğrulama hatası)
+**Sebep:** react-hook-form doğrulama düşerse `onSubmit` HİÇ çağrılmaz. Alanın kendi
+hata satırı yoksa kullanıcı düğmeye basar ve ekranda hiçbir değişiklik olmaz — istek
+bile gitmez, konsolda da iz kalmaz. Ürün formunda 2000 karakteri aşan açıklamada tam
+olarak bu yaşandı: kullanıcı "kaydetmiyor" dedi, sebebi görünmüyordu.
+**Çözüm iki katmanlı:**
+1. `handleSubmit(submit, onInvalid)` — ikinci parametre ZORUNLU sayılsın. Geçersiz
+   gönderimde ilk hatayı üst bantta göster; hiçbir tıklama sessiz kalmasın.
+2. Kaydedilen HER alanın kendi hata satırı olsun. Ortak `Field` yardımcısı bunu
+   sağlar; elle yazılan bir alan (ör. doğrudan konulan `<textarea>`) bu ağın dışında
+   kalır — yeni alanı ortak yardımcıyla ekle.
+
+**Teşhis yöntemi:** Playwright ile düğmeye bas ve `rpc/...` isteğinin gidip gitmediğine
+bak. İstek hiç gitmiyorsa hata sunucuda değil, formun doğrulamasındadır.
