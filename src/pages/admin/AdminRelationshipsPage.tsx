@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import {
-  RelationshipBadge,
-  useRelationshipList,
-  useSetRelationshipStatus,
-} from '@/features/admin';
+import { RelationshipBadge, useRelationshipList, useSetRelationshipStatus } from '@/features/admin';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { RELATIONSHIP_STATUS, type RelationshipStatus } from '@/constants';
@@ -33,8 +29,7 @@ export default function AdminRelationshipsPage() {
       <div>
         <h2 className="text-lg font-bold text-slate-900">İlişkiler</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Üretici ↔ perakendeci ticari bağları. Sipariş, cari ve iade kayıtları bu kenarlara
-          asılır.
+          Üretici ↔ perakendeci ticari bağları. Sipariş, cari ve iade kayıtları bu kenarlara asılır.
         </p>
       </div>
 

@@ -102,8 +102,9 @@ RPC değişikliği sonrası (SQL Editor): `NOTIFY pgrst, 'reload schema';`
     stok hareketi siparişle aynı transaction'da olmak zorundadır, (b) sipariş dışı
     düzeltmelerde `update-stock` Edge Function (service role).
 15. **Plan gating çift katman:** frontend + RLS/Edge.
-16. **Soft delete varsayılan** (`is_active=false`). Gerçek DELETE yalnız admin'in
-    cascade RPC'si ile ve yalnız pasifleştirilmiş kayıtlar için.
+16. **Soft delete varsayılan** (`is_active=false`). Gerçek DELETE yalnız **pasifleştirilmiş**
+    kayıtlar için yapılabilir: admin'in cascade RPC'si ile ya da kaydın sahibi org
+    tarafından (yalnız `owner` rolü). Aktif kayıt hiçbir yoldan silinemez.
 17. **`system_logs`** aylık partition + 90 gün retention (eski partition DROP edilir).
     **Storage** bucket'ları private; public listing kapalı.
 18. **VKN/TCKN** `organizations.vkn_tc` UNIQUE NOT NULL; `src/lib/tckn.ts` checksum

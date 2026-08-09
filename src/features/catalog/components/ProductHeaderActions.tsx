@@ -1,6 +1,9 @@
 import type { ProductGroup } from '../api/useProductGroups';
+import { ACTIVITY_LABEL, type ActivityFilter } from '../domain/productStats';
 
 interface Props {
+  activity: ActivityFilter;
+  onActivityChange: (v: ActivityFilter) => void;
   selectedCount: number;
   /** Seçilenlerden KAÇI tek ürün — set yalnız tek ürünlerden kurulur. */
   selectedSingleCount: number;
@@ -21,6 +24,8 @@ interface Props {
  * bir limit koymak, kullanıcıyı olmayan bir kurala çarptırırdı.
  */
 export function ProductHeaderActions({
+  activity,
+  onActivityChange,
   selectedCount,
   selectedSingleCount,
   productCount,
@@ -36,6 +41,25 @@ export function ProductHeaderActions({
 
   return (
     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:w-auto">
+      {/* Aktif / Pasif — liste bu ikisini karıştırmaz. */}
+      <div className="inline-flex rounded-xl bg-slate-100 p-1">
+        {(['active', 'passive'] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={activity === v}
+            onClick={() => onActivityChange(v)}
+            className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
+              activity === v
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            {ACTIVITY_LABEL[v]}
+          </button>
+        ))}
+      </div>
+
       <div className="flex items-center gap-2">
         <button
           type="button"

@@ -745,6 +745,7 @@ export type Database = {
       }
       products: {
         Row: {
+          category: string | null
           code: string
           created_at: string
           currency: string
@@ -766,6 +767,7 @@ export type Database = {
           width_cm: number | null
         }
         Insert: {
+          category?: string | null
           code: string
           created_at?: string
           currency?: string
@@ -787,6 +789,7 @@ export type Database = {
           width_cm?: number | null
         }
         Update: {
+          category?: string | null
           code?: string
           created_at?: string
           currency?: string
@@ -1638,6 +1641,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      assign_products_to_group: {
+        Args: { p_group_id?: string; p_product_ids: string[] }
+        Returns: number
+      }
       bulk_update_stock: { Args: { p_rows: Json }; Returns: number }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
@@ -1771,6 +1778,7 @@ export type Database = {
         Returns: Json
       }
       delete_product_group: { Args: { p_id: string }; Returns: undefined }
+      delete_product_permanently: { Args: { p_id: string }; Returns: undefined }
       downgrade_org_to_guest: {
         Args: { p_org_id: string }
         Returns: {
@@ -1819,6 +1827,16 @@ export type Database = {
       is_valid_tckn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn_tc: { Args: { p: string }; Returns: boolean }
+      ledger_period_summary: {
+        Args: { p_from?: string; p_relationship_id: string; p_to?: string }
+        Returns: Database["public"]["CompositeTypes"]["ledger_summary"]
+        SetofOptions: {
+          from: "*"
+          to: "ledger_summary"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       manufacturer_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
@@ -1891,6 +1909,7 @@ export type Database = {
       }
       save_product: {
         Args: {
+          p_category?: string
           p_code: string
           p_cost_price?: number
           p_depth?: number
@@ -1960,9 +1979,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_group_products: {
+        Args: { p_group_id: string; p_product_ids: string[] }
+        Returns: number
+      }
       set_product_active: {
         Args: { p_active: boolean; p_id: string }
         Returns: {
+          category: string | null
           code: string
           created_at: string
           currency: string
@@ -2112,6 +2136,13 @@ export type Database = {
         org_created: boolean | null
         status: Database["public"]["Enums"]["relationship_status"] | null
         already_existed: boolean | null
+      }
+      ledger_summary: {
+        opening_balance: number | null
+        total_debit: number | null
+        total_credit: number | null
+        closing_balance: number | null
+        entry_count: number | null
       }
     }
   }

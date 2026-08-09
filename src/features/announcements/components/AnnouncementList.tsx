@@ -50,11 +50,7 @@ export function AnnouncementList({ announcements, isOwnerView, busyId, onToggleA
             </div>
 
             {isOwnerView && (
-              <Button
-                variant="ghost"
-                loading={busyId === a.id}
-                onClick={() => onToggleActive(a)}
-              >
+              <Button variant="ghost" loading={busyId === a.id} onClick={() => onToggleActive(a)}>
                 {a.isActive ? 'Yayından kaldır' : 'Yayınla'}
               </Button>
             )}

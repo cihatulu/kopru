@@ -36,14 +36,12 @@ export function SummaryCards({ summary, periodActive, isManufacturer }: Props) {
         />
       </div>
 
-      <p className="text-xs text-slate-400">
-        Dönemde {summary.entryCount} hareket.
-      </p>
+      <p className="text-xs text-slate-400">Dönemde {summary.entryCount} hareket.</p>
 
       {!consistent && (
         <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          Özet tutarlı değil: kapanış bakiyesi, devir + borç − alacak sonucuna eşit değil.
-          Bu ekrandaki toplamları mutabakat için kullanmayın.
+          Özet tutarlı değil: kapanış bakiyesi, devir + borç − alacak sonucuna eşit değil. Bu
+          ekrandaki toplamları mutabakat için kullanmayın.
         </p>
       )}
     </div>

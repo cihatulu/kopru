@@ -17,8 +17,8 @@ export function SubscriptionBanner({ pending, requested, onRequest }: Props) {
     <section className="rounded-xl bg-brand-50 p-5 ring-1 ring-inset ring-brand-100">
       <h3 className="text-sm font-semibold text-brand-900">Kendi panelinizi açın</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-brand-900/80">
-        Şu anda sizi ekleyen firmanın müşterisi olarak sistemi kullanıyorsunuz. Abone
-        olduğunuzda kendi katalogunuzu, stoğunuzu ve kendi müşterilerinizi yönetebilirsiniz —{' '}
+        Şu anda sizi ekleyen firmanın müşterisi olarak sistemi kullanıyorsunuz. Abone olduğunuzda
+        kendi katalogunuzu, stoğunuzu ve kendi müşterilerinizi yönetebilirsiniz —{' '}
         <strong>mevcut ticari ilişkileriniz ve geçmişiniz aynen korunur.</strong>
       </p>
 

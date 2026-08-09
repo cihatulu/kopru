@@ -74,8 +74,8 @@ export default function CounterpartiesPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">{counterpartyTitle(org.kind)}</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Vergi numarasıyla {counterpartyNoun(org.kind)} ekleyin. Firma sistemde kayıtlıysa
-            mevcut kaydına bağlanılır; kopya kayıt açılmaz.
+            Vergi numarasıyla {counterpartyNoun(org.kind)} ekleyin. Firma sistemde kayıtlıysa mevcut
+            kaydına bağlanılır; kopya kayıt açılmaz.
           </p>
         </div>
         {org.isSubscriber && <Button onClick={() => setDialogOpen(true)}>Yeni ekle</Button>}
@@ -133,7 +133,9 @@ export default function CounterpartiesPage() {
           myVknTc={org.vknTc}
           pending={add.isPending}
           result={result}
-          errorMessage={add.isError ? 'Eklenemedi. Bilgileri kontrol edip tekrar deneyin.' : undefined}
+          errorMessage={
+            add.isError ? 'Eklenemedi. Bilgileri kontrol edip tekrar deneyin.' : undefined
+          }
           onClose={closeDialog}
           onSubmit={submitAdd}
         />

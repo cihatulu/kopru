@@ -6,11 +6,19 @@ interface Props {
   form: UseFormReturn<ProductForm>;
   groups: ProductGroup[];
   groupId: string | null;
+  /** Daha önce kullanılmış kategoriler — yazım tutarlılığı için öneri listesi. */
+  categories: string[];
   onGroupChange: (id: string | null) => void;
 }
 
-/** Ürünün temel alanları — ad, kod, fiyatlar, grup, boyut, stok. */
-export function ProductBasicFields({ form, groups, groupId, onGroupChange }: Props) {
+/**
+ * Ürünün temel alanları.
+ *
+ * Sıralama hiyerarşiyi izler: GRUP (en üst kırılım) → KATEGORİ → MODEL.
+ * Alan sırası kullanıcının kafasındaki sırayla aynı olmalı; aksi halde
+ * kategoriyi grubun üstünde sanır.
+ */
+export function ProductBasicFields({ form, groups, groupId, categories, onGroupChange }: Props) {
   const { register, formState } = form;
   const e = formState.errors;
 
@@ -20,23 +28,8 @@ export function ProductBasicFields({ form, groups, groupId, onGroupChange }: Pro
         <Field label="Ürün adı" error={e.name?.message}>
           <input className="input" autoFocus {...register('name')} />
         </Field>
-        <Field label="Ürün kodu" error={e.code?.message}>
+        <Field label="Model (ürün kodu)" error={e.code?.message}>
           <input className="input" {...register('code')} />
-        </Field>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Satış fiyatı (₺)" error={e.supplierPrice?.message}>
-          <input className="input" type="number" step="0.01" {...register('supplierPrice')} />
-          <p className="mt-1 text-xs text-slate-500">
-            Perakendecinin göreceği fiyat. Cari hesap bu tutardan işler.
-          </p>
-        </Field>
-        <Field label="Maliyetiniz (₺)" error={e.costPrice?.message}>
-          <input className="input" type="number" step="0.01" {...register('costPrice')} />
-          <p className="mt-1 text-xs text-slate-500">
-            Yalnız size görünür. Boş bırakırsanız kaydedilmez.
-          </p>
         </Field>
       </div>
 
@@ -58,39 +51,52 @@ export function ProductBasicFields({ form, groups, groupId, onGroupChange }: Pro
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-slate-500">En üst kırılım.</p>
         </div>
-        <Field label="Stok adedi" error={e.stock?.message}>
-          <input className="input" type="number" step="1" {...register('stock')} />
-          <p className="mt-1 text-xs text-slate-500">
-            Boş bırakılırsa mevcut stok değişmez.
-          </p>
+        <Field label="Kategori" error={e.category?.message}>
+          <input className="input" list="urun-kategorileri" {...register('category')} />
+          {/* Serbest metin ama daha önce yazdıklarınız öneriliyor: aynı kategoriyi
+              iki farklı yazıp iki ayrı kategori oluşturma riskini azaltır. */}
+          <datalist id="urun-kategorileri">
+            {categories.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+          <p className="mt-1 text-xs text-slate-500">Grubun altındaki kırılım.</p>
         </Field>
       </div>
 
-      <div>
-        <label className="label">Ölçüler (cm)</label>
+      <fieldset className="rounded-xl border border-slate-200 p-4">
+        <legend className="px-1 text-xs font-bold uppercase tracking-wider text-slate-600">
+          Ürün ölçüleri (cm)
+        </legend>
         <div className="grid grid-cols-3 gap-3">
-          <div>
-            <input className="input" type="number" step="0.1" placeholder="En" {...register('width')} />
-            {e.width && <p className="field-error">{e.width.message}</p>}
-          </div>
-          <div>
-            <input className="input" type="number" step="0.1" placeholder="Boy" {...register('depth')} />
-            {e.depth && <p className="field-error">{e.depth.message}</p>}
-          </div>
-          <div>
-            <input
-              className="input" type="number" step="0.1" placeholder="Yükseklik"
-              {...register('height')}
-            />
-            {e.height && <p className="field-error">{e.height.message}</p>}
-          </div>
+          <Field label="Genişlik (en)" error={e.width?.message}>
+            <input className="input" type="number" step="0.1" placeholder="cm" {...register('width')} />
+          </Field>
+          <Field label="Derinlik (boy)" error={e.depth?.message}>
+            <input className="input" type="number" step="0.1" placeholder="cm" {...register('depth')} />
+          </Field>
+          <Field label="Yükseklik" error={e.height?.message}>
+            <input className="input" type="number" step="0.1" placeholder="cm" {...register('height')} />
+          </Field>
         </div>
-      </div>
+      </fieldset>
 
-      <Field label="Açıklama" error={e.description?.message}>
-        <textarea className="input min-h-20" {...register('description')} />
-      </Field>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="Maliyet fiyatı (₺)" error={e.costPrice?.message}>
+          <input className="input" type="number" step="0.01" {...register('costPrice')} />
+          <p className="mt-1 text-xs text-slate-500">Yalnız size görünür.</p>
+        </Field>
+        <Field label="Satış fiyatı (₺)" error={e.supplierPrice?.message}>
+          <input className="input" type="number" step="0.01" {...register('supplierPrice')} />
+          <p className="mt-1 text-xs text-slate-500">Perakendecinin göreceği fiyat.</p>
+        </Field>
+        <Field label="Genel stok adedi" error={e.stock?.message}>
+          <input className="input" type="number" step="1" {...register('stock')} />
+          <p className="mt-1 text-xs text-slate-500">Boşsa stok değişmez.</p>
+        </Field>
+      </div>
     </div>
   );
 }

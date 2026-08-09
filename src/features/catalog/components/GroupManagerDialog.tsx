@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import type { ProductGroup } from '../api/useProductGroups';
 import type { CatalogProduct } from '../api/useProducts';
@@ -41,63 +42,63 @@ export function GroupManagerDialog(props: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Ürün gruplarını yönet"
-        className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white p-6 shadow-xl"
-      >
-        <h2 className="text-lg font-extrabold text-slate-800">Ürün Gruplarını Yönet</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Grup bir etikettir: grubu silmek ürünleri silmez, yalnız etiketi kaldırır.
-        </p>
+    <Modal
+      label={'Ürün gruplarını yönet'}
+      panelClassName={
+        'flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white p-6 shadow-xl'
+      }
+      onClose={onClose}
+      closeDisabled={pending}
+    >
+      <h2 className="text-lg font-extrabold text-slate-800">Ürün Gruplarını Yönet</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Grup bir etikettir: grubu silmek ürünleri silmez, yalnız etiketi kaldırır.
+      </p>
 
-        <div className="mt-5 flex gap-2">
-          <input
-            className="input flex-1"
-            placeholder="Yeni grup adı"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-          />
-          <Button
-            loading={pending}
-            disabled={newName.trim().length < 2}
-            onClick={() => {
-              onCreate(newName.trim());
-              setNewName('');
-            }}
-          >
-            Ekle
-          </Button>
-        </div>
-
-        <div className="mt-5 min-h-0 flex-1 space-y-2 overflow-y-auto">
-          {groups.length === 0 && (
-            <p className="py-8 text-center text-sm text-slate-500">Henüz grup yok.</p>
-          )}
-          {groups.map((g) => (
-            <div
-              key={g.id}
-              className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
-            >
-              <div>
-                <p className="text-sm font-bold text-slate-800">{g.name}</p>
-                <p className="text-xs text-slate-400">{countIn(g.id)} ürün</p>
-              </div>
-              <Button variant="secondary" onClick={() => setEditing(g)}>
-                Düzenle
-              </Button>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
-          <Button variant="secondary" onClick={onClose}>
-            Kapat
-          </Button>
-        </div>
+      <div className="mt-5 flex gap-2">
+        <input
+          className="input flex-1"
+          placeholder="Yeni grup adı"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+        />
+        <Button
+          loading={pending}
+          disabled={newName.trim().length < 2}
+          onClick={() => {
+            onCreate(newName.trim());
+            setNewName('');
+          }}
+        >
+          Ekle
+        </Button>
       </div>
-    </div>
+
+      <div className="mt-5 min-h-0 flex-1 space-y-2 overflow-y-auto">
+        {groups.length === 0 && (
+          <p className="py-8 text-center text-sm text-slate-500">Henüz grup yok.</p>
+        )}
+        {groups.map((g) => (
+          <div
+            key={g.id}
+            className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+          >
+            <div>
+              <p className="text-sm font-bold text-slate-800">{g.name}</p>
+              <p className="text-xs text-slate-400">{countIn(g.id)} ürün</p>
+            </div>
+            <Button variant="secondary" onClick={() => setEditing(g)}>
+              Düzenle
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+        <Button variant="secondary" onClick={onClose}>
+          Kapat
+        </Button>
+      </div>
+    </Modal>
   );
 }

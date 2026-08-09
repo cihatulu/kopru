@@ -4,20 +4,27 @@ import type { StockFilter } from '../domain/productStats';
 interface Props {
   search: string;
   groupFilter: string;
+  categoryFilter: string;
+  /** Ürünlerde geçen kategoriler. */
+  categories: string[];
   stockFilter: StockFilter;
   groups: ProductGroup[];
   onSearch: (v: string) => void;
   onGroupFilter: (v: string) => void;
+  onCategoryFilter: (v: string) => void;
   onStockFilter: (v: StockFilter) => void;
 }
 
 export function ProductFilterBar({
   search,
   groupFilter,
+  categoryFilter,
+  categories,
   stockFilter,
   groups,
   onSearch,
   onGroupFilter,
+  onCategoryFilter,
   onStockFilter,
 }: Props) {
   return (
@@ -61,6 +68,21 @@ export function ProductFilterBar({
           ))}
           {/* Gruplanmamışlar ayrı bir seçenek: "Tüm Gruplar" ile karışmasın. */}
           <option value="yok">Gruplanmamış</option>
+        </select>
+
+
+        <select
+          aria-label="Kategori filtresi"
+          value={categoryFilter}
+          onChange={(e) => onCategoryFilter(e.target.value)}
+          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 transition-all hover:border-slate-300 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 md:w-44"
+        >
+          <option value="">Tüm Kategoriler</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
         </select>
 
         <select

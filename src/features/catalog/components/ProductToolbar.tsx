@@ -14,8 +14,8 @@ export function ProductToolbar({ search, onSearchChange, onOpenGroups, onCreate 
         <div>
           <h2 className="text-lg font-bold text-slate-900">Ürün Yönetimi</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Satış fiyatını müşterileriniz görür. Maliyetiniz ayrı tutulur ve hiçbir
-            perakendeciye gösterilmez.
+            Satış fiyatını müşterileriniz görür. Maliyetiniz ayrı tutulur ve hiçbir perakendeciye
+            gösterilmez.
           </p>
         </div>
         <div className="flex gap-2">

@@ -53,7 +53,12 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         ...(v.phone ? { phone: v.phone } : {}),
         ...(v.email ? { email: v.email } : {}),
       },
-      { onSuccess: () => { setCreating(false); create.reset(); } },
+      {
+        onSuccess: () => {
+          setCreating(false);
+          create.reset();
+        },
+      },
     );
   };
 
@@ -123,12 +128,19 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         creating={creating}
         createPending={create.isPending}
         createFailed={create.isError}
-        onCreateClose={() => { setCreating(false); create.reset(); }}
+        onCreateClose={() => {
+          setCreating(false);
+          create.reset();
+        }}
         onCreateSubmit={submitCreate}
         upgradeTarget={target}
         upgradePending={upgrade.isPending}
         upgradeResult={result}
-        onUpgradeClose={() => { setTarget(null); setResult(null); upgrade.reset(); }}
+        onUpgradeClose={() => {
+          setTarget(null);
+          setResult(null);
+          upgrade.reset();
+        }}
         onUpgradeConfirm={(subdomain: string) =>
           target &&
           upgrade.mutate(
@@ -137,7 +149,10 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
           )
         }
         credentials={credentials}
-        onCredentialsClose={() => { setCredentials(null); resetPassword.reset(); }}
+        onCredentialsClose={() => {
+          setCredentials(null);
+          resetPassword.reset();
+        }}
       />
     </div>
   );

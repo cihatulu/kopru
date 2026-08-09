@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { formatMoney } from '@/lib/format';
 import { formatDimensions } from '../domain/variants';
@@ -38,105 +39,102 @@ export function ProductPreview({
   const image = product.images[imageIndex];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={product.name}
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl"
-      >
-        <div className="aspect-[16/9] w-full bg-slate-100">
-          {image ? (
-            <img src={image} alt={product.name} className="size-full object-cover" />
-          ) : (
-            <div className="flex size-full items-center justify-center text-sm text-slate-400">
-              Görsel yok
-            </div>
+    <Modal
+      label={product.name}
+      panelClassName={'max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl'}
+      onClose={onClose}
+    >
+      <div className="aspect-[16/9] w-full bg-slate-100">
+        {image ? (
+          <img src={image} alt={product.name} className="size-full object-cover" />
+        ) : (
+          <div className="flex size-full items-center justify-center text-sm text-slate-400">
+            Görsel yok
+          </div>
+        )}
+      </div>
+
+      {product.images.length > 1 && (
+        <div className="flex gap-2 px-6 pt-4">
+          {product.images.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              aria-label={`Görsel ${i + 1}`}
+              onClick={() => setImageIndex(i)}
+              className={`size-14 overflow-hidden rounded-lg ring-2 ${
+                i === imageIndex ? 'ring-slate-900' : 'ring-transparent'
+              }`}
+            >
+              <img src={src} alt="" className="size-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="space-y-4 p-6">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+            {groupName ?? 'Gruplanmamış'}
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-slate-900">{product.name}</h2>
+          <p className="mt-0.5 font-mono text-xs text-slate-400">{product.code}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="text-2xl font-bold text-slate-900">
+            {formatMoney(priceOverride ?? product.supplierPrice)}
+          </span>
+          <span className="text-sm text-slate-500">
+            Stok: {stock === null ? 'kayıt yok' : stock}
+          </span>
+          {product.type === 'set' && (
+            <span className="rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white">
+              SET · {product.setContents.length} kalem
+            </span>
           )}
         </div>
 
-        {product.images.length > 1 && (
-          <div className="flex gap-2 px-6 pt-4">
-            {product.images.map((src, i) => (
-              <button
-                key={src}
-                type="button"
-                aria-label={`Görsel ${i + 1}`}
-                onClick={() => setImageIndex(i)}
-                className={`size-14 overflow-hidden rounded-lg ring-2 ${
-                  i === imageIndex ? 'ring-slate-900' : 'ring-transparent'
-                }`}
-              >
-                <img src={src} alt="" className="size-full object-cover" />
-              </button>
+        {dimensions && (
+          <p className="text-sm text-slate-600">
+            <span className="text-slate-400">Ölçüler: </span>
+            {dimensions}
+          </p>
+        )}
+
+        {product.description && (
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
+            {product.description}
+          </p>
+        )}
+
+        {product.variants.length > 0 && (
+          <div className="space-y-2">
+            {product.variants.map((v) => (
+              <div key={v.name}>
+                <p className="text-xs font-semibold text-slate-500">{v.name}</p>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {v.options.map((o) => (
+                    <span
+                      key={o}
+                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700"
+                    >
+                      {o}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
 
-        <div className="space-y-4 p-6">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
-              {groupName ?? 'Gruplanmamış'}
-            </p>
-            <h2 className="mt-1 text-xl font-bold text-slate-900">{product.name}</h2>
-            <p className="mt-0.5 font-mono text-xs text-slate-400">{product.code}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-2xl font-bold text-slate-900">
-              {formatMoney(priceOverride ?? product.supplierPrice)}
-            </span>
-            <span className="text-sm text-slate-500">
-              Stok: {stock === null ? 'kayıt yok' : stock}
-            </span>
-            {product.type === 'set' && (
-              <span className="rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white">
-                SET · {product.setContents.length} kalem
-              </span>
-            )}
-          </div>
-
-          {dimensions && (
-            <p className="text-sm text-slate-600">
-              <span className="text-slate-400">Ölçüler: </span>
-              {dimensions}
-            </p>
-          )}
-
-          {product.description && (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
-              {product.description}
-            </p>
-          )}
-
-          {product.variants.length > 0 && (
-            <div className="space-y-2">
-              {product.variants.map((v) => (
-                <div key={v.name}>
-                  <p className="text-xs font-semibold text-slate-500">{v.name}</p>
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {v.options.map((o) => (
-                      <span
-                        key={o}
-                        className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700"
-                      >
-                        {o}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
-            <Button variant="secondary" onClick={onClose}>
-              Kapat
-            </Button>
-            {onAddToCart && stock !== 0 && <Button onClick={onAddToCart}>Sepete ekle</Button>}
-          </div>
+        <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+          <Button variant="secondary" onClick={onClose}>
+            Kapat
+          </Button>
+          {onAddToCart && stock !== 0 && <Button onClick={onAddToCart}>Sepete ekle</Button>}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

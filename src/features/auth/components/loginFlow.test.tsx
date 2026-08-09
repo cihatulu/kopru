@@ -19,7 +19,11 @@ describe('LoginTabs', () => {
   test('beş giriş yolu sunar', () => {
     render(<LoginTabs active="member-manufacturer" onSelect={noop} />);
     for (const label of [
-      'ÜYE ÜRETİCİ', 'ÜYE PERAKENDECİ', 'MİSAFİR ÜRETİCİ', 'MİSAFİR PERAKENDECİ', 'ADMIN',
+      'ÜYE ÜRETİCİ',
+      'ÜYE PERAKENDECİ',
+      'MİSAFİR ÜRETİCİ',
+      'MİSAFİR PERAKENDECİ',
+      'ADMIN',
     ]) {
       expect(screen.getByRole('tab', { name: label })).toBeInTheDocument();
     }

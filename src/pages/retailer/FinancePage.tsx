@@ -30,8 +30,8 @@ export default function FinancePage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Finans</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            İşletmenizin gelir ve giderleri. Bu defter tedarikçi cari hesabınızdan
-            ayrıdır — biri borç ilişkisi, diğeri nakit akışınız.
+            İşletmenizin gelir ve giderleri. Bu defter tedarikçi cari hesabınızdan ayrıdır — biri
+            borç ilişkisi, diğeri nakit akışınız.
           </p>
         </div>
         <Button onClick={() => setCreating(true)}>Kayıt ekle</Button>

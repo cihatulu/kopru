@@ -81,9 +81,7 @@ export default function InvitePage() {
             <AcceptInviteFormView
               preview={preview.data}
               pending={accept.isPending}
-              errorMessage={
-                accept.error instanceof InviteError ? accept.error.message : undefined
-              }
+              errorMessage={accept.error instanceof InviteError ? accept.error.message : undefined}
               onSubmit={submit}
             />
           </>

@@ -64,7 +64,9 @@ function Card({
         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
         <p className="mt-1 text-3xl font-black tracking-tight text-slate-800">{value}</p>
       </div>
-      <div className={`rounded-xl p-3 shadow-sm transition-transform group-hover:scale-110 ${badge}`}>
+      <div
+        className={`rounded-xl p-3 shadow-sm transition-transform group-hover:scale-110 ${badge}`}
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"

@@ -23,8 +23,8 @@ export function IncomingRequests({ requests, myOrgId, busyId, onRespond }: Props
         Gelen bağlantı istekleri ({requests.length})
       </h3>
       <p className="mt-1 text-xs text-amber-800">
-        Bu firmalar sizi kendi listelerine eklemek istiyor. Onaylarsanız karşılıklı sipariş ve
-        cari takibi başlar.
+        Bu firmalar sizi kendi listelerine eklemek istiyor. Onaylarsanız karşılıklı sipariş ve cari
+        takibi başlar.
       </p>
 
       <ul className="mt-4 space-y-2">

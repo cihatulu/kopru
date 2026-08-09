@@ -27,14 +27,7 @@ interface Props {
  * perakendecinin RLS kapsamı dışında (A4). Kartta yalnız iskontolu satış
  * fiyatı vardır.
  */
-export function RetailerProductCard({
-  product,
-  unitPrice,
-  stock,
-  ownStock,
-  onOpen,
-  onAdd,
-}: Props) {
+export function RetailerProductCard({ product, unitPrice, stock, ownStock, onOpen, onAdd }: Props) {
   const [added, setAdded] = useState(false);
   const outOfStock = stock === 0;
 

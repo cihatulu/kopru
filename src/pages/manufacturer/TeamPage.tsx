@@ -32,9 +32,7 @@ export default function TeamPage() {
   const [scopeTarget, setScopeTarget] = useState<StaffMember | null>(null);
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
-  const edges = (useCounterparties().data?.pages.flat() ?? []).filter(
-    (e) => e.status === 'active',
-  );
+  const edges = (useCounterparties().data?.pages.flat() ?? []).filter((e) => e.status === 'active');
 
   if (!user?.org) return null;
   const myOrgId = user.org.id;
@@ -67,8 +65,8 @@ export default function TeamPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Ekip Yönetimi</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Personel yalnız kendisine atanan müşterileri görür. Muhasebeci cari hesap
-            işlemlerini yürütür.
+            Personel yalnız kendisine atanan müşterileri görür. Muhasebeci cari hesap işlemlerini
+            yürütür.
           </p>
         </div>
         <Button onClick={() => setAdding(true)}>Personel ekle</Button>

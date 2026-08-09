@@ -13,6 +13,7 @@ export interface SaveProductInput {
   /** Storage'a önceden yüklenmiş görsellerin public URL'leri. */
   images?: string[] | undefined;
   groupId?: string | null | undefined;
+  category?: string | undefined;
   type?: 'single' | 'set' | undefined;
   variants?: Variant[] | undefined;
   setContents?: SetLine[] | undefined;
@@ -53,6 +54,7 @@ export function useSaveProduct() {
         p_depth: input.depth ?? null,
         p_height: input.height ?? null,
         p_stock: input.stock ?? null,
+        p_category: input.category ?? null,
       });
       if (error) throw error;
       return data;
@@ -70,6 +72,25 @@ export function useSetProductActive() {
         p_id: id,
         p_active: isActive,
       });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/**
+ * Ürünü KALICI olarak siler.
+ *
+ * Yalnız PASİF ürün silinebilir ve yalnız org sahibi çağırabilir — sunucu
+ * ikisini de yeniden doğrular. Sipariş geçmişi bozulmaz: eski sipariş satırı
+ * kendi anlık görüntüsüyle (product_snapshot) durur, yalnız canlı ürün
+ * bağlantısını kaybeder.
+ */
+export function useDeleteProductPermanently() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('delete_product_permanently', { p_id: id });
       if (error) throw error;
     },
     onSuccess: invalidate,

@@ -41,7 +41,11 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
               className="size-10"
               aria-hidden="true"
             >
-              <path d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
         )}

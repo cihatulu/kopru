@@ -25,14 +25,7 @@ interface Props {
  * ölür, yol ise kalıcıdır. Silme işlemi HER ZAMAN yol üzerinden yapılır —
  * süresi dolmuş bir URL'den yol çıkarmaya çalışmak kırılgan olurdu.
  */
-export function PhotoUploader({
-  relationshipId,
-  sshId,
-  paths,
-  urls,
-  disabled,
-  onChange,
-}: Props) {
+export function PhotoUploader({ relationshipId, sshId, paths, urls, disabled, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,9 +84,7 @@ export function PhotoUploader({
             )}
           </div>
         ))}
-        {paths.length === 0 && (
-          <p className="text-sm text-slate-500">Henüz fotoğraf eklenmedi.</p>
-        )}
+        {paths.length === 0 && <p className="text-sm text-slate-500">Henüz fotoğraf eklenmedi.</p>}
       </div>
 
       {!disabled && (

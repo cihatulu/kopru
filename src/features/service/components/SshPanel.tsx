@@ -10,9 +10,9 @@ import { ServiceFilterBar } from './ServiceFilterBar';
 import { SshDetailDrawer } from './SshDetailDrawer';
 import { SshList } from './SshList';
 
-const STATUS_OPTIONS: [string, string][] = (
-  Object.keys(SSH_STATUS_META) as SshStatus[]
-).map((s) => [s, SSH_STATUS_META[s].label]);
+const STATUS_OPTIONS: [string, string][] = (Object.keys(SSH_STATUS_META) as SshStatus[]).map(
+  (s) => [s, SSH_STATUS_META[s].label],
+);
 
 interface Props {
   myOrgId: string;

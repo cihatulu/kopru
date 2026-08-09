@@ -26,12 +26,7 @@ interface Props {
  * (A19) ve bu ekranın beş ayrı durumu var. Katman kuralı korunuyor — doğrudan
  * supabase çağrısı yok, yalnız bu feature'ın api hook'ları.
  */
-export function LedgerPanel({
-  relationshipId,
-  counterpartyName,
-  isManufacturer,
-  canWrite,
-}: Props) {
+export function LedgerPanel({ relationshipId, counterpartyName, isManufacturer, canWrite }: Props) {
   const [period, setPeriod] = useState<Period>(EMPTY_PERIOD);
   const [entering, setEntering] = useState(false);
 
@@ -85,8 +80,8 @@ export function LedgerPanel({
 
       {exportLedger.data?.truncated && (
         <p role="alert" className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Ekstre çok uzun olduğu için dosya kesildi. Daha dar bir tarih aralığı seçip tekrar
-          indirin — eksik bir ekstre mutabakatta yanlış sonuç verir.
+          Ekstre çok uzun olduğu için dosya kesildi. Daha dar bir tarih aralığı seçip tekrar indirin
+          — eksik bir ekstre mutabakatta yanlış sonuç verir.
         </p>
       )}
 
@@ -115,16 +110,15 @@ export function LedgerPanel({
           counterpartyName={counterpartyName}
           currentBalance={balance.data ?? 0}
           pending={addEntry.isPending}
-          errorMessage={addEntry.isError ? 'Hareket kaydedilemedi. Yetkinizi kontrol edin.' : undefined}
+          errorMessage={
+            addEntry.isError ? 'Hareket kaydedilemedi. Yetkinizi kontrol edin.' : undefined
+          }
           onClose={() => {
             setEntering(false);
             addEntry.reset();
           }}
           onSubmit={(values) =>
-            addEntry.mutate(
-              { relationshipId, ...values },
-              { onSuccess: () => setEntering(false) },
-            )
+            addEntry.mutate({ relationshipId, ...values }, { onSuccess: () => setEntering(false) })
           }
         />
       )}

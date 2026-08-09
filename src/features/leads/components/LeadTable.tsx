@@ -66,7 +66,11 @@ export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
                 <td className={`${TD} text-right`}>
                   {!isClosedLead(l.status) && (
                     <div className="inline-flex gap-1.5">
-                      <Button variant="ghost" disabled={busyId === l.id} onClick={() => onReject(l)}>
+                      <Button
+                        variant="ghost"
+                        disabled={busyId === l.id}
+                        onClick={() => onReject(l)}
+                      >
                         Olumsuz
                       </Button>
                       {next && (

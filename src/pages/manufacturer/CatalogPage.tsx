@@ -12,8 +12,8 @@ export default function ManufacturerCatalogPage() {
       <div>
         <h2 className="text-lg font-bold text-slate-900">Ürün Kataloğum</h2>
         <p className="mt-1 max-w-2xl text-sm text-slate-500">
-          Ürünlerinizi gruplar altında inceleyin. Soldaki ağaçtan bir gruba veya ürüne
-          tıklayarak listeyi daraltabilirsiniz. Düzenleme Ürün Yönetimi ekranında yapılır.
+          Ürünlerinizi gruplar altında inceleyin. Soldaki ağaçtan bir gruba veya ürüne tıklayarak
+          listeyi daraltabilirsiniz. Düzenleme Ürün Yönetimi ekranında yapılır.
         </p>
       </div>
 

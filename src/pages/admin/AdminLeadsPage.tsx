@@ -13,7 +13,12 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 
 const FILTERS: (LeadStatus | 'all')[] = [
-  'all', 'new', 'contacted', 'interested', 'converted', 'rejected',
+  'all',
+  'new',
+  'contacted',
+  'interested',
+  'converted',
+  'rejected',
 ];
 
 /** Aday takibi — YALNIZ KOMPOZİSYON (A20). Yalnız platform admini erişir. */
@@ -38,8 +43,8 @@ export default function AdminLeadsPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Adaylar</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Henüz platformda olmayan firmalar. VKN girilen bir aday sisteme kaydolduğunda
-            otomatik olarak müşteriye dönüşür.
+            Henüz platformda olmayan firmalar. VKN girilen bir aday sisteme kaydolduğunda otomatik
+            olarak müşteriye dönüşür.
           </p>
         </div>
         <Button onClick={() => setCreating(true)}>Aday ekle</Button>

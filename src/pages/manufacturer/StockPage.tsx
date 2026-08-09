@@ -48,8 +48,8 @@ export default function StockPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Stok Yönetimi</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Stok, sipariş akışında otomatik düşer. Buradaki düzenleme sayım farkı gibi
-            sipariş dışı düzeltmeler içindir.
+            Stok, sipariş akışında otomatik düşer. Buradaki düzenleme sayım farkı gibi sipariş dışı
+            düzeltmeler içindir.
           </p>
         </div>
         <div className="flex gap-2">
@@ -84,10 +84,7 @@ export default function StockPage() {
           busyId={busyId}
           onSave={(productId, quantity) => {
             setBusyId(productId);
-            setStock.mutate(
-              { productId, quantity },
-              { onSettled: () => setBusyId(undefined) },
-            );
+            setStock.mutate({ productId, quantity }, { onSettled: () => setBusyId(undefined) });
           }}
         />
       )}

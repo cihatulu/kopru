@@ -3,7 +3,11 @@
 export { useProducts, useProductCosts } from './api/useProducts';
 export type { CatalogProduct } from './api/useProducts';
 
-export { useSaveProduct, useSetProductActive } from './api/useProductMutations';
+export {
+  useSaveProduct,
+  useSetProductActive,
+  useDeleteProductPermanently,
+} from './api/useProductMutations';
 export type { SaveProductInput } from './api/useProductMutations';
 
 export {
@@ -18,8 +22,8 @@ export { useRetailerStock } from './api/useRetailerStock';
 export { useAssignProductsToGroup, useAssignToNewGroup, useSetGroupProducts } from './api/useGroupMembership';
 export { useCatalogAdmin } from './api/useCatalogAdmin';
 
-export { useCatalogTree } from './api/useCatalogTree';
-export type { TreeGroup, TreeProduct } from './api/useCatalogTree';
+export { useCatalogTree, TREE_LABELS } from './api/useCatalogTree';
+export type { TreeGroup, TreeCategory, TreeProduct } from './api/useCatalogTree';
 
 export { productSchema, marginPercent, discountedPrice } from './domain/productSchema';
 export type { ProductForm } from './domain/productSchema';
@@ -27,7 +31,7 @@ export type { ProductForm } from './domain/productSchema';
 export { cleanVariants, formatDimensions } from './domain/variants';
 export type { Variant, SetLine, Dimensions } from './domain/variants';
 
-export { toSavePayload, optionalNumber } from './domain/submitMapping';
+export { toSavePayload, toSetSavePayload, optionalNumber } from './domain/submitMapping';
 
 export {
   CRITICAL_STOCK,
@@ -36,10 +40,22 @@ export {
   computeStats,
   marginBand,
   matchesStockFilter,
+  matchesActivity,
+  filterProducts,
+  collectCategories,
+  toggleInSet,
+  ACTIVITY_LABEL,
   netProfit,
   stockLevel,
 } from './domain/productStats';
-export type { ProductStats, StockFilter, MarginBand, StockLevel } from './domain/productStats';
+export type {
+  ProductStats,
+  StockFilter,
+  ActivityFilter,
+  ListFilters,
+  MarginBand,
+  StockLevel,
+} from './domain/productStats';
 
 export {
   canBuildSet,
@@ -71,3 +87,4 @@ export { GroupManagerDialog } from './components/GroupManagerDialog';
 export { DeleteProductDialog } from './components/DeleteProductDialog';
 export { RetailerCatalogGrid } from './components/RetailerCatalogGrid';
 export { RetailerProductCard } from './components/RetailerProductCard';
+export { TreeBranch } from './components/TreeBranch';

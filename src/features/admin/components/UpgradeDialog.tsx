@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import {
   SUBDOMAIN_MESSAGES,
@@ -31,65 +32,63 @@ export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Prop
   const showError = touched && error;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Aboneye yükselt"
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
-      >
-        {result ? (
-          <UpgradeSuccess org={org} result={result} onClose={onClose} />
-        ) : (
-          <>
-            <h2 className="text-lg font-bold text-slate-900">Aboneye yükselt</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              {org.companyName} · {org.vknTc}
-            </p>
+    <Modal
+      label={'Aboneye yükselt'}
+      panelClassName={'w-full max-w-md rounded-xl bg-white p-6 shadow-xl'}
+      onClose={onClose}
+      closeDisabled={pending}
+    >
+      {result ? (
+        <UpgradeSuccess org={org} result={result} onClose={onClose} />
+      ) : (
+        <>
+          <h2 className="text-lg font-bold text-slate-900">Aboneye yükselt</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            {org.companyName} · {org.vknTc}
+          </p>
 
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className="label" htmlFor="subdomain">
-                  Subdomain
-                </label>
-                <input
-                  id="subdomain"
-                  className="input"
-                  value={subdomain}
-                  onChange={(e) => setSubdomain(e.target.value)}
-                  onBlur={() => setTouched(true)}
-                />
-                {showError && <p className="field-error">{SUBDOMAIN_MESSAGES[error]}</p>}
-              </div>
-
-              {org.relationshipCount > 0 && (
-                <p className="rounded-lg bg-blue-50 px-3 py-2.5 text-xs leading-relaxed text-blue-800">
-                  Bu organizasyonun <strong>{org.relationshipCount} aktif ticari ilişkisi</strong>{' '}
-                  var. Yükseltme bunlara dokunmaz — sipariş geçmişi ve cari bakiyeler olduğu
-                  gibi kalır, kendi paneli buna ek olarak açılır.
-                </p>
-              )}
+          <div className="mt-5 space-y-4">
+            <div>
+              <label className="label" htmlFor="subdomain">
+                Subdomain
+              </label>
+              <input
+                id="subdomain"
+                className="input"
+                value={subdomain}
+                onChange={(e) => setSubdomain(e.target.value)}
+                onBlur={() => setTouched(true)}
+              />
+              {showError && <p className="field-error">{SUBDOMAIN_MESSAGES[error]}</p>}
             </div>
 
-            <div className="mt-6 flex justify-end gap-2">
-              <Button variant="secondary" onClick={onClose} disabled={pending}>
-                Vazgeç
-              </Button>
-              <Button
-                loading={pending}
-                disabled={!!error}
-                onClick={() => {
-                  setTouched(true);
+            {org.relationshipCount > 0 && (
+              <p className="rounded-lg bg-blue-50 px-3 py-2.5 text-xs leading-relaxed text-blue-800">
+                Bu organizasyonun <strong>{org.relationshipCount} aktif ticari ilişkisi</strong>{' '}
+                var. Yükseltme bunlara dokunmaz — sipariş geçmişi ve cari bakiyeler olduğu gibi
+                kalır, kendi paneli buna ek olarak açılır.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-6 flex justify-end gap-2">
+            <Button variant="secondary" onClick={onClose} disabled={pending}>
+              Vazgeç
+            </Button>
+            <Button
+              loading={pending}
+              disabled={!!error}
+              onClick={() => {
+                setTouched(true);
                 if (!error) onConfirm(normalizeSubdomain(subdomain));
-                }}
-              >
-                Yükselt
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+              }}
+            >
+              Yükselt
+            </Button>
+          </div>
+        </>
+      )}
+    </Modal>
   );
 }
 

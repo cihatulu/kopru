@@ -101,9 +101,7 @@ export function RetailerCatalogGrid({
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-slate-800">Ürün bulunamadı</h3>
             <p className="text-xs text-slate-400">
-              {term
-                ? 'Arama kriterlerinize uygun ürün yok.'
-                : 'Bu tedarikçinin aktif ürünü yok.'}
+              {term ? 'Arama kriterlerinize uygun ürün yok.' : 'Bu tedarikçinin aktif ürünü yok.'}
             </p>
           </div>
         </div>

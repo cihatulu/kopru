@@ -21,6 +21,7 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
   const [preview, setPreview] = useState<CatalogProduct | null>(null);
 
   const groupFilter = params.get('grup');
+  const categoryFilter = params.get('kategori');
   const highlightId = params.get('urun');
 
   const list = useProducts({ ownerOrgId, activeOnly: true, search });
@@ -34,17 +35,29 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
   // 'yok' = gruplanmamışlar; ayrı bir değer çünkü null bir URL parametresinde
   // "filtre yok" ile karışırdı.
   const products = all.filter((p) => {
+    // 'yok' = kırılımı girilmemiş olanlar; null bir URL parametresinde
+    // "filtre yok" ile karışırdı, o yüzden ayrı bir değer.
+    if (categoryFilter !== null) {
+      if (categoryFilter === 'yok' ? p.category !== null : p.category !== categoryFilter) {
+        return false;
+      }
+    }
     if (groupFilter === null) return true;
     if (groupFilter === 'yok') return p.groupId === null;
     return p.groupId === groupFilter;
   });
 
+  // Kategori seçiliyse rozette o yazar: kullanıcı en son ona tıklamıştır.
   const activeFilterName =
-    groupFilter === null
-      ? null
-      : groupFilter === 'yok'
-        ? 'Gruplanmamış'
-        : (groupName.get(groupFilter) ?? 'Seçili grup');
+    categoryFilter !== null
+      ? categoryFilter === 'yok'
+        ? 'Kategorisiz'
+        : categoryFilter
+      : groupFilter === null
+        ? null
+        : groupFilter === 'yok'
+          ? 'Gruplanmamış'
+          : (groupName.get(groupFilter) ?? 'Seçili grup');
 
   return (
     <div className="space-y-5">

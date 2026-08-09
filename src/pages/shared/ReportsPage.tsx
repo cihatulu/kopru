@@ -44,7 +44,11 @@ export default function ReportsPage() {
   );
 }
 
-function ManufacturerCards({ data }: { data: NonNullable<ReturnType<typeof useSummaryFor>['manufacturer']['data']> }) {
+function ManufacturerCards({
+  data,
+}: {
+  data: NonNullable<ReturnType<typeof useSummaryFor>['manufacturer']['data']>;
+}) {
   const margin = manufacturerMargin(data.revenue, data.cost);
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -55,9 +59,7 @@ function ManufacturerCards({ data }: { data: NonNullable<ReturnType<typeof useSu
         value={formatMoney(margin.profit)}
         tone={margin.profit >= 0 ? 'positive' : 'default'}
         hint={
-          margin.percent === null
-            ? 'Marj için ürün maliyetlerini girin'
-            : `Marj %${margin.percent}`
+          margin.percent === null ? 'Marj için ürün maliyetlerini girin' : `Marj %${margin.percent}`
         }
       />
       <StatCard
@@ -69,7 +71,11 @@ function ManufacturerCards({ data }: { data: NonNullable<ReturnType<typeof useSu
   );
 }
 
-function RetailerCards({ data }: { data: NonNullable<ReturnType<typeof useSummaryFor>['retailer']['data']> }) {
+function RetailerCards({
+  data,
+}: {
+  data: NonNullable<ReturnType<typeof useSummaryFor>['retailer']['data']>;
+}) {
   const profit = retailerProfit(data.purchaseTotal, data.expectedRevenue);
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

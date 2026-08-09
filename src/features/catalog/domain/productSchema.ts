@@ -31,6 +31,19 @@ export const productSchema = z
       .min(1, 'Zorunlu')
       .max(64)
       .regex(/^[A-Za-z0-9._/-]+$/, 'Harf, rakam ve . _ / - kullanın'),
+    /**
+     * Grup › Kategori › Model hiyerarşisinin ORTA kademesi.
+     *
+     * Serbest metin: üretici ürün eklerken kategoriyi oracıkta yazabilmeli.
+     * Yazım tutarlılığı, formdaki öneri listesiyle (daha önce kullanılanlar)
+     * sağlanır — ayrı bir yönetim ekranı gerektirmez.
+     */
+    category: z
+      .string()
+      .trim()
+      .max(120)
+      .optional()
+      .transform((v) => (v === '' ? undefined : v)),
     supplierPrice: money,
     /**
      * Boş bırakılabilir: "maliyeti bilmiyorum" ile "maliyeti sıfır" farklıdır.

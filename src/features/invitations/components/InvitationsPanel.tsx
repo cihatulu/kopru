@@ -68,8 +68,8 @@ export function InvitationsPanel({ myKind }: { myKind: OrgKind }) {
         <div>
           <h3 className="text-base font-bold text-slate-900">Davetler</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Link gönderin; {noun} kendi hesabını kendisi açsın. Bilgilerini ve şifresini
-            kendisi girer.
+            Link gönderin; {noun} kendi hesabını kendisi açsın. Bilgilerini ve şifresini kendisi
+            girer.
           </p>
         </div>
         <Button variant="secondary" onClick={() => setDialogOpen(true)}>
@@ -114,7 +114,9 @@ export function InvitationsPanel({ myKind }: { myKind: OrgKind }) {
           myKind={myKind}
           pending={create.isPending}
           created={created}
-          errorMessage={create.isError ? 'Davet oluşturulamadı. Bilgileri kontrol edin.' : undefined}
+          errorMessage={
+            create.isError ? 'Davet oluşturulamadı. Bilgileri kontrol edin.' : undefined
+          }
           onClose={close}
           onSubmit={submit}
         />

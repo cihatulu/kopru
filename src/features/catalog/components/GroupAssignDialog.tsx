@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import type { ProductGroup } from '../api/useProductGroups';
 
@@ -20,72 +21,66 @@ export function GroupAssignDialog({ groups, selectedCount, pending, onClose, onS
   const valid = mode === 'new' ? name.trim().length >= 2 : groupId !== '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Seçilenleri gruba ekle"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-      >
-        <h2 className="text-lg font-extrabold text-slate-800">Seçilenleri Gruba Ekle</h2>
-        <p className="mt-1 text-sm leading-relaxed text-slate-600">
-          {selectedCount} ürün seçtiniz. Bu ürünleri nasıl gruplamak istersiniz?
-        </p>
+    <Modal
+      label={'Seçilenleri gruba ekle'}
+      panelClassName={'w-full max-w-md rounded-2xl bg-white p-6 shadow-xl'}
+      onClose={onClose}
+      closeDisabled={pending}
+    >
+      <h2 className="text-lg font-extrabold text-slate-800">Seçilenleri Gruba Ekle</h2>
+      <p className="mt-1 text-sm leading-relaxed text-slate-600">
+        {selectedCount} ürün seçtiniz. Bu ürünleri nasıl gruplamak istersiniz?
+      </p>
 
-        <div className="mt-5 space-y-4">
-          <Option active={mode === 'new'} label="Yeni Grup Oluştur" onSelect={() => setMode('new')}>
-            <input
-              type="text"
-              className="input mt-3"
-              placeholder="Grup adı (örn. Köşe Koltuk Takımı)"
-              value={name}
-              disabled={mode !== 'new'}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Option>
+      <div className="mt-5 space-y-4">
+        <Option active={mode === 'new'} label="Yeni Grup Oluştur" onSelect={() => setMode('new')}>
+          <input
+            type="text"
+            className="input mt-3"
+            placeholder="Grup adı (örn. Köşe Koltuk Takımı)"
+            value={name}
+            disabled={mode !== 'new'}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Option>
 
-          <Option
-            active={mode === 'existing'}
-            label="Mevcut Gruba Ekle"
-            onSelect={() => groups.length > 0 && setMode('existing')}
+        <Option
+          active={mode === 'existing'}
+          label="Mevcut Gruba Ekle"
+          onSelect={() => groups.length > 0 && setMode('existing')}
+        >
+          <select
+            className="input mt-3"
+            value={groupId}
+            disabled={mode !== 'existing' || groups.length === 0}
+            onChange={(e) => setGroupId(e.target.value)}
           >
-            <select
-              className="input mt-3"
-              value={groupId}
-              disabled={mode !== 'existing' || groups.length === 0}
-              onChange={(e) => setGroupId(e.target.value)}
-            >
-              <option value="">Bir grup seçiniz…</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-            {groups.length === 0 && (
-              <p className="mt-2 text-xs font-bold text-slate-500">
-                Henüz hiç grup oluşturulmamış.
-              </p>
-            )}
-          </Option>
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
-          <Button variant="secondary" onClick={onClose} disabled={pending}>
-            İptal
-          </Button>
-          <Button
-            loading={pending}
-            disabled={!valid}
-            onClick={() =>
-              onSave(mode === 'new' ? { newName: name.trim() } : { groupId })
-            }
-          >
-            Kaydet
-          </Button>
-        </div>
+            <option value="">Bir grup seçiniz…</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+          {groups.length === 0 && (
+            <p className="mt-2 text-xs font-bold text-slate-500">Henüz hiç grup oluşturulmamış.</p>
+          )}
+        </Option>
       </div>
-    </div>
+
+      <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
+        <Button variant="secondary" onClick={onClose} disabled={pending}>
+          İptal
+        </Button>
+        <Button
+          loading={pending}
+          disabled={!valid}
+          onClick={() => onSave(mode === 'new' ? { newName: name.trim() } : { groupId })}
+        >
+          Kaydet
+        </Button>
+      </div>
+    </Modal>
   );
 }
 

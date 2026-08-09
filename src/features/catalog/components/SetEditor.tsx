@@ -70,8 +70,8 @@ export function SetEditor({ lines, available, editingId, onChange }: Props) {
 
       {lines.length > 0 && (
         <p className="mt-2 text-xs text-slate-500">
-          İçeriğin ayrı ayrı toplamı: <strong>{formatMoney(total)}</strong> — setin kendi
-          satış fiyatı bundan bağımsızdır.
+          İçeriğin ayrı ayrı toplamı: <strong>{formatMoney(total)}</strong> — setin kendi satış
+          fiyatı bundan bağımsızdır.
         </p>
       )}
 

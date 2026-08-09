@@ -63,11 +63,7 @@ export default function AdminRequestsPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  disabled={busyId === req.id}
-                  onClick={() => reject(req.id)}
-                >
+                <Button variant="ghost" disabled={busyId === req.id} onClick={() => reject(req.id)}>
                   Reddet
                 </Button>
                 <Button

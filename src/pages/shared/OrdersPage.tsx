@@ -121,11 +121,11 @@ export default function OrdersPage() {
         <ShipmentDialog
           order={detail.data}
           pending={ship.isPending}
-          errorMessage={ship.isError ? 'Sevkiyat kaydedilemedi. Miktarları kontrol edin.' : undefined}
-          onClose={() => setShipping(false)}
-          onShip={(items) =>
-            ship.mutate({ orderId: detail.data.id, items }, { onSuccess: close })
+          errorMessage={
+            ship.isError ? 'Sevkiyat kaydedilemedi. Miktarları kontrol edin.' : undefined
           }
+          onClose={() => setShipping(false)}
+          onShip={(items) => ship.mutate({ orderId: detail.data.id, items }, { onSuccess: close })}
         />
       )}
     </div>

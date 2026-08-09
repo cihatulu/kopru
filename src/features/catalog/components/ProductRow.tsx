@@ -29,9 +29,12 @@ interface Props {
   cost: number | undefined;
   quantity: number | null;
   groupName: string | null;
+  /** Kalıcı silme yalnız SAHİPTE ve yalnız pasif üründe görünür. */
+  canDelete: boolean;
   selected: boolean;
   onToggle: (id: string) => void;
   onEdit: (p: CatalogProduct) => void;
+  onToggleActive: (p: CatalogProduct) => void;
   onDelete: (p: CatalogProduct) => void;
 }
 
@@ -40,9 +43,11 @@ export function ProductRow({
   cost,
   quantity,
   groupName,
+  canDelete,
   selected,
   onToggle,
   onEdit,
+  onToggleActive,
   onDelete,
 }: Props) {
   const level = stockLevel(quantity);
@@ -107,6 +112,8 @@ export function ProductRow({
         {groupName ?? '—'}
       </td>
 
+      <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">{p.category ?? '—'}</td>
+
       <td className="whitespace-nowrap px-4 py-4">
         <span
           className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold ${STOCK_STYLE[level].chip}`}
@@ -150,9 +157,22 @@ export function ProductRow({
           <IconButton label="Düzenle" onClick={() => onEdit(p)}>
             <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
           </IconButton>
-          <IconButton label="Sil" danger onClick={() => onDelete(p)}>
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
-          </IconButton>
+          {p.isActive ? (
+            <IconButton label="Pasife al" onClick={() => onToggleActive(p)}>
+              <path d="M18.36 6.64A9 9 0 1112 3v9" />
+            </IconButton>
+          ) : (
+            <IconButton label="Aktife al" onClick={() => onToggleActive(p)}>
+              <path d="M20 6L9 17l-5-5" />
+            </IconButton>
+          )}
+          {/* Kalıcı silme YALNIZ pasif üründe: aktif ürünü önce pasife almak,
+              kullanıcıyı bir kez daha düşünmeye zorlayan bilinçli bir adımdır. */}
+          {!p.isActive && canDelete && (
+            <IconButton label="Kalıcı olarak sil" danger onClick={() => onDelete(p)}>
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
+            </IconButton>
+          )}
         </div>
       </td>
     </tr>

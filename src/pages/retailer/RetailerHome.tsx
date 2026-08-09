@@ -1,9 +1,4 @@
-import {
-  DASHBOARD_ICONS as I,
-  SummaryCard,
-  toRetailer,
-  useDashboard,
-} from '@/features/dashboard';
+import { DASHBOARD_ICONS as I, SummaryCard, toRetailer, useDashboard } from '@/features/dashboard';
 import { useAnnouncements } from '@/features/announcements';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -37,31 +32,49 @@ export default function RetailerHome() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryCard
-          title="Tedarikçi" value={String(d.supplierCount)}
-          hint="Aktif ticari ilişki" icon={I.users} tone="purple"
+          title="Tedarikçi"
+          value={String(d.supplierCount)}
+          hint="Aktif ticari ilişki"
+          icon={I.users}
+          tone="purple"
         />
         <SummaryCard
-          title="Açık Sipariş" value={String(d.openOrders)}
-          hint="Teslim edilmemiş sipariş" icon={I.cart} tone="amber"
+          title="Açık Sipariş"
+          value={String(d.openOrders)}
+          hint="Teslim edilmemiş sipariş"
+          icon={I.cart}
+          tone="amber"
         />
         <SummaryCard
-          title="Bekleyen İade" value={String(d.pendingReturns)}
-          hint="Karar bekleyen iade" icon={I.ret} tone="rose"
+          title="Bekleyen İade"
+          value={String(d.pendingReturns)}
+          hint="Karar bekleyen iade"
+          icon={I.ret}
+          tone="rose"
         />
         <SummaryCard
-          title="Bekleyen SSH" value={String(d.pendingSsh)}
-          hint="Çözüm bekleyen servis" icon={I.wrench} tone="yellow"
+          title="Bekleyen SSH"
+          value={String(d.pendingSsh)}
+          hint="Çözüm bekleyen servis"
+          icon={I.wrench}
+          tone="yellow"
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[repeat(2,minmax(0,1fr))_2fr]">
         <SummaryCard
-          title="Toplam Alım" value={formatMoney(d.purchaseTotal)}
-          hint="İptal ve iade hariç" icon={I.money} tone="blue"
+          title="Toplam Alım"
+          value={formatMoney(d.purchaseTotal)}
+          hint="İptal ve iade hariç"
+          icon={I.money}
+          tone="blue"
         />
         <SummaryCard
-          title="Toplam Borç" value={formatMoney(d.totalDebt)}
-          hint="Tüm tedarikçilere" icon={I.wallet} tone="emerald"
+          title="Toplam Borç"
+          value={formatMoney(d.totalDebt)}
+          hint="Tüm tedarikçilere"
+          icon={I.wallet}
+          tone="emerald"
         />
 
         <section className="rounded-2xl bg-white p-6 ring-1 ring-inset ring-slate-200">

@@ -13,9 +13,7 @@ const TD = 'px-4 py-3 align-middle';
 export function OrderStatusBadge({ status }: { status: OrderRow['status'] }) {
   const meta = ORDER_STATUS_META[status];
   return (
-    <span
-      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}
-    >
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}>
       {meta.label}
     </span>
   );

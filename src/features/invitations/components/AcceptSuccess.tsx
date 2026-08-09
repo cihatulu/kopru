@@ -21,15 +21,18 @@ export function AcceptSuccess({
     <div className="space-y-5 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-emerald-200">
         <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={2}>
-          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m5 13 4 4L19 7"
+          />
         </svg>
       </div>
 
       <div>
         <h2 className="text-lg font-bold text-slate-900">Hesabınız hazır</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          {inviterName} ile bağlantınız kuruldu.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{inviterName} ile bağlantınız kuruldu.</p>
       </div>
 
       {result.accountCreated ? (

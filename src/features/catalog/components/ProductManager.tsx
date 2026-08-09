@@ -4,9 +4,17 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useProducts, useProductCosts, type CatalogProduct } from '../api/useProducts';
 import { useProductStock } from '../api/useProductStock';
 import { useProductGroups } from '../api/useProductGroups';
+import { useAuthSession } from '@/features/auth';
 import { useCatalogAdmin } from '../api/useCatalogAdmin';
-import { computeStats, matchesStockFilter, type StockFilter } from '../domain/productStats';
-import { toSavePayload } from '../domain/submitMapping';
+import {
+  collectCategories,
+  computeStats,
+  filterProducts,
+  toggleInSet,
+  type ActivityFilter,
+  type StockFilter,
+} from '../domain/productStats';
+import { toSavePayload, toSetSavePayload } from '../domain/submitMapping';
 import { ProductStatCards } from './ProductStatCards';
 import { ProductHeaderActions } from './ProductHeaderActions';
 import { ProductFilterBar } from './ProductFilterBar';
@@ -17,7 +25,10 @@ import { ProductDialogs, type ProductDialogKind } from './ProductDialogs';
 export function ProductManager({ orgId }: { orgId: string }) {
   const [search, setSearch] = useState('');
   const [groupFilter, setGroupFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [stockFilter, setStockFilter] = useState<StockFilter>('all');
+  // Varsayılan AKTİF: üretici günlük işini aktif katalogla yapar.
+  const [activity, setActivity] = useState<ActivityFilter>('active');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<ProductDialogKind>('none');
   const [editing, setEditing] = useState<CatalogProduct | undefined>(undefined);
@@ -30,13 +41,15 @@ export function ProductManager({ orgId }: { orgId: string }) {
   const costs = useProductCosts(ids);
   const stock = useProductStock(ids);
   const admin = useCatalogAdmin();
+  // Kalıcı silme yalnız org SAHİBİNDE; sunucu da ayrıca doğrular.
+  const canDelete = useAuthSession().data?.orgRole === 'owner';
 
-  const visible = all.filter((p) => {
-    if (!matchesStockFilter(stock.data?.[p.id] ?? null, stockFilter)) return false;
-    if (groupFilter === '') return true;
-    if (groupFilter === 'yok') return p.groupId === null;
-    return p.groupId === groupFilter;
-  });
+  const visible = filterProducts(
+    all,
+    { group: groupFilter, category: categoryFilter, stock: stockFilter, activity },
+    (id) => stock.data?.[id] ?? null,
+  );
+  const categories = collectCategories(all);
 
   const stats = computeStats(
     all.map((p) => ({ price: p.supplierPrice, quantity: stock.data?.[p.id] ?? null })),
@@ -60,6 +73,8 @@ export function ProductManager({ orgId }: { orgId: string }) {
         </div>
 
         <ProductHeaderActions
+          activity={activity}
+          onActivityChange={setActivity}
           selectedCount={selectedIds.size}
           selectedSingleCount={selected.filter((p) => p.type === 'single').length}
           productCount={all.length}
@@ -80,10 +95,13 @@ export function ProductManager({ orgId }: { orgId: string }) {
       <ProductFilterBar
         search={search}
         groupFilter={groupFilter}
+        categoryFilter={categoryFilter}
+        categories={categories}
         stockFilter={stockFilter}
         groups={groups.data ?? []}
         onSearch={setSearch}
         onGroupFilter={setGroupFilter}
+        onCategoryFilter={setCategoryFilter}
         onStockFilter={setStockFilter}
       />
 
@@ -97,15 +115,9 @@ export function ProductManager({ orgId }: { orgId: string }) {
           costs={costs.data}
           stock={stock.data}
           groupNames={new Map((groups.data ?? []).map((g) => [g.id, g.name]))}
+          canDelete={canDelete}
           selectedIds={selectedIds}
-          onToggleOne={(id) =>
-            setSelectedIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(id)) next.delete(id);
-              else next.add(id);
-              return next;
-            })
-          }
+          onToggleOne={(id) => setSelectedIds((prev) => toggleInSet(prev, id))}
           onToggleAll={(rowIds, selectAll) =>
             setSelectedIds(selectAll ? new Set(rowIds) : new Set())
           }
@@ -113,6 +125,7 @@ export function ProductManager({ orgId }: { orgId: string }) {
             setEditing(p);
             setDialog('product');
           }}
+          onToggleActive={(p) => admin.setActive.mutate({ id: p.id, isActive: !p.isActive })}
           onDelete={setDeleting}
         />
       )}
@@ -137,6 +150,7 @@ export function ProductManager({ orgId }: { orgId: string }) {
         orgId={orgId}
         groups={groups.data ?? []}
         allProducts={all}
+        categories={categories}
         selected={selected}
         costs={costs.data}
         stock={stock.data}
@@ -145,31 +159,19 @@ export function ProductManager({ orgId }: { orgId: string }) {
         savePending={admin.saveProduct.isPending}
         saveFailed={admin.saveProduct.isError}
         groupPending={admin.groupPending}
-        deletePending={admin.setActive.isPending}
+        deletePending={admin.deleteProduct.isPending}
         onClose={close}
         onCloseDelete={() => setDeleting(null)}
         onSubmitProduct={(payload) =>
           admin.saveProduct.mutate(toSavePayload(payload, editing?.id), { onSuccess: close })
         }
         onSubmitSet={(v) =>
-          admin.saveProduct.mutate(
-            {
-              name: v.name,
-              code: v.code,
-              supplierPrice: v.price,
-              ...(v.cost !== undefined ? { costPrice: v.cost } : {}),
-              description: v.description,
-              type: 'set',
-              setContents: v.contents,
-              stock: v.stock,
+          admin.saveProduct.mutate(toSetSavePayload(v), {
+            onSuccess: () => {
+              setSelectedIds(new Set());
+              close();
             },
-            {
-              onSuccess: () => {
-                setSelectedIds(new Set());
-                close();
-              },
-            },
-          )
+          })
         }
         onAssign={(choice) => {
           const productIds = [...selectedIds];
@@ -186,10 +188,7 @@ export function ProductManager({ orgId }: { orgId: string }) {
         onSetMembers={(groupId, productIds) => admin.setMembers.mutate({ groupId, productIds })}
         onConfirmDelete={() =>
           deleting &&
-          admin.setActive.mutate(
-            { id: deleting.id, isActive: false },
-            { onSuccess: () => setDeleting(null) },
-          )
+          admin.deleteProduct.mutate(deleting.id, { onSuccess: () => setDeleting(null) })
         }
       />
     </div>

@@ -51,7 +51,9 @@ export default function ServicePage() {
             onClick={() => setTab(t)}
             aria-pressed={tab === t}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+              tab === t
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             {t === 'ssh' ? 'Servis' : 'İadeler'}

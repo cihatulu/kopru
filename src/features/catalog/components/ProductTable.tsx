@@ -7,10 +7,13 @@ interface Props {
   costs: Record<string, number> | undefined;
   stock: Record<string, number> | undefined;
   groupNames: Map<string, string>;
+  /** Kalıcı silme yetkisi — yalnız org sahibi. */
+  canDelete: boolean;
   selectedIds: Set<string>;
   onToggleOne: (id: string) => void;
   onToggleAll: (ids: string[], selectAll: boolean) => void;
   onEdit: (p: CatalogProduct) => void;
+  onToggleActive: (p: CatalogProduct) => void;
   onDelete: (p: CatalogProduct) => void;
 }
 
@@ -38,6 +41,7 @@ export function ProductTable(props: Props) {
             </th>
             <th className={TH}>Ürün Adı / Kodu</th>
             <th className={TH}>Grup</th>
+            <th className={TH}>Kategori</th>
             <th className={TH}>Stok</th>
             <th className={TH}>Maliyet</th>
             <th className={TH}>Satış Fiyatı</th>
@@ -50,7 +54,7 @@ export function ProductTable(props: Props) {
         <tbody className="divide-y divide-slate-100 bg-white">
           {products.length === 0 && (
             <tr>
-              <td colSpan={9} className="py-16 text-center text-sm italic text-slate-400">
+              <td colSpan={10} className="py-16 text-center text-sm italic text-slate-400">
                 Aradığınız kriterlere uygun ürün bulunamadı.
               </td>
             </tr>
@@ -63,9 +67,11 @@ export function ProductTable(props: Props) {
               cost={costs?.[p.id]}
               quantity={stock?.[p.id] ?? null}
               groupName={p.groupId ? (groupNames.get(p.groupId) ?? null) : null}
+              canDelete={props.canDelete}
               selected={selectedIds.has(p.id)}
               onToggle={props.onToggleOne}
               onEdit={props.onEdit}
+              onToggleActive={props.onToggleActive}
               onDelete={props.onDelete}
             />
           ))}

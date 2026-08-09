@@ -90,3 +90,74 @@ export function matchesStockFilter(quantity: number | null, filter: StockFilter)
   if (quantity === null) return false;
   return filter === 'low' ? quantity < CRITICAL_STOCK : quantity >= CRITICAL_STOCK;
 }
+
+/** Liste hangi ürünleri gösteriyor. */
+export type ActivityFilter = 'active' | 'passive';
+
+export const ACTIVITY_LABEL: Record<ActivityFilter, string> = {
+  active: 'Aktif ürünler',
+  passive: 'Pasif ürünler',
+};
+
+/**
+ * Aktiflik filtresi.
+ *
+ * Varsayılan 'active': üretici günlük işini aktif katalogla yapar. Pasifler
+ * ayrı bir görünümde durur — karışık gösterilseydi satılmayan ürünler listeyi
+ * doldurur ve "bu ürün neden siparişe düşmüyor" sorusunu doğururdu.
+ */
+export function matchesActivity(isActive: boolean, filter: ActivityFilter): boolean {
+  return filter === 'active' ? isActive : !isActive;
+}
+
+export interface ListFilters {
+  /** '' = tümü, 'yok' = gruplanmamış, aksi halde grup id'si. */
+  group: string;
+  /** '' = tümü, aksi halde kategori adı. */
+  category: string;
+  stock: StockFilter;
+  activity: ActivityFilter;
+}
+
+export interface FilterableProduct {
+  id: string;
+  groupId: string | null;
+  category: string | null;
+  isActive: boolean;
+}
+
+/**
+ * Liste filtrelerinin tamamı — SAF.
+ *
+ * Bileşende dağınık duran dört koşul burada toplandı: hem test edilebilir
+ * oldu hem de "hangi filtre neyi eliyor" tek yerden okunuyor.
+ */
+export function filterProducts<T extends FilterableProduct>(
+  products: T[],
+  filters: ListFilters,
+  stockOf: (id: string) => number | null,
+): T[] {
+  return products.filter((p) => {
+    if (!matchesActivity(p.isActive, filters.activity)) return false;
+    if (!matchesStockFilter(stockOf(p.id), filters.stock)) return false;
+    if (filters.category !== '' && p.category !== filters.category) return false;
+    if (filters.group === '') return true;
+    if (filters.group === 'yok') return p.groupId === null;
+    return p.groupId === filters.group;
+  });
+}
+
+/** Ürünlerde geçen kategoriler — form önerisi ve filtre listesi için. */
+export function collectCategories(products: { category: string | null }[]): string[] {
+  const seen = new Set<string>();
+  for (const p of products) if (p.category) seen.add(p.category);
+  return [...seen].sort((a, b) => a.localeCompare(b, 'tr'));
+}
+
+/** Seçim kümesine ekle/çıkar — bileşende dört satır yer kaplıyordu. */
+export function toggleInSet(current: Set<string>, id: string): Set<string> {
+  const next = new Set(current);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  return next;
+}

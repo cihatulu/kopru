@@ -13,6 +13,8 @@ interface Props {
   orgId: string;
   groups: ProductGroup[];
   allProducts: CatalogProduct[];
+  /** Daha önce kullanılmış kategoriler — ürün formundaki öneri listesi. */
+  categories: string[];
   selected: CatalogProduct[];
   costs: Record<string, number> | undefined;
   stock: Record<string, number> | undefined;
@@ -43,7 +45,7 @@ interface Props {
  * tutmak için ayrıldı (A19/A20), aynı desen admin ekranında da kullanılıyor.
  */
 export function ProductDialogs(props: Props) {
-  const { kind, groups, allProducts, selected, costs, stock, editing, deleting } = props;
+  const { kind, groups, allProducts, categories, selected, costs, stock, editing, deleting } = props;
 
   return (
     <>
@@ -55,6 +57,7 @@ export function ProductDialogs(props: Props) {
           orgId={props.orgId}
           groups={groups}
           allProducts={allProducts}
+          categories={categories}
           pending={props.savePending}
           errorMessage={props.saveFailed ? 'Kaydedilemedi. Bilgileri kontrol edin.' : undefined}
           onClose={props.onClose}

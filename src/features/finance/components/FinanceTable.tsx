@@ -1,9 +1,5 @@
 import { formatDate, formatMoney } from '@/lib/format';
-import {
-  FINANCE_KIND_LABELS,
-  PAYMENT_METHOD_LABELS,
-  affectsOwnCash,
-} from '../domain/finance';
+import { FINANCE_KIND_LABELS, PAYMENT_METHOD_LABELS, affectsOwnCash } from '../domain/finance';
 import type { FinanceEntry } from '../api/useFinance';
 
 const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
@@ -38,9 +34,7 @@ export function FinanceTable({ entries }: { entries: FinanceEntry[] }) {
               </td>
               <td className={`${TD} text-slate-700`}>
                 {e.description}
-                {e.category && (
-                  <span className="ml-2 text-xs text-slate-400">{e.category}</span>
-                )}
+                {e.category && <span className="ml-2 text-xs text-slate-400">{e.category}</span>}
               </td>
               <td className={`${TD} text-xs text-slate-500`}>
                 {PAYMENT_METHOD_LABELS[e.method]}
@@ -64,8 +58,8 @@ export function FinanceTable({ entries }: { entries: FinanceEntry[] }) {
         </tbody>
       </table>
       <p className="border-t border-slate-100 px-4 py-2 text-xs text-slate-400">
-        {FINANCE_KIND_LABELS.income} / {FINANCE_KIND_LABELS.expense} defteri tedarikçi
-        carinizden ayrıdır.
+        {FINANCE_KIND_LABELS.income} / {FINANCE_KIND_LABELS.expense} defteri tedarikçi carinizden
+        ayrıdır.
       </p>
     </div>
   );

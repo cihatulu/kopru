@@ -6,7 +6,13 @@ const BASE = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-med
  * Abone / misafir ayrımı. Misafir "eksik" bir kayıt değil — grafın tam üyesi,
  * yalnız bizden hizmet almıyor. Rozet bunu olumsuzlamadan anlatmalı.
  */
-export function SubscriberBadge({ isSubscriber, plan }: { isSubscriber: boolean; plan: Plan | null }) {
+export function SubscriberBadge({
+  isSubscriber,
+  plan,
+}: {
+  isSubscriber: boolean;
+  plan: Plan | null;
+}) {
   if (!isSubscriber) {
     return <span className={`${BASE} bg-slate-100 text-slate-600`}>Misafir</span>;
   }

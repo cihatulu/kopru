@@ -7,7 +7,11 @@ import {
   useAssignToNewGroup,
   useSetGroupProducts,
 } from './useGroupMembership';
-import { useSaveProduct, useSetProductActive } from './useProductMutations';
+import {
+  useDeleteProductPermanently,
+  useSaveProduct,
+  useSetProductActive,
+} from './useProductMutations';
 
 /**
  * Ürün Yönetimi ekranının yazma işlemleri — tek yerde toplanmış.
@@ -19,6 +23,7 @@ import { useSaveProduct, useSetProductActive } from './useProductMutations';
 export function useCatalogAdmin() {
   const saveProduct = useSaveProduct();
   const setActive = useSetProductActive();
+  const deleteProduct = useDeleteProductPermanently();
   const saveGroup = useSaveProductGroup();
   const deleteGroup = useDeleteProductGroup();
   const assignGroup = useAssignProductsToGroup();
@@ -28,6 +33,7 @@ export function useCatalogAdmin() {
   return {
     saveProduct,
     setActive,
+    deleteProduct,
     saveGroup,
     deleteGroup,
     assignGroup,

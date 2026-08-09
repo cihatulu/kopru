@@ -57,17 +57,13 @@ export function StaffTable({
                       className="input py-1 text-xs"
                       value={m.role}
                       aria-label={`${m.fullName ?? m.userCode} rolü`}
-                      onChange={(e) =>
-                        onChangeRole(m, e.target.value as 'staff' | 'accountant')
-                      }
+                      onChange={(e) => onChangeRole(m, e.target.value as 'staff' | 'accountant')}
                     >
                       <option value="staff">{ROLE_LABEL.staff}</option>
                       <option value="accountant">{ROLE_LABEL.accountant}</option>
                     </select>
                   ) : (
-                    <span className="text-xs font-medium text-slate-500">
-                      {ROLE_LABEL[m.role]}
-                    </span>
+                    <span className="text-xs font-medium text-slate-500">{ROLE_LABEL[m.role]}</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
@@ -82,9 +78,7 @@ export function StaffTable({
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      m.isActive
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-slate-100 text-slate-500'
+                      m.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
                     }`}
                   >
                     {m.isActive ? 'Aktif' : 'Pasif'}

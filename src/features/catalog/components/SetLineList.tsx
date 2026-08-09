@@ -15,11 +15,17 @@ export function SetLineList({ lines, onQuantityChange }: Props) {
           <span className="flex-1 truncate text-sm text-slate-700">{l.name}</span>
           <span className="text-xs text-slate-400">{formatMoney(l.unitPrice)}</span>
           <div className="flex items-center gap-1">
-            <StepButton label={`${l.name} miktarını azalt`} onClick={() => onQuantityChange(l.productId, l.quantity - 1)}>
+            <StepButton
+              label={`${l.name} miktarını azalt`}
+              onClick={() => onQuantityChange(l.productId, l.quantity - 1)}
+            >
               −
             </StepButton>
             <span className="w-8 text-center text-sm font-bold text-slate-800">{l.quantity}</span>
-            <StepButton label={`${l.name} miktarını artır`} onClick={() => onQuantityChange(l.productId, l.quantity + 1)}>
+            <StepButton
+              label={`${l.name} miktarını artır`}
+              onClick={() => onQuantityChange(l.productId, l.quantity + 1)}
+            >
               +
             </StepButton>
           </div>

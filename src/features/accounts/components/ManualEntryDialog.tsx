@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { formatMoney, parseDecimal } from '@/lib/format';
 
@@ -38,115 +39,117 @@ export function ManualEntryDialog({
   const descriptionInvalid = touched && description.trim() === '';
   const valid = amount !== null && amount > 0 && description.trim() !== '';
 
-  const projected = amount === null ? currentBalance
-    : type === 'debit' ? currentBalance + amount : currentBalance - amount;
+  const projected =
+    amount === null
+      ? currentBalance
+      : type === 'debit'
+        ? currentBalance + amount
+        : currentBalance - amount;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Cari hareket ekle"
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
-      >
-        <h2 className="text-lg font-bold text-slate-900">Cari hareket ekle</h2>
-        <p className="mt-1 text-sm text-slate-500">{counterpartyName}</p>
+    <Modal
+      label={'Cari hareket ekle'}
+      panelClassName={'w-full max-w-md rounded-xl bg-white p-6 shadow-xl'}
+      onClose={onClose}
+      closeDisabled={pending}
+    >
+      <h2 className="text-lg font-bold text-slate-900">Cari hareket ekle</h2>
+      <p className="mt-1 text-sm text-slate-500">{counterpartyName}</p>
 
-        <div className="mt-5 space-y-4">
-          <div>
-            <span className="label">Hareket tipi</span>
-            <div className="mt-1 grid grid-cols-2 gap-2">
-              <TypeButton
-                active={type === 'credit'}
-                label="Ödeme / Alacak"
-                hint="Bakiyeyi azaltır"
-                onClick={() => setType('credit')}
-              />
-              <TypeButton
-                active={type === 'debit'}
-                label="Masraf / Borç"
-                hint="Bakiyeyi artırır"
-                onClick={() => setType('debit')}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="label" htmlFor="amount">
-              Tutar
-            </label>
-            <input
-              id="amount"
-              inputMode="decimal"
-              className="input"
-              placeholder="0,00"
-              value={amountText}
-              onChange={(e) => {
-                setAmountText(e.target.value);
-                setTouched(true);
-              }}
+      <div className="mt-5 space-y-4">
+        <div>
+          <span className="label">Hareket tipi</span>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            <TypeButton
+              active={type === 'credit'}
+              label="Ödeme / Alacak"
+              hint="Bakiyeyi azaltır"
+              onClick={() => setType('credit')}
             />
-            {amountInvalid && <p className="field-error">Sıfırdan büyük bir tutar girin</p>}
-          </div>
-
-          <div>
-            <label className="label" htmlFor="description">
-              Açıklama
-            </label>
-            <input
-              id="description"
-              className="input"
-              placeholder="Havale, çek, nakit tahsilat…"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setTouched(true);
-              }}
+            <TypeButton
+              active={type === 'debit'}
+              label="Masraf / Borç"
+              hint="Bakiyeyi artırır"
+              onClick={() => setType('debit')}
             />
-            {descriptionInvalid && <p className="field-error">Açıklama zorunlu</p>}
           </div>
-
-          <div className="rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-inset ring-slate-200">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Şu anki bakiye</span>
-              <span className="font-medium text-slate-700">{formatMoney(currentBalance)}</span>
-            </div>
-            <div className="mt-1 flex justify-between">
-              <span className="text-slate-500">Kayıttan sonra</span>
-              <span className="font-bold text-slate-900">{formatMoney(projected)}</span>
-            </div>
-          </div>
-
-          <p className="text-xs leading-relaxed text-slate-500">
-            Kaydedilen hareket <strong>silinemez ve değiştirilemez</strong>. Hata olursa ters
-            yönde yeni bir kayıt girilerek düzeltilir.
-          </p>
-
-          {errorMessage && (
-            <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              {errorMessage}
-            </p>
-          )}
         </div>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={pending}>
-            Vazgeç
-          </Button>
-          <Button
-            loading={pending}
-            onClick={() => {
+        <div>
+          <label className="label" htmlFor="amount">
+            Tutar
+          </label>
+          <input
+            id="amount"
+            inputMode="decimal"
+            className="input"
+            placeholder="0,00"
+            value={amountText}
+            onChange={(e) => {
+              setAmountText(e.target.value);
               setTouched(true);
-              if (valid && amount !== null) {
-                onSubmit({ type, amount, description: description.trim() });
-              }
             }}
-          >
-            Kaydet
-          </Button>
+          />
+          {amountInvalid && <p className="field-error">Sıfırdan büyük bir tutar girin</p>}
         </div>
+
+        <div>
+          <label className="label" htmlFor="description">
+            Açıklama
+          </label>
+          <input
+            id="description"
+            className="input"
+            placeholder="Havale, çek, nakit tahsilat…"
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setTouched(true);
+            }}
+          />
+          {descriptionInvalid && <p className="field-error">Açıklama zorunlu</p>}
+        </div>
+
+        <div className="rounded-lg bg-slate-50 p-3 text-sm ring-1 ring-inset ring-slate-200">
+          <div className="flex justify-between">
+            <span className="text-slate-500">Şu anki bakiye</span>
+            <span className="font-medium text-slate-700">{formatMoney(currentBalance)}</span>
+          </div>
+          <div className="mt-1 flex justify-between">
+            <span className="text-slate-500">Kayıttan sonra</span>
+            <span className="font-bold text-slate-900">{formatMoney(projected)}</span>
+          </div>
+        </div>
+
+        <p className="text-xs leading-relaxed text-slate-500">
+          Kaydedilen hareket <strong>silinemez ve değiştirilemez</strong>. Hata olursa ters yönde
+          yeni bir kayıt girilerek düzeltilir.
+        </p>
+
+        {errorMessage && (
+          <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </p>
+        )}
       </div>
-    </div>
+
+      <div className="mt-6 flex justify-end gap-2">
+        <Button variant="secondary" onClick={onClose} disabled={pending}>
+          Vazgeç
+        </Button>
+        <Button
+          loading={pending}
+          onClick={() => {
+            setTouched(true);
+            if (valid && amount !== null) {
+              onSubmit({ type, amount, description: description.trim() });
+            }
+          }}
+        >
+          Kaydet
+        </Button>
+      </div>
+    </Modal>
   );
 }
 

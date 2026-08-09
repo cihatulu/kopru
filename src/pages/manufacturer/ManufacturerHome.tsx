@@ -37,35 +37,56 @@ export default function ManufacturerHome() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <SummaryCard
-          title="Toplam Ürün" value={String(d.productCount)}
-          hint="Kayıtlı aktif ürün" icon={I.box} tone="blue"
+          title="Toplam Ürün"
+          value={String(d.productCount)}
+          hint="Kayıtlı aktif ürün"
+          icon={I.box}
+          tone="blue"
         />
         <SummaryCard
-          title="Toplam Müşteri" value={String(d.partnerCount)}
-          hint="Aktif bayileriniz" icon={I.users} tone="purple"
+          title="Toplam Müşteri"
+          value={String(d.partnerCount)}
+          hint="Aktif bayileriniz"
+          icon={I.users}
+          tone="purple"
         />
         <SummaryCard
-          title="Bekleyen Sipariş" value={String(d.pendingOrders)}
-          hint="Onay bekleyen sipariş" icon={I.cart} tone="amber"
+          title="Bekleyen Sipariş"
+          value={String(d.pendingOrders)}
+          hint="Onay bekleyen sipariş"
+          icon={I.cart}
+          tone="amber"
         />
         <SummaryCard
-          title="Bekleyen İade" value={String(d.pendingReturns)}
-          hint="İnceleme bekleyen iade" icon={I.ret} tone="rose"
+          title="Bekleyen İade"
+          value={String(d.pendingReturns)}
+          hint="İnceleme bekleyen iade"
+          icon={I.ret}
+          tone="rose"
         />
         <SummaryCard
-          title="Bekleyen SSH" value={String(d.pendingSsh)}
-          hint="Çözüm bekleyen servis" icon={I.wrench} tone="yellow"
+          title="Bekleyen SSH"
+          value={String(d.pendingSsh)}
+          hint="Çözüm bekleyen servis"
+          icon={I.wrench}
+          tone="yellow"
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[repeat(2,minmax(0,1fr))_2fr]">
         <SummaryCard
-          title="Toplam Ciro (Net)" value={formatMoney(d.netRevenue)}
-          hint="İptal ve iade hariç" icon={I.money} tone="emerald"
+          title="Toplam Ciro (Net)"
+          value={formatMoney(d.netRevenue)}
+          hint="İptal ve iade hariç"
+          icon={I.money}
+          tone="emerald"
         />
         <SummaryCard
-          title="Onaylı İade Cirosu" value={formatMoney(d.returnedAmount)}
-          hint="Kabul edilen iade tutarı" icon={I.ret} tone="rose"
+          title="Onaylı İade Cirosu"
+          value={formatMoney(d.returnedAmount)}
+          hint="Kabul edilen iade tutarı"
+          icon={I.ret}
+          tone="rose"
         />
 
         <section className="rounded-2xl bg-white p-6 ring-1 ring-inset ring-slate-200 lg:row-span-2">
@@ -87,12 +108,18 @@ export default function ManufacturerHome() {
         </section>
 
         <SummaryCard
-          title="Onaylı İade Adedi" value={String(d.approvedReturns)}
-          hint="Kabul edilen iadeler" icon={I.ret} tone="pink"
+          title="Onaylı İade Adedi"
+          value={String(d.approvedReturns)}
+          hint="Kabul edilen iadeler"
+          icon={I.ret}
+          tone="pink"
         />
         <SummaryCard
-          title="Tamamlanan SSH" value={String(d.completedSsh)}
-          hint="Çözülen destek kayıtları" icon={I.check} tone="teal"
+          title="Tamamlanan SSH"
+          value={String(d.completedSsh)}
+          hint="Çözülen destek kayıtları"
+          icon={I.check}
+          tone="teal"
         />
       </div>
     </div>

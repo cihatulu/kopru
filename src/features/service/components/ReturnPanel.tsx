@@ -9,9 +9,9 @@ import type { ReturnStatus } from '../api/shared';
 import { ReturnList } from './ReturnList';
 import { ServiceFilterBar } from './ServiceFilterBar';
 
-const STATUS_OPTIONS: [string, string][] = (
-  Object.keys(RETURN_STATUS_META) as ReturnStatus[]
-).map((s) => [s, RETURN_STATUS_META[s].label]);
+const STATUS_OPTIONS: [string, string][] = (Object.keys(RETURN_STATUS_META) as ReturnStatus[]).map(
+  (s) => [s, RETURN_STATUS_META[s].label],
+);
 
 interface Props {
   myOrgId: string;
