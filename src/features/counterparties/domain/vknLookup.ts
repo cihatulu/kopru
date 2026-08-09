@@ -84,13 +84,34 @@ export function verdictTone(v: LookupVerdict): 'info' | 'warn' | 'error' | 'none
   return 'none';
 }
 
+export type CredentialsMode = 'ask' | 'subscriber' | 'has-login' | 'hidden';
+
 /**
- * Giriş bilgileri (kullanıcı kodu ve şifre) sorulmalı mı.
+ * Giriş bilgileri bölümünün durumu.
  *
- * Zaten girişi olan bir firmaya şifre sormak anlamsız — üstelik kullanıcı
- * "yeni şifre belirledim" sanır, oysa o hesap değişmez.
+ * 'ask' VARSAYILANDIR — pencere açıldığında (henüz VKN yazılmamışken) alanlar
+ * GÖRÜNÜR olmalı. Önce gizleyip sonra göstermek, kullanıcıya alanın hiç
+ * olmadığını düşündürüyordu.
+ *
+ * Yalnız iki durumda gizlenir ve yerine sebebi yazılır: firma zaten abone
+ * (kendi hesabı var) ya da misafir ama girişi zaten açılmış. İkisinde de şifre
+ * sormak, kullanıcıya "yeni şifre belirledim" yanılgısı yaşatırdı.
  */
-export function needsCredentials(v: LookupVerdict, lookup: OrgLookup | null): boolean {
+export function credentialsMode(v: LookupVerdict, lookup: OrgLookup | null): CredentialsMode {
+  if (v === 'existing-subscriber') return 'subscriber';
+  if (v === 'existing-guest') return lookup?.hasLogin ? 'has-login' : 'ask';
+  if (v === 'unknown' || v === 'new') return 'ask';
+  return 'hidden';
+}
+
+/**
+ * Şifre ZORUNLU mu.
+ *
+ * Alanlar görünür olabilir ama zorunlu olmayabilir: VKN henüz yazılmamışken
+ * ('unknown') kullanıcının şifreyi önceden doldurmasını engellemeyiz, ancak
+ * kaydetme de zaten mümkün değildir.
+ */
+export function requiresPassword(v: LookupVerdict, lookup: OrgLookup | null): boolean {
   if (v === 'new') return true;
   if (v === 'existing-guest') return !(lookup?.hasLogin ?? false);
   return false;

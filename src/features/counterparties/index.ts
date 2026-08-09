@@ -36,11 +36,12 @@ export {
   verdictFor,
   verdictMessage,
   verdictTone,
-  needsCredentials,
+  credentialsMode,
+  requiresPassword,
   submitLabel,
   canSubmit,
 } from './domain/vknLookup';
-export type { OrgLookup, LookupVerdict } from './domain/vknLookup';
+export type { OrgLookup, LookupVerdict, CredentialsMode } from './domain/vknLookup';
 
 export { addCounterpartySchema, isSelfReference } from './domain/addSchema';
 export type { AddCounterpartyForm } from './domain/addSchema';

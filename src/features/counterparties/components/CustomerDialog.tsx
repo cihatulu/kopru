@@ -6,7 +6,8 @@ import type { OrgKind } from '@/constants';
 import { useOrgLookup } from '../api/useOrgLookup';
 import {
   canSubmit,
-  needsCredentials,
+  credentialsMode,
+  requiresPassword,
   submitLabel,
   verdictFor,
   type LookupVerdict,
@@ -48,7 +49,8 @@ export function CustomerDialog({
   const lookupQuery = useOrgLookup(vknTc);
   const lookup = lookupQuery.data ?? null;
   const verdict = verdictFor(lookup, myKind, myVknTc, vknTc);
-  const wantsCredentials = needsCredentials(verdict, lookup);
+  const credentials = credentialsMode(verdict, lookup);
+  const passwordRequired = requiresPassword(verdict, lookup);
 
   // İSTENEN DAVRANIŞ: kullanıcı kodu VKN yazılırken kendiliğinden dolar.
   // Kullanıcı alana elle dokunduysa bir daha EZİLMEZ — yazdığını geri almak
@@ -56,7 +58,7 @@ export function CustomerDialog({
   const effectiveUserCode = userCodeTouched ? userCode : normalizeVknTc(vknTc);
 
   const credentialsOk =
-    !wantsCredentials ||
+    !passwordRequired ||
     (password.length >= 8 && password === passwordRepeat && effectiveUserCode.length >= 3);
   const ready = canSubmit(verdict) && credentialsOk && !pending;
 
@@ -119,7 +121,7 @@ export function CustomerDialog({
           loading={lookupQuery.isFetching}
         />
 
-        {wantsCredentials && (
+        {credentials === 'ask' && (
           <CredentialFields
             userCode={effectiveUserCode}
             password={password}
@@ -131,6 +133,18 @@ export function CustomerDialog({
             onPassword={setPassword}
             onPasswordRepeat={setPasswordRepeat}
           />
+        )}
+
+        {credentials === 'subscriber' && (
+          <p className="rounded-lg bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200">
+            Bu firma platformun abonesi; kendi giriş hesabı var. Şifre belirlemenize gerek yok.
+          </p>
+        )}
+        {credentials === 'has-login' && (
+          <p className="rounded-lg bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200">
+            Bu firmanın girişi zaten açılmış. Şifresini buradan değiştiremezsiniz; gerekirse
+            listeden <strong>Şifre Sıfırla</strong> ile yenileyebilirsiniz.
+          </p>
         )}
 
         {errorMessage && (
@@ -157,7 +171,7 @@ export function CustomerDialog({
                 ...(phone ? { phone } : {}),
                 ...(address ? { address } : {}),
                 discountRate: Number(discountRate.replace(',', '.')) || 0,
-                ...(wantsCredentials ? { userCode: effectiveUserCode, password } : {}),
+                ...(passwordRequired ? { userCode: effectiveUserCode, password } : {}),
               },
               verdict,
             )

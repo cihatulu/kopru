@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import {
   canSubmit,
-  needsCredentials,
+  credentialsMode,
+  requiresPassword,
   submitLabel,
   verdictFor,
   verdictMessage,
@@ -81,28 +82,51 @@ describe('verdictFor', () => {
   });
 });
 
-describe('needsCredentials', () => {
-  test('yeni kayıtta giriş bilgisi istenir', () => {
-    expect(needsCredentials('new', lookup({ found: false }))).toBe(true);
+describe('credentialsMode', () => {
+  test('pencere açılır açılmaz alanlar GÖRÜNÜR', () => {
+    // 'unknown' = VKN henüz yazılmadı. Alanları gizlemek, kullanıcıya şifre
+    // alanının hiç olmadığını düşündürüyordu.
+    expect(credentialsMode('unknown', null)).toBe('ask');
   });
 
-  test('girişi OLMAYAN misafirde istenir', () => {
-    expect(needsCredentials('existing-guest', lookup({ hasLogin: false }))).toBe(true);
+  test('yeni kayıtta sorulur', () => {
+    expect(credentialsMode('new', lookup({ found: false }))).toBe('ask');
   });
 
-  test('girişi OLAN misafirde istenmez', () => {
-    // Aksi halde kullanıcı "yeni şifre belirledim" sanır, oysa hesap değişmez.
-    expect(needsCredentials('existing-guest', lookup({ hasLogin: true }))).toBe(false);
+  test('girişi OLMAYAN misafirde sorulur', () => {
+    expect(credentialsMode('existing-guest', lookup({ hasLogin: false }))).toBe('ask');
   });
 
-  test('abonede hiç istenmez', () => {
-    expect(needsCredentials('existing-subscriber', lookup({ isSubscriber: true }))).toBe(false);
+  test('girişi OLAN misafirde sorulmaz, sebebi yazılır', () => {
+    expect(credentialsMode('existing-guest', lookup({ hasLogin: true }))).toBe('has-login');
   });
 
-  test('hatalı durumlarda istenmez', () => {
-    for (const v of ['self', 'kind-mismatch', 'already-linked', 'pending', 'unknown'] as const) {
-      expect(needsCredentials(v, lookup())).toBe(false);
+  test('abonede sorulmaz — kendi hesabı var', () => {
+    expect(credentialsMode('existing-subscriber', lookup({ isSubscriber: true }))).toBe(
+      'subscriber',
+    );
+  });
+
+  test('hatalı durumlarda bölüm hiç gösterilmez', () => {
+    for (const v of ['self', 'kind-mismatch', 'already-linked', 'pending'] as const) {
+      expect(credentialsMode(v, lookup())).toBe('hidden');
     }
+  });
+});
+
+describe('requiresPassword', () => {
+  test('yalnız gerçekten hesap açılacaksa zorunlu', () => {
+    expect(requiresPassword('new', lookup({ found: false }))).toBe(true);
+    expect(requiresPassword('existing-guest', lookup({ hasLogin: false }))).toBe(true);
+  });
+
+  test('hesabı olan veya abone firmada zorunlu değil', () => {
+    expect(requiresPassword('existing-guest', lookup({ hasLogin: true }))).toBe(false);
+    expect(requiresPassword('existing-subscriber', lookup({ isSubscriber: true }))).toBe(false);
+  });
+
+  test('VKN yazılmamışken zorunlu değil — kaydetme zaten kapalı', () => {
+    expect(requiresPassword('unknown', null)).toBe(false);
   });
 });
 
