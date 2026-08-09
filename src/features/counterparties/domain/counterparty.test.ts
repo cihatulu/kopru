@@ -21,6 +21,8 @@ const party = (id: string, name: string): Party => ({
   isSubscriber: true,
   phone: null,
   email: null,
+  authorizedName: null,
+  address: null,
 });
 
 const edge = (over: Partial<Edge> = {}): Edge => ({

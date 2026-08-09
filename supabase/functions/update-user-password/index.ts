@@ -31,6 +31,84 @@ function anonClient() {
   );
 }
 
+/**
+ * Sponsor, MİSAFİR müşterisinin şifresini yeniler.
+ *
+ * Sınır dar ve bilinçli:
+ *   · Hedef org MİSAFİR olmak zorunda. Abone bir perakendeci de müşteriniz
+ *     olabilir ama hesabı KENDİSİNE aittir; onun şifresini değiştirebilmek
+ *     başka bir firmanın hesabını ele geçirmek olurdu.
+ *   · Aramızda gerçekten bir ilişki kenarı olmalı.
+ *   · Çağıran org SAHİBİ olmalı; personel şifre sıfırlayamaz.
+ *
+ * Şifreyi çağıran belirler (geçici şifre üretilmez): kaynak üründeki davranış
+ * budur ve sponsor şifreyi müşterisine zaten kendisi iletir.
+ */
+async function sponsorReset(req: Request, orgId: string, newPassword: string) {
+  const header = req.headers.get('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (!token) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data: authUser, error: authError } = await admin.auth.getUser(token);
+  if (authError || !authUser.user) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data: me } = await admin
+    .from('users')
+    .select('org_id, org_role, is_active')
+    .eq('id', authUser.user.id)
+    .maybeSingle();
+
+  if (!me || !me.is_active || me.org_role !== 'owner') return json({ error: 'FORBIDDEN' }, 403);
+
+  const { data: target } = await admin
+    .from('organizations')
+    .select('id, is_subscriber')
+    .eq('id', orgId)
+    .maybeSingle();
+
+  if (!target) return json({ error: 'ORG_NOT_FOUND' }, 404);
+  if (target.is_subscriber) return json({ error: 'TARGET_IS_SUBSCRIBER' }, 403);
+
+  const { data: edge } = await admin
+    .from('relationships')
+    .select('id')
+    .or(
+      `and(manufacturer_org_id.eq.${me.org_id},retailer_org_id.eq.${orgId}),` +
+        `and(retailer_org_id.eq.${me.org_id},manufacturer_org_id.eq.${orgId})`,
+    )
+    .maybeSingle();
+
+  if (!edge) return json({ error: 'NOT_MY_COUNTERPARTY' }, 403);
+
+  const { data: user } = await admin
+    .from('users')
+    .select('id, user_code')
+    .eq('org_id', orgId)
+    .eq('org_role', 'owner')
+    .maybeSingle();
+
+  if (!user) return json({ error: 'NO_OWNER_USER' }, 404);
+
+  const { error } = await admin.auth.admin.updateUserById(user.id, { password: newPassword });
+  if (error) {
+    console.error('sponsor sifre guncellemesi basarisiz', error);
+    return json({ error: 'UPDATE_FAILED' }, 500);
+  }
+
+  await admin.from('users').update({ failed_attempts: 0, locked_until: null }).eq('id', user.id);
+
+  await admin.from('system_logs').insert({
+    actor_user_id: authUser.user.id,
+    actor_org_id: me.org_id,
+    action: 'counterparty.password_reset',
+    entity: 'users',
+    entity_id: user.id,
+    meta: { target_org: orgId },
+  });
+
+  return json({ ok: true, userCode: user.user_code });
+}
+
 /** Platform admini bir organizasyonun owner şifresini yeniler. */
 async function adminReset(req: Request, orgId: string) {
   const auth = await requirePlatformAdmin(req, admin);
@@ -118,6 +196,7 @@ Deno.serve(async (req) => {
   let body: {
     mode?: string;
     orgId?: string;
+    newPassword?: string;
     currentPassword?: string;
     newPassword?: string;
   };
@@ -131,6 +210,11 @@ Deno.serve(async (req) => {
     if (body.mode === 'admin_reset') {
       if (!body.orgId) return json({ error: 'BAD_REQUEST' }, 400);
       return await adminReset(req, body.orgId);
+    }
+    if (body.mode === 'sponsor_reset') {
+      if (!body.orgId || !body.newPassword) return json({ error: 'BAD_REQUEST' }, 400);
+      if (body.newPassword.length < 8) return json({ error: 'WEAK_PASSWORD' }, 400);
+      return await sponsorReset(req, body.orgId, body.newPassword);
     }
     if (body.mode === 'self') {
       if (!body.currentPassword || !body.newPassword) {

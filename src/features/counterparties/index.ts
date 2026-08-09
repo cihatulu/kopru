@@ -1,6 +1,14 @@
 // features/counterparties PUBLIC YÜZEYİ (A20).
 
 export { useCounterparties } from './api/useCounterparties';
+export { useOrgLookup } from './api/useOrgLookup';
+export {
+  useCreateCustomer,
+  useUpdateCustomer,
+  useResetCustomerPassword,
+  CustomerError,
+} from './api/useCustomerMutations';
+export type { CreateCustomerInput, CreateCustomerResult } from './api/useCustomerMutations';
 export {
   useAddCounterparty,
   useRespondToConnection,
@@ -24,6 +32,16 @@ export {
 } from './domain/counterparty';
 export type { Edge, Party } from './domain/counterparty';
 
+export {
+  verdictFor,
+  verdictMessage,
+  verdictTone,
+  needsCredentials,
+  submitLabel,
+  canSubmit,
+} from './domain/vknLookup';
+export type { OrgLookup, LookupVerdict } from './domain/vknLookup';
+
 export { addCounterpartySchema, isSelfReference } from './domain/addSchema';
 export type { AddCounterpartyForm } from './domain/addSchema';
 
@@ -32,3 +50,7 @@ export { IncomingRequests } from './components/IncomingRequests';
 export { AddCounterpartyDialog } from './components/AddCounterpartyDialog';
 export { SubscriptionBanner } from './components/SubscriptionBanner';
 export { PartyPicker } from './components/PartyPicker';
+export { CustomerManager } from './components/CustomerManager';
+export { CustomerTable } from './components/CustomerTable';
+export { CustomerDialog } from './components/CustomerDialog';
+export { VknNotice } from './components/VknNotice';

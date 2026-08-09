@@ -14,6 +14,8 @@ export interface Party {
   isSubscriber: boolean;
   phone: string | null;
   email: string | null;
+  authorizedName: string | null;
+  address: string | null;
 }
 
 export interface Edge {

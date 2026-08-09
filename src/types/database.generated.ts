@@ -1837,6 +1837,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      lookup_org_by_vkn: {
+        Args: { p_vkn_tc: string }
+        Returns: Database["public"]["CompositeTypes"]["org_lookup_result"]
+        SetofOptions: {
+          from: "*"
+          to: "org_lookup_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       manufacturer_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
@@ -2066,6 +2076,17 @@ export type Database = {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       track_order: { Args: { p_token: string }; Returns: Json }
+      update_counterparty_profile: {
+        Args: {
+          p_address?: string
+          p_authorized_name?: string
+          p_company_name?: string
+          p_email?: string
+          p_org_id: string
+          p_phone?: string
+        }
+        Returns: undefined
+      }
       upgrade_org_to_subscriber: {
         Args: {
           p_org_id: string
@@ -2143,6 +2164,17 @@ export type Database = {
         total_credit: number | null
         closing_balance: number | null
         entry_count: number | null
+      }
+      org_lookup_result: {
+        found: boolean | null
+        org_id: string | null
+        company_name: string | null
+        kind: Database["public"]["Enums"]["org_kind"] | null
+        is_subscriber: boolean | null
+        relationship_status:
+          | Database["public"]["Enums"]["relationship_status"]
+          | null
+        has_login: boolean | null
       }
     }
   }

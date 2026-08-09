@@ -5,7 +5,7 @@ import type { Edge, Party } from '../domain/counterparty';
 
 // Açık kolon listesi (kilitli kural 19). İki uç da çekilir; "karşı taraf"
 // çevirisi domain/counterparty.ts içinde yapılır.
-const PARTY = 'id, company_name, vkn_tc, is_subscriber, phone, email';
+const PARTY = 'id, company_name, vkn_tc, is_subscriber, phone, email, authorized_name, address';
 // Gömme ipucu KISIT ADIYLA verilir, kolon adıyla değil.
 // Sebep: A15 gereği `relationships` → `organizations` yabancı anahtarı BİLEŞİK
 // ((org_id, kind) → (id, kind)); PostgREST tek kolonluk ipucu ile bileşik bir
@@ -30,6 +30,8 @@ function toParty(row: Record<string, unknown> | null): Party {
     isSubscriber: (row?.is_subscriber as boolean) ?? false,
     phone: (row?.phone as string | null) ?? null,
     email: (row?.email as string | null) ?? null,
+    authorizedName: (row?.authorized_name as string | null) ?? null,
+    address: (row?.address as string | null) ?? null,
   };
 }
 
