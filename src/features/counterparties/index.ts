@@ -63,3 +63,7 @@ export { DeleteCounterpartyConfirm } from './components/DeleteCounterpartyConfir
 export { InviteSupplierModal } from './components/InviteSupplierModal';
 export type { InviteSupplierValues } from './components/InviteSupplierModal';
 export { SupplierInvitations } from './components/SupplierInvitations';
+export { OutgoingRequests } from './components/OutgoingRequests';
+export { SupplierTable } from './components/SupplierTable';
+export { SupplierTabs } from './components/SupplierTabs';
+export type { SupplierTab } from './components/SupplierTabs';

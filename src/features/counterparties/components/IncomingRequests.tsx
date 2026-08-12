@@ -38,6 +38,10 @@ export function IncomingRequests({ requests, myOrgId, busyId, onRespond }: Props
               <div className="min-w-0">
                 <p className="font-medium text-slate-900">{party.companyName}</p>
                 <p className="font-mono text-xs text-slate-500">{party.vknTc}</p>
+                {/* Teklif edilen iskonto onaydan ÖNCE görünmeli: kabul edilen şey bu. */}
+                <p className="mt-0.5 text-xs text-slate-500">
+                  İlişki iskonto oranı: %{edge.discountRate}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button
