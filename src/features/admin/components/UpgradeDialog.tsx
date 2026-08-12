@@ -33,7 +33,7 @@ export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Prop
 
   return (
     <Modal
-      label={'Aboneye yükselt'}
+      label={'Üyeliğe yükselt'}
       panelClassName={'w-full max-w-md rounded-xl bg-white p-6 shadow-xl'}
       onClose={onClose}
       closeDisabled={pending}
@@ -42,7 +42,7 @@ export function UpgradeDialog({ org, pending, result, onClose, onConfirm }: Prop
         <UpgradeSuccess org={org} result={result} onClose={onClose} />
       ) : (
         <>
-          <h2 className="text-lg font-bold text-slate-900">Aboneye yükselt</h2>
+          <h2 className="text-lg font-bold text-slate-900">Üyeliğe yükselt</h2>
           <p className="mt-1 text-sm text-slate-500">
             {org.companyName} · {org.vknTc}
           </p>
@@ -104,7 +104,7 @@ function UpgradeSuccess({
   return (
     <>
       <h2 className="text-lg font-bold text-slate-900">Yükseltme tamamlandı</h2>
-      <p className="mt-1 text-sm text-slate-500">{org.companyName} artık abone.</p>
+      <p className="mt-1 text-sm text-slate-500">{org.companyName} artık üye.</p>
 
       {result.tempPassword ? (
         <div className="mt-5 rounded-lg bg-amber-50 p-4 ring-1 ring-inset ring-amber-200">

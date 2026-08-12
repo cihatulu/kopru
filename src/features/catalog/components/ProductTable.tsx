@@ -10,6 +10,8 @@ interface Props {
   /** Kalıcı silme yetkisi — yalnız org sahibi. */
   canDelete: boolean;
   selectedIds: Set<string>;
+  isGuest?: boolean;
+  onSaveCost?: (productId: string, costPrice: number) => void;
   onToggleOne: (id: string) => void;
   onToggleAll: (ids: string[], selectAll: boolean) => void;
   onEdit: (p: CatalogProduct) => void;
@@ -21,7 +23,7 @@ const TH = 'px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-
 
 /** Üreticinin katalog yönetimi tablosu. Maliyet ve marj sütunları yalnız burada. */
 export function ProductTable(props: Props) {
-  const { products, costs, stock, groupNames, selectedIds } = props;
+  const { products, costs, stock, groupNames, selectedIds, isGuest, onSaveCost } = props;
   const ids = products.map((p) => p.id);
   const allSelected = ids.length > 0 && ids.every((id) => selectedIds.has(id));
 
@@ -69,6 +71,8 @@ export function ProductTable(props: Props) {
               groupName={p.groupId ? (groupNames.get(p.groupId) ?? null) : null}
               canDelete={props.canDelete}
               selected={selectedIds.has(p.id)}
+              isGuest={isGuest}
+              onSaveCost={onSaveCost}
               onToggle={props.onToggleOne}
               onEdit={props.onEdit}
               onToggleActive={props.onToggleActive}

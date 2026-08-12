@@ -29,13 +29,14 @@ export default function LoginPage() {
 
   const tab = tabById(tabId);
 
-  const submit = (values: LoginForm) => {
+  const submit = (values: LoginForm & { userType?: 'owner' | 'staff' }) => {
     // Boş alanlar isteğe HİÇ konmaz: sunucu "alan yok" ile "alan var ama boş"
     // arasında ayrım yapıyor (misafir sekmesinde sponsor VKN zorunlu).
     login.mutate({
       portal: tab.portal,
       mode: tab.mode,
       password: values.password ?? '',
+      userType: values.userType,
       ...(values.userCode ? { userCode: values.userCode } : {}),
       ...(values.sponsorVkn ? { sponsorVkn: values.sponsorVkn } : {}),
       ...(values.email ? { email: values.email } : {}),

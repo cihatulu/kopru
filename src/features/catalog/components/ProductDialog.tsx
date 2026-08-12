@@ -3,7 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
-import { productSchema, type ProductForm } from '../domain/productSchema';
+import { productSchema, retailerProductSchema, type ProductForm } from '../domain/productSchema';
 import { cleanVariants, type SetLine, type Variant } from '../domain/variants';
 import { ImageUploader } from './ImageUploader';
 import { VariantEditor } from './VariantEditor';
@@ -30,6 +30,7 @@ interface Props {
   allProducts: CatalogProduct[];
   /** Daha önce kullanılmış kategoriler — öneri listesi. */
   categories: string[];
+  isRetailer?: boolean;
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;
@@ -37,7 +38,7 @@ interface Props {
 }
 
 export function ProductDialog(props: Props) {
-  const { product, initialCost, initialStock, orgId, groups, allProducts, categories } = props;
+  const { product, initialCost, initialStock, orgId, groups, allProducts, categories, isRetailer } = props;
   const { pending, errorMessage, onClose, onSubmit } = props;
 
   const [images, setImages] = useState<string[]>(product?.images ?? []);
@@ -52,7 +53,7 @@ export function ProductDialog(props: Props) {
   const [draftId] = useState(() => product?.id ?? `draft-${Date.now()}`);
 
   const form = useForm<ProductForm>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(isRetailer ? retailerProductSchema : productSchema),
     defaultValues: {
       name: product?.name ?? '',
       code: product?.code ?? '',
@@ -115,6 +116,7 @@ export function ProductDialog(props: Props) {
           groups={groups}
           groupId={groupId}
           categories={categories}
+          isRetailer={isRetailer}
           onGroupChange={setGroupId}
         />
 

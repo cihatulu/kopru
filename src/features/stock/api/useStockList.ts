@@ -10,10 +10,17 @@ export interface StockRow {
   quantity: number | null;
   unit: string;
   updatedAt: string | null;
+  category: string | null;
+  groupId: string | null;
+  images: string[];
+  widthCm: number | null;
+  depthCm: number | null;
+  heightCm: number | null;
+  variants: any[];
 }
 
 // Açık kolon listeleri (kilitli kural 19). Gizli fiyat katmanları burada yok (A4).
-const PRODUCT_COLUMNS = 'id, name, code';
+const PRODUCT_COLUMNS = 'id, name, code, category, group_id, images, width_cm, depth_cm, height_cm, variants';
 const STOCK_COLUMNS = 'product_id, quantity, unit, updated_at';
 
 /**
@@ -74,6 +81,13 @@ export function useStockList(search: string) {
           quantity: s ? s.quantity : null,
           unit: s?.unit ?? 'adet',
           updatedAt: s?.updatedAt ?? null,
+          category: (p.category as string | null) ?? null,
+          groupId: (p.group_id as string | null) ?? null,
+          images: Array.isArray(p.images) ? (p.images as string[]) : [],
+          widthCm: p.width_cm != null ? Number(p.width_cm) : null,
+          depthCm: p.depth_cm != null ? Number(p.depth_cm) : null,
+          heightCm: p.height_cm != null ? Number(p.height_cm) : null,
+          variants: Array.isArray(p.variants) ? p.variants : [],
         };
       });
     },

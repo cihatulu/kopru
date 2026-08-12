@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/constants';
-import { TREE_LABELS, useCatalogTree } from '../api/useCatalogTree';
+import { useCatalogTree } from '../api/useCatalogTree';
 import { TreeBranch } from './TreeBranch';
 
 /**
@@ -18,7 +18,6 @@ export function CatalogTree({ ownerOrgId }: { ownerOrgId: string | undefined }) 
   const [open, setOpen] = useState<Set<string>>(new Set());
 
   const activeGroup = params.get('grup');
-  const activeCategory = params.get('kategori');
   const activeProduct = params.get('urun');
 
   if (!tree.data || tree.data.length === 0) return null;
@@ -42,7 +41,11 @@ export function CatalogTree({ ownerOrgId }: { ownerOrgId: string | undefined }) 
         const groupKey = group.id ?? 'grupsuz';
         // Aktif grup kendiliğinden açılır: kullanıcı ona tıkladıysa içeriğini
         // görmek istiyor demektir.
-        const groupOpen = open.has(groupKey) || activeGroup === group.id;
+        const groupProducts = group.categories
+          .flatMap((c) => c.products)
+          .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+        const hasActiveProduct = groupProducts.some((p) => p.id === activeProduct);
+        const groupOpen = open.has(groupKey) || activeGroup === group.id || hasActiveProduct;
 
         return (
           <TreeBranch
@@ -50,48 +53,28 @@ export function CatalogTree({ ownerOrgId }: { ownerOrgId: string | undefined }) 
             label={group.name}
             emphasis
             expanded={groupOpen}
-            active={activeGroup === group.id}
+            active={activeGroup === group.id && !activeProduct}
             onToggle={() => toggle(groupKey)}
             onSelect={() => go(group.id ? `grup=${group.id}` : 'grup=yok')}
           >
-            {group.categories.map((category) => {
-              const catKey = `${groupKey}:${category.name ?? 'kategorisiz'}`;
-              const catOpen = open.has(catKey) || activeCategory === category.name;
-
-              return (
-                <TreeBranch
-                  key={catKey}
-                  label={category.name ?? TREE_LABELS.uncategorized}
-                  expanded={catOpen}
-                  active={activeCategory === category.name}
-                  onToggle={() => toggle(catKey)}
-                  onSelect={() =>
-                    go(
-                      category.name
-                        ? `kategori=${encodeURIComponent(category.name)}`
-                        : 'kategori=yok',
-                    )
+            {groupProducts.map((p) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    go(group.id ? `grup=${group.id}&urun=${p.id}` : `urun=${p.id}`)
                   }
+                  title={p.code}
+                  className={`w-full truncate rounded px-1.5 py-1 text-left text-xs transition-colors ${
+                    activeProduct === p.id
+                      ? 'bg-slate-700/80 font-bold text-white'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`}
                 >
-                  {category.products.map((p) => (
-                    <li key={p.id}>
-                      <button
-                        type="button"
-                        onClick={() => go(`urun=${p.id}`)}
-                        title={p.code}
-                        className={`w-full truncate rounded px-1.5 py-1 text-left text-xs transition-colors ${
-                          activeProduct === p.id
-                            ? 'bg-slate-700/80 text-white'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        {p.name}
-                      </button>
-                    </li>
-                  ))}
-                </TreeBranch>
-              );
-            })}
+                  {p.name}
+                </button>
+              </li>
+            ))}
           </TreeBranch>
         );
       })}

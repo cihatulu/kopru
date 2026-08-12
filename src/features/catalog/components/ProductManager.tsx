@@ -42,8 +42,11 @@ export function ProductManager({ orgId }: { orgId: string }) {
   const costs = useProductCosts(ids);
   const stock = useProductStock(ids);
   const admin = useCatalogAdmin();
+  const session = useAuthSession();
   // Kalıcı silme yalnız org SAHİBİNDE; sunucu da ayrıca doğrular.
-  const canDelete = useAuthSession().data?.orgRole === 'owner';
+  const canDelete = session.data?.orgRole === 'owner';
+  const isSubscriber = session.data?.org?.isSubscriber ?? true;
+  const isGuestManufacturer = session.data?.org?.kind === 'manufacturer' && !isSubscriber;
 
   const visible = filterProducts(
     all,
@@ -81,6 +84,7 @@ export function ProductManager({ orgId }: { orgId: string }) {
           productCount={all.length}
           setCount={all.filter((p) => p.type === 'set').length}
           groups={groups.data ?? []}
+          isGuest={isGuestManufacturer}
           onAssignGroup={() => setDialog('group-assign')}
           onManageGroups={() => setDialog('group-manage')}
           onCreateSet={() => setDialog('set')}
@@ -118,6 +122,8 @@ export function ProductManager({ orgId }: { orgId: string }) {
           groupNames={new Map((groups.data ?? []).map((g) => [g.id, g.name]))}
           canDelete={canDelete}
           selectedIds={selectedIds}
+          isGuest={isGuestManufacturer}
+          onSaveCost={(productId, costPrice) => admin.saveCost.mutate({ productId, costPrice })}
           onToggleOne={(id) => setSelectedIds((prev) => toggleInSet(prev, id))}
           onToggleAll={(rowIds, selectAll) =>
             setSelectedIds(selectAll ? new Set(rowIds) : new Set())
@@ -192,11 +198,11 @@ export function ProductManager({ orgId }: { orgId: string }) {
         }}
         onCreateGroup={(name) => admin.saveGroup.mutate({ name })}
         onRenameGroup={(id, name) => admin.saveGroup.mutate({ id, name })}
-        onDeleteGroup={(id) => admin.deleteGroup.mutate(id)}
+        onDeleteGroup={(id) => admin.deleteGroup.mutate({ id })}
         onSetMembers={(groupId, productIds) => admin.setMembers.mutate({ groupId, productIds })}
         onConfirmDelete={() =>
           deleting &&
-          admin.deleteProduct.mutate(deleting.id, { onSuccess: () => setDeleting(null) })
+          admin.deleteProduct.mutate({ id: deleting.id }, { onSuccess: () => setDeleting(null) })
         }
       />
     </div>

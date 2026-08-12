@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +9,7 @@ interface Props {
   tab: LoginTab;
   pending: boolean;
   errorMessage?: string | undefined;
-  onSubmit: (values: LoginForm) => void;
+  onSubmit: (values: LoginForm & { userType?: 'owner' | 'staff' }) => void;
 }
 
 /**
@@ -22,22 +23,28 @@ interface Props {
 export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props) {
   const email = usesEmail(tab);
   const guest = isGuestTab(tab);
+  const [userType, setUserType] = useState<'owner' | 'staff' | null>(null);
 
   const {
     register,
     handleSubmit,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(schemaFor(tab.portal, tab.mode)),
   });
 
   const submit = (values: LoginForm) => {
+    if (!email && !userType) {
+      setError('root', { message: 'Lütfen giriş tipini (Yetkili/Personel) seçiniz.' });
+      return;
+    }
     if (guest && sponsorConflict({ userCode: values.userCode ?? '', ...values })) {
       setError('sponsorVkn', { message: 'Sponsor vergi numarası kendi numaranızla aynı olamaz.' });
       return;
     }
-    onSubmit(values);
+    onSubmit({ ...values, ...(userType ? { userType } : {}) });
   };
 
   return (
@@ -77,20 +84,55 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
           {errors.email && <p className="field-error">{errors.email.message}</p>}
         </div>
       ) : (
-        <div>
-          <label className="label uppercase tracking-wide" htmlFor="userCode">
-            Vergi No / Kullanıcı Kodu
-          </label>
-          <input
-            id="userCode"
-            inputMode="numeric"
-            autoComplete="username"
-            placeholder="Vergi numaranız veya T.C. kimlik numaranız"
-            className="input"
-            {...register('userCode')}
-          />
-          {errors.userCode && <p className="field-error">{errors.userCode.message}</p>}
-        </div>
+        <>
+          <div>
+            <label className="label uppercase tracking-wide" htmlFor="userCode">
+              Vergi No / Kullanıcı Kodu
+            </label>
+            <input
+              id="userCode"
+              inputMode="numeric"
+              autoComplete="username"
+              placeholder="Vergi numaranız veya T.C. kimlik numaranız"
+              className="input"
+              {...register('userCode')}
+            />
+            {errors.userCode && <p className="field-error">{errors.userCode.message}</p>}
+          </div>
+
+          {/* Yetkili / Personel Seçim Tik Alanı */}
+          <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100/80 flex justify-around items-center">
+            <label className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="userType"
+                value="owner"
+                checked={userType === 'owner'}
+                onChange={() => {
+                  setUserType('owner');
+                  clearErrors('root');
+                }}
+                className="h-4.5 w-4.5 text-slate-800 rounded border-slate-300 focus:ring-slate-850 cursor-pointer"
+              />
+              <span>Yetkili Girişi</span>
+            </label>
+            <label className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="userType"
+                value="staff"
+                checked={userType === 'staff'}
+                onChange={() => {
+                  setUserType('staff');
+                  clearErrors('root');
+                }}
+                className="h-4.5 w-4.5 text-slate-800 rounded border-slate-300 focus:ring-slate-850 cursor-pointer"
+              />
+              <span>Personel Girişi</span>
+            </label>
+          </div>
+          {errors.root?.message && <p className="field-error text-center">{errors.root.message}</p>}
+        </>
       )}
 
       <div>
@@ -116,7 +158,12 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
         </div>
       )}
 
-      <Button type="submit" loading={pending} className="w-full py-3">
+      <Button
+        type="submit"
+        loading={pending}
+        disabled={!email && !userType}
+        className="w-full py-3"
+      >
         Giriş Yap
       </Button>
     </form>

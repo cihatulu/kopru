@@ -27,7 +27,7 @@ export function OrgToolbar(props: Props) {
         <div>
           <h2 className="text-lg font-bold text-slate-900">{TITLES[kind]}</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Abone ve misafir organizasyonlar aynı listede. Misafir bir kayıt tek tıkla aboneye
+            Üye ve misafir organizasyonlar aynı listede. Misafir bir kayıt tek tıkla üyeliğe
             yükseltilir; mevcut ticari ilişkileri korunur.
           </p>
         </div>

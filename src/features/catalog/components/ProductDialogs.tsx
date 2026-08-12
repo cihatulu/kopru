@@ -20,6 +20,7 @@ interface Props {
   stock: Record<string, number> | undefined;
   editing: CatalogProduct | undefined;
   deleting: CatalogProduct | null;
+  isRetailer?: boolean;
 
   savePending: boolean;
   /** Sunucudan gelen okunur hata mesajı; yoksa null. */
@@ -47,7 +48,7 @@ interface Props {
  * tutmak için ayrıldı (A19/A20), aynı desen admin ekranında da kullanılıyor.
  */
 export function ProductDialogs(props: Props) {
-  const { kind, groups, allProducts, categories, selected, costs, stock, editing, deleting } = props;
+  const { kind, groups, allProducts, categories, selected, costs, stock, editing, deleting, isRetailer } = props;
 
   return (
     <>
@@ -60,6 +61,7 @@ export function ProductDialogs(props: Props) {
           groups={groups}
           allProducts={allProducts}
           categories={categories}
+          isRetailer={isRetailer}
           pending={props.savePending}
           errorMessage={props.saveError ?? undefined}
           onClose={props.onClose}

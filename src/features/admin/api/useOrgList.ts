@@ -17,6 +17,7 @@ export interface AdminOrg extends Cursor {
   subdomain: string | null;
   isActive: boolean;
   relationshipCount: number;
+  createdByName: string | null;
 }
 
 export interface OrgListFilters {
@@ -27,6 +28,7 @@ export interface OrgListFilters {
 }
 
 function toOrg(row: Record<string, unknown>): AdminOrg {
+  const creatorObj = row.creator as { company_name?: string } | null;
   return {
     id: row.id as string,
     createdAt: row.created_at as string,
@@ -41,6 +43,7 @@ function toOrg(row: Record<string, unknown>): AdminOrg {
     subdomain: (row.subdomain as string | null) ?? null,
     isActive: row.is_active as boolean,
     relationshipCount: (row.active_relationship_count as number | null) ?? 0,
+    createdByName: creatorObj?.company_name ?? null,
   };
 }
 

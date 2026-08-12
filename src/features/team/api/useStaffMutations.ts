@@ -23,6 +23,7 @@ export interface CreateStaffInput {
   password: string;
   email?: string;
   phone?: string;
+  userCode?: string;
 }
 
 export interface CreateStaffResult {
@@ -115,5 +116,74 @@ export function useSetStaffScope() {
       if (error) throw error;
     },
     onSuccess: invalidate,
+  });
+}
+
+export interface UpdateStaffInput {
+  userId: string;
+  fullName?: string;
+  userCode?: string;
+  email?: string;
+  phone?: string;
+  role?: 'staff' | 'accountant';
+}
+
+export function useUpdateStaff() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ userId, role, ...updates }: UpdateStaffInput) => {
+      const { error: edgeError } = await supabase.functions.invoke('update-user-password', {
+        body: {
+          mode: 'staff_update',
+          userId,
+          updates,
+        },
+      });
+
+      if (edgeError) {
+        let code = 'DEFAULT';
+        try {
+          const body = (await edgeError.context?.json()) as { error?: string } | undefined;
+          if (body?.error) code = body.error;
+        } catch {
+          // Gövde okunamadıysa
+        }
+        throw new StaffError(code);
+      }
+
+      if (role) {
+        const { error } = await supabase.rpc('set_staff_role', rpcArgs({
+          p_user_id: userId,
+          p_role: role,
+        }));
+        if (error) throw error;
+      }
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useResetStaffPassword() {
+  return useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const { error } = await supabase.functions.invoke('update-user-password', {
+        body: {
+          mode: 'staff_update',
+          userId,
+          updates: { password: newPassword },
+        },
+      });
+
+      if (error) {
+        let code = 'DEFAULT';
+        try {
+          const body = (await error.context?.json()) as { error?: string } | undefined;
+          if (body?.error) code = body.error;
+        } catch {
+          // Gövde okunamadıysa
+        }
+        throw new StaffError(code);
+      }
+    },
   });
 }

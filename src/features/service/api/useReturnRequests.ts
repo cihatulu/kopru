@@ -15,6 +15,12 @@ import {
   type Row,
 } from './shared';
 
+export interface ReturnItemDetail {
+  orderItemId: string;
+  quantity: number;
+  name: string;
+}
+
 export interface ReturnRequest extends Cursor {
   id: string;
   status: ReturnStatus;
@@ -22,22 +28,43 @@ export interface ReturnRequest extends Cursor {
   /** Onay anında SİPARİŞTEN hesaplanan tutar; talep sahibi belirleyemez. */
   approvedAmount: number | null;
   createdAt: string;
+  decidedAt: string | null;
   orderNo: string;
   counterpartyName: string;
   manufacturerOrgId: string;
+  items: ReturnItemDetail[];
 }
 
 function toReturn(raw: unknown, myOrgId: string): ReturnRequest {
   const r = raw as Row;
+  const orderObj = nested(r.orders);
+  const rawOrderItems = (Array.isArray(orderObj.order_items) ? orderObj.order_items : []) as Row[];
+  const returnItems = (Array.isArray(r.items) ? r.items : []) as Row[];
+
+  const items: ReturnItemDetail[] = returnItems.map((item) => {
+    const itemId = str(item.order_item_id);
+    const qty = Number(item.quantity || 1);
+    const foundOrderItem = rawOrderItems.find((oi) => str(oi.id) === itemId);
+    const snap = nested(foundOrderItem?.product_snapshot);
+    const name = str(snap.name) || 'İade Ürün';
+    return {
+      orderItemId: itemId,
+      quantity: qty,
+      name,
+    };
+  });
+
   return {
     id: str(r.id),
     status: r.status as ReturnStatus,
     reason: nullableStr(r.reason),
     approvedAmount: r.approved_amount == null ? null : Number(r.approved_amount),
     createdAt: str(r.created_at),
-    orderNo: str(nested(r.orders).order_no),
+    decidedAt: nullableStr(r.decided_at),
+    orderNo: str(orderObj.order_no),
     counterpartyName: counterpartyName(r, myOrgId),
     manufacturerOrgId: str(r.manufacturer_org_id),
+    items,
   };
 }
 

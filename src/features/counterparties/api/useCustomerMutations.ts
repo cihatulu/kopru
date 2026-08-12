@@ -60,10 +60,9 @@ async function toCustomerError(error: { context?: Response } | null): Promise<Cu
 
 function useInvalidate() {
   const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: ['counterparties'] });
-    // Cari hesap listesi ilişkilerden türer; yeni müşteri hemen görünmeli.
-    void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: ['counterparties'] });
+    await queryClient.invalidateQueries({ queryKey: ['accounts'] });
   };
 }
 

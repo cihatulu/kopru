@@ -7,7 +7,15 @@ import type { OrderStatus } from '../domain/status';
 export interface PlaceOrderInput {
   relationshipId: string;
   lines: CartLine[];
-  customer?: { name?: string; phone?: string; address?: string; note?: string };
+  customer?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    province?: string;
+    district?: string;
+    address?: string;
+    note?: string;
+  };
 }
 
 function useInvalidate() {
@@ -42,11 +50,11 @@ export function usePlaceOrder() {
 export function useAdvanceOrderStatus() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: OrderStatus }) => {
+    mutationFn: async ({ orderId, status, note }: { orderId: string; status: OrderStatus; note?: string }) => {
       const { error } = await supabase.rpc('advance_order_status', rpcArgs({
         p_order_id: orderId,
         p_status: status,
-        p_note: undefined,
+        p_note: note ?? undefined,
       }));
       if (error) throw error;
     },
@@ -64,15 +72,18 @@ export function useShipOrder() {
     mutationFn: async ({
       orderId,
       items,
+      note,
     }: {
       orderId: string;
       items: { orderItemId: string; quantity: number }[] | null;
+      note?: string;
     }) => {
       const { error } = await supabase.rpc('ship_order_atomic', rpcArgs({
         p_order_id: orderId,
         p_items: items
           ? items.map((i) => ({ order_item_id: i.orderItemId, quantity: i.quantity }))
           : null,
+        p_note: note || undefined,
       }));
       if (error) throw error;
     },

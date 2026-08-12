@@ -6,9 +6,11 @@ export {
   useSetStaffRole,
   useSetStaffActive,
   useSetStaffScope,
+  useUpdateStaff,
+  useResetStaffPassword,
   StaffError,
 } from './api/useStaffMutations';
-export type { CreateStaffInput, CreateStaffResult } from './api/useStaffMutations';
+export type { CreateStaffInput, CreateStaffResult, UpdateStaffInput } from './api/useStaffMutations';
 
 export {
   ROLE_LABEL,
@@ -23,3 +25,4 @@ export type { StaffMember, StaffRole, CreateStaffForm } from './domain/staff';
 export { StaffTable } from './components/StaffTable';
 export { StaffDialog } from './components/StaffDialog';
 export { ScopeDialog } from './components/ScopeDialog';
+export { ResetPasswordForm } from './components/ResetPasswordForm';

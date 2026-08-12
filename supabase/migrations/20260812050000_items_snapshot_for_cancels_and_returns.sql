@@ -1,0 +1,210 @@
+-- İptal ve İade cari hareketlerinde items_snapshot alanının doldurulması.
+
+-- 1. cancel_order_atomic: İptal edilirken siparişteki ürünlerin anlık görüntüsü kaydedilir.
+create or replace function public.cancel_order_atomic(
+  p_order_id uuid,
+  p_reason text default null
+)
+returns public.orders
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid := public.get_my_org_id();
+  v_order public.orders%rowtype;
+  v_prev numeric(14,2);
+  v_item record;
+  v_from public.order_status;
+  v_desc text;
+  v_snapshot jsonb := '[]'::jsonb;
+begin
+  select * into v_order from public.orders where id = p_order_id for update;
+  if not found then
+    raise exception 'ORDER_NOT_FOUND' using errcode = 'P0002';
+  end if;
+  v_from := v_order.status;
+  if v_me not in (v_order.manufacturer_org_id, v_order.retailer_org_id) then
+    raise exception 'FORBIDDEN' using errcode = '42501';
+  end if;
+  if v_order.status in ('cancelled', 'returned', 'delivered') then
+    raise exception 'ORDER_CLOSED' using errcode = '22023';
+  end if;
+
+  -- Ürün snapshot'ını order_items tablosundan derle
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'name', coalesce(oi.product_snapshot->>'name', p.name, 'Ürün'),
+        'code', coalesce(oi.product_snapshot->>'code', p.code, ''),
+        'quantity', oi.quantity,
+        'unit_price', oi.supplier_unit_price,
+        'total', oi.total_price
+      )
+    ),
+    '[]'::jsonb
+  ) into v_snapshot
+  from public.order_items oi
+  left join public.products p on p.id = oi.product_id
+  where oi.order_id = p_order_id;
+
+  for v_item in select product_id, quantity from public.order_items where order_id = p_order_id loop
+    if v_item.product_id is not null then
+      update public.manufacturer_stock
+         set quantity = quantity + v_item.quantity, updated_at = now()
+       where owner_org_id = v_order.manufacturer_org_id and product_id = v_item.product_id;
+    end if;
+  end loop;
+
+  select t.balance_after into v_prev
+    from public.transactions t
+   where t.relationship_id = v_order.relationship_id
+   order by t.created_at desc, t.id desc
+   limit 1
+     for update;
+
+  v_desc := 'Sipariş iptali: #' || v_order.order_no;
+  if p_reason is not null and length(trim(p_reason)) > 0 then
+    v_desc := v_desc || ' (' || trim(p_reason) || ')';
+  end if;
+
+  insert into public.transactions (
+    relationship_id, manufacturer_org_id, retailer_org_id, type, amount,
+    balance_after, order_id, description, items_snapshot
+  ) values (
+    v_order.relationship_id, v_order.manufacturer_org_id, v_order.retailer_org_id,
+    'credit', v_order.total_amount,
+    coalesce(v_prev, 0) - v_order.total_amount, p_order_id,
+    v_desc, v_snapshot
+  );
+
+  update public.orders set status = 'cancelled' where id = p_order_id
+  returning * into v_order;
+
+  insert into public.order_status_logs (order_id, from_status, to_status, actor_user_id, actor_org_id, note)
+  values (p_order_id, v_from, 'cancelled', public.get_my_user_id(), v_me, p_reason);
+
+  return v_order;
+end;
+$$;
+
+-- 2. approve_return_request: İade edilirken siparişteki ürünlerin anlık görüntüsü kaydedilir.
+create or replace function public.approve_return_request(
+  p_return_id uuid,
+  p_note text default null
+)
+returns public.return_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me uuid := public.get_my_org_id();
+  v_req public.return_requests%rowtype;
+  v_order public.orders%rowtype;
+  v_prev numeric(14,2);
+  v_amount numeric(14,2);
+  v_item record;
+  v_desc text;
+  v_snapshot jsonb := '[]'::jsonb;
+begin
+  select * into v_req from public.return_requests where id = p_return_id for update;
+  if not found then
+    raise exception 'RETURN_NOT_FOUND' using errcode = 'P0002';
+  end if;
+  if v_req.status <> 'pending' then
+    raise exception 'RETURN_CLOSED' using errcode = '22023';
+  end if;
+
+  select * into v_order from public.orders where id = v_req.order_id for update;
+  if not found then
+    raise exception 'ORDER_NOT_FOUND' using errcode = 'P0002';
+  end if;
+  if v_me <> v_req.manufacturer_org_id then
+    raise exception 'FORBIDDEN' using errcode = '42501';
+  end if;
+
+  v_amount := v_order.total_amount;
+
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'name', coalesce(oi.product_snapshot->>'name', p.name, 'Ürün'),
+        'code', coalesce(oi.product_snapshot->>'code', p.code, ''),
+        'quantity', oi.quantity,
+        'unit_price', oi.supplier_unit_price,
+        'total', oi.total_price
+      )
+    ),
+    '[]'::jsonb
+  ) into v_snapshot
+  from public.order_items oi
+  left join public.products p on p.id = oi.product_id
+  where oi.order_id = v_req.order_id;
+
+  for v_item in select product_id, quantity from public.order_items where order_id = v_req.order_id loop
+    if v_item.product_id is not null then
+      update public.manufacturer_stock
+         set quantity = quantity + v_item.quantity, updated_at = now()
+       where owner_org_id = v_req.manufacturer_org_id and product_id = v_item.product_id;
+    end if;
+  end loop;
+
+  select t.balance_after into v_prev
+    from public.transactions t
+   where t.relationship_id = v_req.relationship_id
+   order by t.created_at desc, t.id desc
+   limit 1
+     for update;
+
+  v_desc := 'Sipariş iadesi: #' || v_order.order_no;
+  if p_note is not null and length(trim(p_note)) > 0 then
+    v_desc := v_desc || ' (' || trim(p_note) || ')';
+  end if;
+
+  insert into public.transactions (
+    relationship_id, manufacturer_org_id, retailer_org_id, type, amount,
+    balance_after, order_id, description, items_snapshot
+  ) values (
+    v_req.relationship_id, v_req.manufacturer_org_id, v_req.retailer_org_id,
+    'credit', v_amount, coalesce(v_prev, 0) - v_amount, v_req.order_id,
+    v_desc, v_snapshot
+  );
+
+  update public.return_requests
+     set status = 'approved', approved_amount = v_amount,
+         decided_at = now(), decided_by = public.get_my_user_id()
+   where id = p_return_id
+  returning * into v_req;
+
+  update public.orders set status = 'returned'::public.order_status
+   where id = v_req.order_id;
+
+  insert into public.order_status_logs (order_id, from_status, to_status, actor_user_id, actor_org_id, note)
+  values (v_req.order_id, 'delivered', 'returned', public.get_my_user_id(), v_me, p_note);
+
+  return v_req;
+end;
+$$;
+
+-- 3. Mevcut tüm bos items_snapshot kayıtlarını doldur.
+update public.transactions t
+set items_snapshot = (
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'name', coalesce(oi.product_snapshot->>'name', p.name, 'Ürün'),
+        'code', coalesce(oi.product_snapshot->>'code', p.code, ''),
+        'quantity', oi.quantity,
+        'unit_price', oi.supplier_unit_price,
+        'total', oi.total_price
+      )
+    ),
+    '[]'::jsonb
+  )
+  from public.order_items oi
+  left join public.products p on p.id = oi.product_id
+  where oi.order_id = t.order_id
+)
+where t.order_id is not null
+  and (t.items_snapshot is null or t.items_snapshot = '[]'::jsonb);

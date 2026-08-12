@@ -1,7 +1,7 @@
 // features/orders PUBLIC YÜZEYİ (A20).
 
-export { useOrders, useOrderDetail } from './api/useOrders';
-export type { OrderRow, OrderDetail, OrderItemRow } from './api/useOrders';
+export { useOrders, useOrderDetail, useOrderStats } from './api/useOrders';
+export type { OrderRow, OrderDetail, OrderItemRow, OrderStats } from './api/useOrders';
 
 export {
   usePlaceOrder,
@@ -17,6 +17,7 @@ export {
   canCancel,
   isClosed,
   isShipmentStep,
+  getAvailableTransitions,
 } from './domain/status';
 export type { OrderStatus } from './domain/status';
 
@@ -34,3 +35,4 @@ export { OrderTable, OrderStatusBadge } from './components/OrderTable';
 export { CartPanel } from './components/CartPanel';
 export { ShipmentDialog } from './components/ShipmentDialog';
 export { OrderDetailPanel } from './components/OrderDetailPanel';
+export { CartProvider, useCart } from './context/CartContext';

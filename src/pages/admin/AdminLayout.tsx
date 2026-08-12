@@ -7,7 +7,7 @@ const TABS = [
   { to: ROUTES.adminManufacturers, label: 'Üretici Yönet' },
   { to: ROUTES.adminRetailers, label: 'Perakendeci Yönet' },
   { to: ROUTES.adminRelationships, label: 'İlişkiler' },
-  { to: ROUTES.adminRequests, label: 'Abonelik Talepleri' },
+  { to: ROUTES.adminRequests, label: 'Üyelik Talepleri' },
   { to: ROUTES.adminLeads, label: 'Adaylar' },
 ] as const;
 

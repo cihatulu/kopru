@@ -8,7 +8,7 @@ export type SubscriberFilter = 'all' | 'subscriber' | 'guest';
 
 export const SUBSCRIBER_FILTERS: { id: SubscriberFilter; label: string }[] = [
   { id: 'all', label: 'Tümü' },
-  { id: 'subscriber', label: 'Abone' },
+  { id: 'subscriber', label: 'Üye' },
   { id: 'guest', label: 'Misafir' },
 ];
 

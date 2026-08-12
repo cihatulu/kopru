@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
+import Draggable from 'react-draggable';
 
 interface Props {
   /** Ekran okuyucular için pencerenin adı. */
@@ -45,6 +46,8 @@ export function Modal({
     return () => window.removeEventListener('keydown', onKey);
   }, [closeDisabled, onClose]);
 
+  const nodeRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
       className={
@@ -55,9 +58,27 @@ export function Modal({
         if (!closeDisabled && e.target === e.currentTarget) onClose();
       }}
     >
-      <div role="dialog" aria-modal="true" aria-label={label} className={panelClassName}>
-        {children}
-      </div>
+      <Draggable
+        nodeRef={nodeRef}
+        cancel="input,textarea,button,select,option,a,[role='button'],.cancel-drag"
+        bounds="parent"
+      >
+        <div
+          ref={nodeRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          className={
+            (panelClassName ??
+            'max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-100/80 text-left') + ' no-scrollbar cursor-move'
+          }
+        >
+          {/* İçerik etkileşimleri sırasında sürüklemeyi bozmamak için varsayılan cursor'u sıfırlayalım */}
+          <div className="cursor-auto flex flex-col h-full min-h-0">
+            {children}
+          </div>
+        </div>
+      </Draggable>
     </div>
   );
 }

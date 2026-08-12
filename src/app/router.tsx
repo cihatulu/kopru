@@ -9,13 +9,16 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const InvitePage = lazy(() => import('@/pages/auth/InvitePage'));
 const PanelLayout = lazy(() => import('@/app/layout/PanelLayout'));
 
-const CounterpartiesPage = lazy(() => import('@/pages/shared/CounterpartiesPage'));
 const OrdersPage = lazy(() => import('@/pages/shared/OrdersPage'));
 const AccountsPage = lazy(() => import('@/pages/shared/AccountsPage'));
 const ServicePage = lazy(() => import('@/pages/shared/ServicePage'));
+const ReturnsPage = lazy(() => import('@/pages/shared/ReturnsPage'));
+const SshPage = lazy(() => import('@/pages/shared/SshPage'));
 const AnnouncementsPage = lazy(() => import('@/pages/shared/AnnouncementsPage'));
 const ReportsPage = lazy(() => import('@/pages/shared/ReportsPage'));
 const FinancePage = lazy(() => import('@/pages/retailer/FinancePage'));
+const RetailerTedarikcilerPage = lazy(() => import('@/pages/retailer/TedarikcilerPage'));
+const RetailerProductManagementPage = lazy(() => import('@/pages/retailer/ProductManagementPage'));
 
 const ProductsPage = lazy(() => import('@/pages/manufacturer/ProductsPage'));
 const StockPage = lazy(() => import('@/pages/manufacturer/StockPage'));
@@ -24,7 +27,9 @@ const TeamPage = lazy(() => import('@/pages/manufacturer/TeamPage'));
 const CustomersPage = lazy(() => import('@/pages/manufacturer/CustomersPage'));
 const ManufacturerHome = lazy(() => import('@/pages/manufacturer/ManufacturerHome'));
 const CatalogPage = lazy(() => import('@/pages/retailer/CatalogPage'));
+const CartPage = lazy(() => import('@/pages/retailer/CartPage'));
 const RetailerHome = lazy(() => import('@/pages/retailer/RetailerHome'));
+const RetailerTeamPage = lazy(() => import('@/pages/retailer/RetailerTeamPage'));
 
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
 const AdminManufacturersPage = lazy(() => import('@/pages/admin/AdminManufacturersPage'));
@@ -57,6 +62,8 @@ export const router = createBrowserRouter([
           { path: 'ekip', element: lazyRoute(<TeamPage />) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'iade', element: lazyRoute(<ReturnsPage />) },
+          { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
           { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
@@ -74,13 +81,18 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: lazyRoute(<RetailerHome />) },
           { path: 'katalog', element: lazyRoute(<CatalogPage />) },
+          { path: 'sepetim', element: lazyRoute(<CartPage />) },
           { path: 'finans', element: lazyRoute(<FinancePage />) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'iade', element: lazyRoute(<ReturnsPage />) },
+          { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
           { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
-          { path: 'tedarikcilerim', element: lazyRoute(<CounterpartiesPage />) },
+          { path: 'tedarikcilerim', element: lazyRoute(<RetailerTedarikcilerPage />) },
+          { path: 'urun-yonetimi', element: lazyRoute(<RetailerProductManagementPage />) },
+          { path: 'ekip', element: lazyRoute(<RetailerTeamPage />) },
         ],
       },
     ],

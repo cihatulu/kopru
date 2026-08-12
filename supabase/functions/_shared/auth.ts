@@ -63,5 +63,5 @@ export async function requireOrgOwner(
 }
 
 export function generateTempPassword(): string {
-  return 'kopru2026test';
+  return '1q2w3e4r';
 }

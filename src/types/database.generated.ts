@@ -52,6 +52,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          image_url: string | null
           is_active: boolean
           owner_kind: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
@@ -63,6 +64,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
@@ -74,6 +76,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id?: string
@@ -312,6 +315,87 @@ export type Database = {
           user_code?: string
         }
         Relationships: []
+      }
+      manual_transaction_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by_org_id: string | null
+          decided_by_user_id: string | null
+          description: string
+          id: string
+          relationship_id: string
+          requesting_org_id: string
+          requesting_user_id: string
+          status: string
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by_org_id?: string | null
+          decided_by_user_id?: string | null
+          description: string
+          id?: string
+          relationship_id: string
+          requesting_org_id: string
+          requesting_user_id: string
+          status?: string
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by_org_id?: string | null
+          decided_by_user_id?: string | null
+          description?: string
+          id?: string
+          relationship_id?: string
+          requesting_org_id?: string
+          requesting_user_id?: string
+          status?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_transaction_requests_decided_by_org_id_fkey"
+            columns: ["decided_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_requests_decided_by_user_id_fkey"
+            columns: ["decided_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_requests_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_requests_requesting_org_id_fkey"
+            columns: ["requesting_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_requests_requesting_user_id_fkey"
+            columns: ["requesting_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manufacturer_stock: {
         Row: {
@@ -830,6 +914,7 @@ export type Database = {
       relationships: {
         Row: {
           activated_at: string | null
+          can_edit_catalog: boolean
           created_at: string
           discount_rate: number
           id: string
@@ -843,6 +928,7 @@ export type Database = {
         }
         Insert: {
           activated_at?: string | null
+          can_edit_catalog?: boolean
           created_at?: string
           discount_rate?: number
           id?: string
@@ -856,6 +942,7 @@ export type Database = {
         }
         Update: {
           activated_at?: string | null
+          can_edit_catalog?: boolean
           created_at?: string
           discount_rate?: number
           id?: string
@@ -1385,6 +1472,8 @@ export type Database = {
           amount: number
           balance_after: number
           created_at: string
+          created_by_org_id: string | null
+          created_by_user_id: string | null
           description: string
           id: string
           items_snapshot: Json
@@ -1398,6 +1487,8 @@ export type Database = {
           amount: number
           balance_after: number
           created_at?: string
+          created_by_org_id?: string | null
+          created_by_user_id?: string | null
           description: string
           id?: string
           items_snapshot?: Json
@@ -1411,6 +1502,8 @@ export type Database = {
           amount?: number
           balance_after?: number
           created_at?: string
+          created_by_org_id?: string | null
+          created_by_user_id?: string | null
           description?: string
           id?: string
           items_snapshot?: Json
@@ -1421,6 +1514,20 @@ export type Database = {
           type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_created_by_org_id_fkey"
+            columns: ["created_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_manufacturer_org_id_fkey"
             columns: ["manufacturer_org_id"]
@@ -1540,6 +1647,8 @@ export type Database = {
           amount: number
           balance_after: number
           created_at: string
+          created_by_org_id: string | null
+          created_by_user_id: string | null
           description: string
           id: string
           items_snapshot: Json
@@ -1556,6 +1665,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_delete_org: { Args: { p_org_id: string }; Returns: undefined }
       admin_set_relationship_status: {
         Args: {
           p_relationship_id: string
@@ -1563,6 +1673,7 @@ export type Database = {
         }
         Returns: {
           activated_at: string | null
+          can_edit_catalog: boolean
           created_at: string
           discount_rate: number
           id: string
@@ -1641,8 +1752,36 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_return_request: {
+        Args: { p_note?: string; p_return_id: string }
+        Returns: {
+          approved_amount: number | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          items: Json
+          manufacturer_org_id: string
+          order_id: string
+          reason: string | null
+          relationship_id: string
+          retailer_org_id: string
+          status: Database["public"]["Enums"]["return_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "return_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assign_products_to_group: {
-        Args: { p_group_id?: string; p_product_ids: string[] }
+        Args: {
+          p_group_id?: string
+          p_owner_org_id?: string
+          p_product_ids: string[]
+        }
         Returns: number
       }
       bulk_update_stock: { Args: { p_rows: Json }; Returns: number }
@@ -1748,6 +1887,10 @@ export type Database = {
       }
       current_balance: { Args: { p_relationship_id: string }; Returns: number }
       dashboard_summary: { Args: never; Returns: Json }
+      decide_manual_transaction: {
+        Args: { p_approve: boolean; p_request_id: string }
+        Returns: undefined
+      }
       decide_subscription_request: {
         Args: {
           p_approve: boolean
@@ -1777,8 +1920,22 @@ export type Database = {
         Args: { p_plan: Database["public"]["Enums"]["plan_tier"] }
         Returns: Json
       }
-      delete_product_group: { Args: { p_id: string }; Returns: undefined }
-      delete_product_permanently: { Args: { p_id: string }; Returns: undefined }
+      delete_counterparty: {
+        Args: { p_relationship_id: string }
+        Returns: undefined
+      }
+      delete_manual_transaction: {
+        Args: { p_transaction_id: string }
+        Returns: boolean
+      }
+      delete_product_group: {
+        Args: { p_id: string; p_owner_org_id?: string }
+        Returns: undefined
+      }
+      delete_product_permanently: {
+        Args: { p_id: string; p_owner_org_id?: string }
+        Returns: undefined
+      }
       downgrade_org_to_guest: {
         Args: { p_org_id: string }
         Returns: {
@@ -1818,6 +1975,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["org_role"]
       }
+      get_my_sponsor_org_id: { Args: never; Returns: string }
       get_my_user_id: { Args: never; Returns: string }
       is_my_relationship: {
         Args: { p_relationship_id: string }
@@ -1827,6 +1985,16 @@ export type Database = {
       is_valid_tckn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn: { Args: { p: string }; Returns: boolean }
       is_valid_vkn_tc: { Args: { p: string }; Returns: boolean }
+      ledger_accounts_for_me: {
+        Args: never
+        Returns: Database["public"]["CompositeTypes"]["ledger_account_row"][]
+        SetofOptions: {
+          from: "*"
+          to: "ledger_account_row"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       ledger_period_summary: {
         Args: { p_from?: string; p_relationship_id: string; p_to?: string }
         Returns: Database["public"]["CompositeTypes"]["ledger_summary"]
@@ -1860,9 +2028,22 @@ export type Database = {
         Args: { p_customer?: Json; p_items: Json; p_relationship_id: string }
         Returns: string
       }
+      recalculate_relationship_balances: {
+        Args: { p_relationship_id: string }
+        Returns: undefined
+      }
       relationship_has_module: {
         Args: { p_module: string; p_relationship_id: string }
         Returns: boolean
+      }
+      request_manual_transaction: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_relationship_id: string
+          p_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Returns: Json
       }
       request_subscription: {
         Args: {
@@ -1891,6 +2072,7 @@ export type Database = {
         Args: { p_accept: boolean; p_relationship_id: string }
         Returns: {
           activated_at: string | null
+          can_edit_catalog: boolean
           created_at: string
           discount_rate: number
           id: string
@@ -1929,6 +2111,7 @@ export type Database = {
           p_id?: string
           p_images?: string[]
           p_name?: string
+          p_owner_org_id?: string
           p_set_contents?: Json
           p_stock?: number
           p_supplier_price?: number
@@ -1939,13 +2122,19 @@ export type Database = {
         Returns: string
       }
       save_product_group: {
-        Args: { p_id?: string; p_name?: string; p_sort_order?: number }
+        Args: {
+          p_id?: string
+          p_name?: string
+          p_owner_org_id?: string
+          p_sort_order?: number
+        }
         Returns: string
       }
       set_counterparty_discount: {
         Args: { p_discount_rate: number; p_relationship_id: string }
         Returns: {
           activated_at: string | null
+          can_edit_catalog: boolean
           created_at: string
           discount_rate: number
           id: string
@@ -1971,6 +2160,7 @@ export type Database = {
         }
         Returns: {
           activated_at: string | null
+          can_edit_catalog: boolean
           created_at: string
           discount_rate: number
           id: string
@@ -1990,11 +2180,15 @@ export type Database = {
         }
       }
       set_group_products: {
-        Args: { p_group_id: string; p_product_ids: string[] }
+        Args: {
+          p_group_id: string
+          p_owner_org_id?: string
+          p_product_ids: string[]
+        }
         Returns: number
       }
       set_product_active: {
-        Args: { p_active: boolean; p_id: string }
+        Args: { p_active: boolean; p_id: string; p_owner_org_id?: string }
         Returns: {
           category: string | null
           code: string
@@ -2070,7 +2264,7 @@ export type Database = {
       }
       shares_relationship_with: { Args: { p_org_id: string }; Returns: boolean }
       ship_order_atomic: {
-        Args: { p_items?: Json; p_order_id: string }
+        Args: { p_items?: Json; p_note?: string; p_order_id: string }
         Returns: string
       }
       show_limit: { Args: never; Returns: number }
@@ -2086,6 +2280,35 @@ export type Database = {
           p_phone?: string
         }
         Returns: undefined
+      }
+      update_manual_transaction: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_transaction_id: string
+          p_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Returns: {
+          amount: number
+          balance_after: number
+          created_at: string
+          created_by_org_id: string | null
+          created_by_user_id: string | null
+          description: string
+          id: string
+          items_snapshot: Json
+          manufacturer_org_id: string
+          order_id: string | null
+          relationship_id: string
+          retailer_org_id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       upgrade_org_to_subscriber: {
         Args: {
@@ -2157,6 +2380,16 @@ export type Database = {
         org_created: boolean | null
         status: Database["public"]["Enums"]["relationship_status"] | null
         already_existed: boolean | null
+      }
+      ledger_account_row: {
+        relationship_id: string | null
+        counterparty_org_id: string | null
+        company_name: string | null
+        vkn_tc: string | null
+        total_debit: number | null
+        total_credit: number | null
+        balance: number | null
+        counterparty_is_subscriber: boolean | null
       }
       ledger_summary: {
         opening_balance: number | null

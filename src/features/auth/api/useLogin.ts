@@ -11,6 +11,7 @@ export interface LoginRequest {
   sponsorVkn?: string;
   email?: string;
   password: string;
+  userType?: 'owner' | 'staff';
 }
 
 interface LoginResponse {

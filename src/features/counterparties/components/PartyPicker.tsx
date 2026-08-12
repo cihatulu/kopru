@@ -27,6 +27,10 @@ export function PartyPicker({
     );
   }
 
+  if (edges.length <= 1) {
+    return null;
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       {edges.map((e) => (
@@ -35,7 +39,7 @@ export function PartyPicker({
           type="button"
           onClick={() => onSelect(e)}
           aria-pressed={selectedId === e.id}
-          className={`rounded-lg px-3.5 py-2 text-sm font-medium ring-1 ring-inset transition-colors ${
+          className={`rounded-lg px-3.5 py-2 text-sm font-medium ring-1 ring-inset transition-colors cursor-pointer ${
             selectedId === e.id
               ? 'bg-brand-600 text-white ring-brand-600'
               : 'bg-white text-slate-700 ring-slate-200 hover:ring-brand-500'

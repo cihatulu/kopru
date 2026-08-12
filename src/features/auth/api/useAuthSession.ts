@@ -8,7 +8,7 @@ export const AUTH_SESSION_KEY = ['auth-session'] as const;
 // Açık kolon listesi (kilitli kural 19) — select('*') yasak.
 const SESSION_COLUMNS =
   'id, org_id, org_role, full_name, email, is_active, ' +
-  'organizations!users_org_id_fkey!inner(id, kind, company_name, vkn_tc, is_subscriber, plan, ' +
+  'organizations!users_org_id_fkey!inner(id, kind, company_name, vkn_tc, is_subscriber, plan, created_by_org_id, ' +
   'enabled_modules, branding, subdomain, is_active)';
 
 export interface SessionOrg {
@@ -18,6 +18,7 @@ export interface SessionOrg {
   vknTc: string;
   isSubscriber: boolean;
   plan: Plan | null;
+  createdByOrgId: string | null;
   enabledModules: string[];
   subdomain: string | null;
 }
@@ -28,6 +29,7 @@ export interface SessionUser {
   fullName: string | null;
   isPlatformAdmin: boolean;
   org: SessionOrg | null;
+  sponsorOrgId?: string | null;
 }
 
 async function fetchSession(): Promise<SessionUser | null> {
@@ -42,7 +44,7 @@ async function fetchSession(): Promise<SessionUser | null> {
     .maybeSingle();
 
   if (adminRow) {
-    return { id: auth.user.id, orgRole: 'owner', fullName: null, isPlatformAdmin: true, org: null };
+    return { id: auth.user.id, orgRole: 'owner', fullName: null, isPlatformAdmin: true, org: null, sponsorOrgId: null };
   }
 
   const { data: row, error } = await supabase
@@ -77,9 +79,11 @@ async function fetchSession(): Promise<SessionUser | null> {
       vknTc: org.vkn_tc as string,
       isSubscriber: org.is_subscriber as boolean,
       plan: (org.plan as Plan | null) ?? null,
+      createdByOrgId: (org.created_by_org_id as string | null) ?? null,
       enabledModules: (org.enabled_modules as string[] | null) ?? [],
       subdomain: (org.subdomain as string | null) ?? null,
     },
+    sponsorOrgId: (auth.user.app_metadata?.sponsor_org_id as string | null) ?? null,
   };
 }
 

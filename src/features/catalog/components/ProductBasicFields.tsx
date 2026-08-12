@@ -8,6 +8,7 @@ interface Props {
   groupId: string | null;
   /** Daha önce kullanılmış kategoriler — yazım tutarlılığı için öneri listesi. */
   categories: string[];
+  isRetailer?: boolean;
   onGroupChange: (id: string | null) => void;
 }
 
@@ -18,7 +19,7 @@ interface Props {
  * Alan sırası kullanıcının kafasındaki sırayla aynı olmalı; aksi halde
  * kategoriyi grubun üstünde sanır.
  */
-export function ProductBasicFields({ form, groups, groupId, categories, onGroupChange }: Props) {
+export function ProductBasicFields({ form, groups, groupId, categories, isRetailer, onGroupChange }: Props) {
   const { register, formState } = form;
   const e = formState.errors;
 
@@ -28,7 +29,7 @@ export function ProductBasicFields({ form, groups, groupId, categories, onGroupC
         <Field label="Ürün adı" error={e.name?.message}>
           <input className="input" autoFocus {...register('name')} />
         </Field>
-        <Field label="Model (ürün kodu)" error={e.code?.message}>
+        <Field label="Model" error={e.code?.message}>
           <input className="input" {...register('code')} />
         </Field>
       </div>
@@ -84,13 +85,33 @@ export function ProductBasicFields({ form, groups, groupId, categories, onGroupC
       </fieldset>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Field label="Maliyet fiyatı (₺)" error={e.costPrice?.message}>
-          <input className="input" type="number" step="0.01" {...register('costPrice')} />
-          <p className="mt-1 text-xs text-slate-500">Yalnız size görünür.</p>
+        <Field
+          label={isRetailer ? "Alış maliyeti (₺)" : "Maliyet fiyatı (₺)"}
+          error={isRetailer ? e.supplierPrice?.message : e.costPrice?.message}
+        >
+          <input
+            className="input"
+            type="number"
+            step="0.01"
+            {...register(isRetailer ? 'supplierPrice' : 'costPrice')}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            {isRetailer ? "Tedarikçinizden alış maliyetiniz." : "Yalnız size görünür."}
+          </p>
         </Field>
-        <Field label="Satış fiyatı (₺)" error={e.supplierPrice?.message}>
-          <input className="input" type="number" step="0.01" {...register('supplierPrice')} />
-          <p className="mt-1 text-xs text-slate-500">Perakendecinin göreceği fiyat.</p>
+        <Field
+          label="Satış fiyatı (₺)"
+          error={isRetailer ? e.costPrice?.message : e.supplierPrice?.message}
+        >
+          <input
+            className="input"
+            type="number"
+            step="0.01"
+            {...register(isRetailer ? 'costPrice' : 'supplierPrice')}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            {isRetailer ? "Müşterilerinize perakende satış fiyatınız." : "Perakendecinin göreceği fiyat."}
+          </p>
         </Field>
         <Field label="Genel stok adedi" error={e.stock?.message}>
           <input className="input" type="number" step="1" {...register('stock')} />

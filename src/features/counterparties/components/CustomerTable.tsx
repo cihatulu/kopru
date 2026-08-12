@@ -7,6 +7,7 @@ interface Props {
   onEdit: (e: Edge) => void;
   onResetPassword: (e: Edge) => void;
   onToggleActive: (e: Edge) => void;
+  onDelete?: (e: Edge) => void;
 }
 
 const TH = 'px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500';
@@ -23,6 +24,7 @@ export function CustomerTable({
   onEdit,
   onResetPassword,
   onToggleActive,
+  onDelete,
 }: Props) {
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-xl">
@@ -118,6 +120,14 @@ export function CustomerTable({
                       disabled={busyId === edge.id}
                       onClick={() => onToggleActive(edge)}
                     />
+                    {!active && onDelete && (
+                      <Action
+                        label="Sil"
+                        tone="red"
+                        disabled={busyId === edge.id}
+                        onClick={() => onDelete(edge)}
+                      />
+                    )}
                   </div>
                 </td>
               </tr>
@@ -137,7 +147,7 @@ function Action({
   onClick,
 }: {
   label: string;
-  tone: 'amber' | 'plain';
+  tone: 'amber' | 'plain' | 'red';
   disabled?: boolean;
   title?: string | undefined;
   onClick: () => void;
@@ -147,6 +157,8 @@ function Action({
   const skin =
     tone === 'amber'
       ? 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
+      : tone === 'red'
+      ? 'border-red-200 bg-red-50 text-red-800 hover:bg-red-100'
       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50';
 
   return (

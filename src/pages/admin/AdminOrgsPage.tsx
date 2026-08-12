@@ -12,6 +12,7 @@ import {
   useResetOrgPassword,
   useSetOrgActive,
   useUpgradeOrg,
+  useDeleteOrg,
   type AdminOrg,
   type CreateOrgForm,
   type ResetPasswordResult,
@@ -27,6 +28,7 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<SubscriberFilter>('all');
   const [target, setTarget] = useState<AdminOrg | null>(null);
+  const [deletingOrg, setDeletingOrg] = useState<AdminOrg | null>(null);
   const [result, setResult] = useState<UpgradeResult | null>(null);
   const [creating, setCreating] = useState(false);
   const [credentials, setCredentials] = useState<
@@ -40,6 +42,7 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
   const downgrade = useDowngradeOrg();
   const setActive = useSetOrgActive();
   const resetPassword = useResetOrgPassword();
+  const deleteOrg = useDeleteOrg();
 
   const orgs = list.data?.pages.flat() ?? [];
 
@@ -70,6 +73,14 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
     });
   };
 
+  const doDelete = (org: AdminOrg) => {
+    setBusyId(org.id);
+    deleteOrg.mutate(org.id, {
+      onSuccess: () => setDeletingOrg(null),
+      onSettled: () => setBusyId(undefined),
+    });
+  };
+
   return (
     <div className="space-y-5">
       <OrgToolbar
@@ -96,6 +107,12 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
         </p>
       )}
 
+      {deleteOrg.isError && (
+        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          Firma silinirken bir hata oluştu.
+        </p>
+      )}
+
       {list.isPending ? (
         <div className="flex justify-center py-12">
           <Spinner />
@@ -108,6 +125,7 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
           onDowngrade={(org) => downgrade.mutate(org.id)}
           onToggleActive={(org) => setActive.mutate({ orgId: org.id, isActive: !org.isActive })}
           onResetPassword={doReset}
+          onDelete={setDeletingOrg}
         />
       )}
 
@@ -120,6 +138,33 @@ export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
           >
             Daha fazla yükle
           </Button>
+        </div>
+      )}
+
+      {deletingOrg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">Firmayı Sil</h3>
+            <p className="text-sm text-slate-600">
+              <strong className="text-slate-900">{deletingOrg.companyName}</strong> firmasını ve bu firmaya ait tüm verileri kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="secondary"
+                disabled={deleteOrg.isPending}
+                onClick={() => setDeletingOrg(null)}
+              >
+                Vazgeç
+              </Button>
+              <Button
+                variant="danger"
+                loading={deleteOrg.isPending}
+                onClick={() => doDelete(deletingOrg)}
+              >
+                Evet, Sil
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

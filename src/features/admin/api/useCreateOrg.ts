@@ -12,8 +12,8 @@ export interface CreateOrgInput {
 }
 
 /**
- * Admin yeni organizasyon açar. Kayıt MİSAFİR olarak doğar; aboneye yükseltme
- * ayrı ve bilinçli bir adımdır (A2).
+ * Admin yeni organizasyon açar. Admin tarafından açılan her organizasyon
+ * muhakkak suretle ÜYE (abone / is_subscriber: true) olarak doğar.
  *
  * `vkn_tc` UNIQUE olduğu için aynı numarayla ikinci kayıt DB tarafından
  * reddedilir — yakınsama anahtarı budur (A3).
@@ -29,7 +29,8 @@ export function useCreateOrg() {
         authorized_name: input.authorizedName ?? null,
         phone: input.phone ?? null,
         email: input.email ?? null,
-        is_subscriber: false,
+        is_subscriber: true,
+        plan: 'basic',
       });
       if (error) throw error;
     },

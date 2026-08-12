@@ -5,7 +5,7 @@
  * maddeler korundu, olmayanlar (AI Raporları gibi) dış servis gerektirdiği için
  * şimdilik listede yok.
  */
-import { ORG_KIND, ROUTES, type OrgKind } from '@/constants';
+import { ORG_KIND, ROUTES, type OrgKind, type OrgRole } from '@/constants';
 
 export interface NavItem {
   to: string;
@@ -51,7 +51,8 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
   { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşteri Yönetimi', icon: ICONS.users },
   { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },
   { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler', icon: ICONS.cart },
-  { to: `${ROUTES.manufacturer}/servis`, label: 'İade ve SSH', icon: ICONS.ret, module: 'ssh' },
+  { to: `${ROUTES.manufacturer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
+  { to: `${ROUTES.manufacturer}/ssh`, label: 'SSH Talepleri', icon: ICONS.wrench, module: 'ssh' },
   { to: `${ROUTES.manufacturer}/raporlar`, label: 'Raporlar', icon: ICONS.report, module: 'reports' },
   {
     to: `${ROUTES.manufacturer}/duyurular`,
@@ -64,10 +65,13 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
 
 export const RETAILER_NAV: readonly NavItem[] = [
   { to: ROUTES.retailer, label: 'Anasayfa', icon: ICONS.home },
-  { to: `${ROUTES.retailer}/katalog`, label: 'Ürün Kataloğu', icon: ICONS.catalog },
+  { to: `${ROUTES.retailer}/urun-yonetimi`, label: 'Ürün Yönetimi', icon: ICONS.box },
+  { to: `${ROUTES.retailer}/katalog`, label: 'Ürün Kataloğu', icon: ICONS.catalog, slot: 'catalog-tree' },
+  { to: `${ROUTES.retailer}/sepetim`, label: 'Sepetim', icon: ICONS.cart },
   { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim', icon: ICONS.cart },
+  { to: `${ROUTES.retailer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
   { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesabım', icon: ICONS.wallet },
-  { to: `${ROUTES.retailer}/servis`, label: 'İade ve SSH', icon: ICONS.ret, module: 'ssh' },
+  { to: `${ROUTES.retailer}/ssh`, label: 'SSH Talepleri', icon: ICONS.wrench, module: 'ssh' },
   { to: `${ROUTES.retailer}/finans`, label: 'Finans', icon: ICONS.wallet, module: 'finance' },
   { to: `${ROUTES.retailer}/raporlar`, label: 'Raporlar', icon: ICONS.report, module: 'reports' },
   {
@@ -77,16 +81,64 @@ export const RETAILER_NAV: readonly NavItem[] = [
     module: 'announcements',
   },
   { to: `${ROUTES.retailer}/tedarikcilerim`, label: 'Tedarikçilerim', icon: ICONS.users },
+  { to: `${ROUTES.retailer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
 ] as const;
 
 /**
  * Org'un görebileceği menü.
  *
- * Plan gating kaldırıldı — tüm kullanıcılar tüm menü maddelerini görür.
- * `enabledModules` parametresi geriye dönük uyumluluk için korunuyor.
+ * Misafir perakendeciler (isSubscriber = false) için Finans, Raporlar,
+ * Tedarikçilerim ve Ekip Yönetimi menüleri gizlenir.
  */
-export function navFor(kind: OrgKind, _enabledModules: string[]): NavItem[] {
-  return kind === ORG_KIND.manufacturer
+export function navFor(
+  kind: OrgKind,
+  _enabledModules: string[],
+  role: OrgRole,
+  isSubscriber: boolean = true,
+): NavItem[] {
+  let items = kind === ORG_KIND.manufacturer
     ? [...MANUFACTURER_NAV]
     : [...RETAILER_NAV];
+
+  if (kind === ORG_KIND.retailer && !isSubscriber) {
+    items = items.filter(
+      (i) =>
+        i.label !== 'Finans' &&
+        i.label !== 'Raporlar' &&
+        i.label !== 'Tedarikçilerim' &&
+        i.label !== 'Ekip Yönetimi',
+    );
+  }
+
+  if (kind === ORG_KIND.manufacturer && !isSubscriber) {
+    items = items.filter(
+      (i) =>
+        i.label !== 'Müşteri Yönetimi' &&
+        i.label !== 'Raporlar' &&
+        i.label !== 'Ekip Yönetimi',
+    );
+  }
+
+  if (role === 'staff') {
+    return items.filter(
+      (i) =>
+        i.label !== 'Ekip Yönetimi' &&
+        i.label !== 'Müşteri Yönetimi' &&
+        i.label !== 'Raporlar' &&
+        i.label !== 'Tedarikçilerim' &&
+        i.label !== 'Cari Hesaplar' &&
+        i.label !== 'Cari Hesabım' &&
+        i.label !== 'Finans',
+    );
+  }
+
+  if (role === 'accountant') {
+    return items.filter(
+      (i) =>
+        i.label !== 'Ekip Yönetimi' &&
+        i.label !== 'Raporlar',
+    );
+  }
+
+  return items;
 }

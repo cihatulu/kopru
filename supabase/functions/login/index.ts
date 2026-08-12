@@ -1,18 +1,8 @@
 /**
- * KÖPRÜ — TEK GİRİŞ YOLU (kilitli kural 3).
+ * KÖPRÜ — Giriş Edge Function.
  *
- * Kullanıcı VKN/TCKN + şifre ile girer; Supabase Auth ise e-posta ister.
- * Aradaki eşleme, sponsor-VKN doğrulaması ve kilit sayacı BURADA yapılır —
- * istemcide değil.
- *
- * Neden istemcide değil:
- *   1. İstemci `users` tablosunda kod arayabilseydi, "bu VKN sistemde var mı?"
- *      diye deneyerek tüm müşteri listesi çıkarılabilirdi.
- *   2. Misafirin sponsor VKN'si bir KİMLİK FAKTÖRÜDÜR; istemcide doğrulanamaz.
- *   3. Kilit sayacı istemcide tutulsaydı kullanıcı sıfırlayabilirdi.
- *
- * Tüm başarısız yollar TEK TİP cevap döner (INVALID_CREDENTIALS) — hangi adımda
- * düşüldüğü sızdırılmaz. Tek istisna: kilitli hesap (kullanıcının bilmesi gerekir).
+ * Yetkili (owner) veya Personel (staff/accountant) girişi ayrımı.
+ * Personel de sahibi olan firmanın VKN'sini girerek, tik işaretleyip kendi şifresiyle girer.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/cors.ts';
@@ -29,9 +19,9 @@ interface LoginBody {
   mode?: Mode;
   userCode?: string;
   sponsorVkn?: string;
-  /** Yalnız admin portalında kullanılır — platform admini bir org'a bağlı değildir. */
   email?: string;
   password?: string;
+  userType?: 'owner' | 'staff'; // 'owner' = Yetkili, 'staff' = Personel
 }
 
 const normalize = (v: string) => v.replace(/[\s.-]/g, '');
@@ -57,8 +47,6 @@ async function audit(
   reason: string | null,
   ip: string | null,
 ) {
-  // Başarısız giriş system_logs'a YAZILMAZ — orası org bazlı okunabilir ve
-  // deneme kayıtları kullanıcı numaralandırmasına yol açardı.
   await admin.from('login_audit').insert({
     user_code: userCode,
     portal,
@@ -68,11 +56,6 @@ async function audit(
   });
 }
 
-/**
- * Platform admini girişi. Admin hiçbir organizasyona bağlı değildir, dolayısıyla
- * VKN'si de yoktur — kimliği e-postadır. Şifre doğru olsa bile `platform_admins`
- * tablosunda kaydı yoksa oturum verilmez.
- */
 async function loginAsAdmin(email: string, password: string, ip: string | null) {
   const anon = anonClient();
   const { data, error } = await anon.auth.signInWithPassword({ email, password });
@@ -89,7 +72,6 @@ async function loginAsAdmin(email: string, password: string, ip: string | null) 
     .maybeSingle();
 
   if (!row) {
-    // Normal bir kullanıcı admin kapısından girmeye çalıştı. Oturumu iptal et.
     await anon.auth.signOut();
     await audit(email, null, false, 'NOT_ADMIN', ip);
     return json({ error: 'INVALID_CREDENTIALS' }, 401);
@@ -121,9 +103,9 @@ Deno.serve(async (req) => {
   const userCode = normalize(body.userCode ?? '');
   const sponsorVkn = normalize(body.sponsorVkn ?? '');
   const password = body.password ?? '';
+  const userType = body.userType;
 
   try {
-    // --- Admin ayrı kapı: org yok, kimlik e-posta ---
     if (portal === 'admin') {
       const email = (body.email ?? '').trim().toLowerCase();
       if (!email || !password) return json({ error: 'INVALID_CREDENTIALS' }, 401);
@@ -135,47 +117,144 @@ Deno.serve(async (req) => {
       (mode !== 'subscriber' && mode !== 'guest') ||
       !userCode ||
       !password ||
-      (mode === 'guest' && !sponsorVkn)
+      (mode === 'guest' && !sponsorVkn) ||
+      (userType !== 'owner' && userType !== 'staff')
     ) {
       return json({ error: 'INVALID_CREDENTIALS' }, 401);
     }
 
-    // --- 1. Kullanıcı + organizasyon ---
-    const { data: user } = await admin
-      .from('users')
-      .select(
-        'id, org_id, org_role, auth_email, is_active, failed_attempts, locked_until, ' +
-          'organizations!users_org_id_fkey!inner(id, kind, is_subscriber, is_active)',
-      )
-      .eq('user_code', userCode)
-      .maybeSingle();
+    let selectedUser: any = null;
+    let selectedOrg: any = null;
+    let sessionData: any = null;
 
-    // Kullanıcı yoksa bile aynı cevap: var/yok bilgisi sızdırılmaz.
-    if (!user) {
-      await audit(userCode, portal, false, 'NO_USER', ip);
-      return json({ error: 'INVALID_CREDENTIALS' }, 401);
+    if (userType === 'owner') {
+      // --- YETKİLİ GİRİŞİ ---
+      const { data: user } = await admin
+        .from('users')
+        .select(
+          'id, org_id, org_role, auth_email, is_active, failed_attempts, locked_until, ' +
+            'organizations!users_org_id_fkey!inner(id, kind, is_subscriber, is_active)',
+        )
+        .eq('user_code', userCode)
+        .eq('org_role', 'owner')
+        .maybeSingle();
+
+      if (!user) {
+        await audit(userCode, portal, false, 'NO_OWNER_USER', ip);
+        return json({ error: 'INVALID_CREDENTIALS' }, 401);
+      }
+
+      // Kilit kontrolü
+      if (user.locked_until && new Date(user.locked_until) > new Date()) {
+        await audit(userCode, portal, false, 'LOCKED', ip);
+        return json({ error: 'ACCOUNT_LOCKED', retryAfter: LOCK_SECONDS }, 423);
+      }
+
+      selectedUser = user;
+      selectedOrg = user.organizations;
+
+      // Şifre doğrulama
+      const anon = anonClient();
+      const { data: signIn, error: signInError } = await anon.auth.signInWithPassword({
+        email: user.auth_email,
+        password,
+      });
+
+      if (signInError || !signIn.session) {
+        const attempts = (user.failed_attempts ?? 0) + 1;
+        await admin
+          .from('users')
+          .update({
+            failed_attempts: attempts,
+            locked_until:
+              attempts >= MAX_ATTEMPTS
+                ? new Date(Date.now() + LOCK_SECONDS * 1000).toISOString()
+                 : null,
+          })
+          .eq('id', user.id);
+
+        await audit(userCode, portal, false, 'BAD_PASSWORD', ip);
+        return json({ error: 'INVALID_CREDENTIALS' }, 401);
+      }
+
+      sessionData = signIn;
+    } else {
+      // --- PERSONEL GİRİŞİ ---
+      // Önce VKN'ye sahip organizasyonu bulalım
+      const { data: org } = await admin
+        .from('organizations')
+        .select('id, kind, is_subscriber, is_active')
+        .eq('vkn_tc', userCode)
+        .maybeSingle();
+
+      if (!org) {
+        await audit(userCode, portal, false, 'ORG_NOT_FOUND', ip);
+        return json({ error: 'INVALID_CREDENTIALS' }, 401);
+      }
+
+      // Bu organizasyondaki tüm aktif personelleri bulalım
+      const { data: staffList } = await admin
+        .from('users')
+        .select('id, org_id, org_role, auth_email, is_active, failed_attempts, locked_until')
+        .eq('org_id', org.id)
+        .in('org_role', ['staff', 'accountant'])
+        .eq('is_active', true);
+
+      if (!staffList || staffList.length === 0) {
+        await audit(userCode, portal, false, 'NO_STAFF_MEMBERS', ip);
+        return json({ error: 'INVALID_CREDENTIALS' }, 401);
+      }
+
+      // Her aktif personeli şifreyle doğrulamayı deneyelim
+      const anon = anonClient();
+      for (const member of staffList) {
+        if (member.locked_until && new Date(member.locked_until) > new Date()) {
+          continue; // Kilitli hesapları atla
+        }
+
+        const { data: signIn, error: signInError } = await anon.auth.signInWithPassword({
+          email: member.auth_email,
+          password,
+        });
+
+        if (!signInError && signIn.session) {
+          selectedUser = member;
+          selectedOrg = org;
+          sessionData = signIn;
+          break; // Doğru personeli bulduk!
+        } else {
+          const attempts = (member.failed_attempts ?? 0) + 1;
+          await admin
+            .from('users')
+            .update({
+              failed_attempts: attempts,
+              locked_until:
+                attempts >= MAX_ATTEMPTS
+                  ? new Date(Date.now() + LOCK_SECONDS * 1000).toISOString()
+                  : null,
+            })
+            .eq('id', member.id);
+        }
+      }
+
+      if (!selectedUser || !sessionData) {
+        await audit(userCode, portal, false, 'BAD_PASSWORD_FOR_ALL_STAFF', ip);
+        return json({ error: 'INVALID_CREDENTIALS' }, 401);
+      }
     }
 
-    const org = user.organizations as unknown as {
-      id: string;
-      kind: OrgPortal;
-      is_subscriber: boolean;
-      is_active: boolean;
-    };
+    const org = selectedOrg;
+    const user = selectedUser;
+    const signIn = sessionData;
 
-    // --- 2. Kilit ---
-    if (user.locked_until && new Date(user.locked_until) > new Date()) {
-      await audit(userCode, portal, false, 'LOCKED', ip);
-      return json({ error: 'ACCOUNT_LOCKED', retryAfter: LOCK_SECONDS }, 423);
-    }
-
-    // --- 3. Kapı doğru mu: portal ↔ org.kind, mode ↔ is_subscriber ---
+    // Kapı ve mod doğrulamaları
     const portalOk = org.kind === portal;
     const modeOk = mode === 'subscriber' ? org.is_subscriber : !org.is_subscriber;
     const activeOk = user.is_active && org.is_active;
 
-    // --- 4. Misafir ise sponsor VKN bir KİMLİK FAKTÖRÜDÜR ---
     let sponsorOk = true;
+    let sponsorOrgId: string | null = null;
+
     if (mode === 'guest') {
       const { data: sponsor } = await admin
         .from('organizations')
@@ -186,7 +265,6 @@ Deno.serve(async (req) => {
       if (!sponsor || sponsor.kind === org.kind) {
         sponsorOk = false;
       } else {
-        // Karşı tarafla aramızda AKTİF bir ilişki kenarı olmak zorunda.
         const mfr = org.kind === 'manufacturer' ? org.id : sponsor.id;
         const rtl = org.kind === 'retailer' ? org.id : sponsor.id;
 
@@ -198,6 +276,7 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         sponsorOk = rel?.status === 'active';
+        if (sponsorOk) sponsorOrgId = sponsor.id;
       }
     }
 
@@ -210,50 +289,55 @@ Deno.serve(async (req) => {
             ? 'INACTIVE'
             : 'NO_ACTIVE_RELATIONSHIP';
       await audit(userCode, portal, false, reason, ip);
-      // Şifre doğru olsa bile burada durulur; ayrım istemciye gösterilmez.
       return json({ error: 'INVALID_CREDENTIALS' }, 401);
     }
 
-    // --- 5. Şifre ---
-    const anon = anonClient();
-    const { data: signIn, error: signInError } = await anon.auth.signInWithPassword({
-      email: user.auth_email,
-      password,
-    });
-
-    if (signInError || !signIn.session) {
-      const attempts = (user.failed_attempts ?? 0) + 1;
-      await admin
-        .from('users')
-        .update({
-          failed_attempts: attempts,
-          locked_until:
-            attempts >= MAX_ATTEMPTS
-              ? new Date(Date.now() + LOCK_SECONDS * 1000).toISOString()
-              : null,
-        })
-        .eq('id', user.id);
-
-      await audit(userCode, portal, false, 'BAD_PASSWORD', ip);
-      return json({ error: 'INVALID_CREDENTIALS' }, 401);
-    }
-
-    // --- 6. Başarılı: sayaç sıfırlanır ---
+    // Sayaçları sıfırla
     await admin
       .from('users')
       .update({ failed_attempts: 0, locked_until: null })
       .eq('id', user.id);
 
+    // Misafir oturum izolasyonu
+    if (sponsorOrgId) {
+      await admin.auth.admin.updateUserById(user.id, {
+        app_metadata: { sponsor_org_id: sponsorOrgId },
+      });
+    } else if (mode === 'subscriber') {
+      await admin.auth.admin.updateUserById(user.id, {
+        app_metadata: { sponsor_org_id: null },
+      });
+    }
+
     await audit(userCode, portal, true, null, ip);
 
+    // ZORUNLU: updateUserById app_metadata'yı günceller ama signIn.session.access_token
+    // bu güncellemeden ÖNCE imzalandı — içinde eski sponsor_org_id claim'i var.
+    // refreshSession ile taze bir JWT alıyoruz; bu JWT güncel app_metadata'yı taşır.
+    // Aksi hâlde üye olarak giriş yapan perakendeci yalnız eski sponsor üreticiyi görebilir.
+    let finalAccessToken = signIn.session.access_token;
+    let finalRefreshToken = signIn.session.refresh_token;
+    try {
+      const refreshAnon = anonClient();
+      const { data: refreshed } = await refreshAnon.auth.refreshSession({
+        refresh_token: signIn.session.refresh_token,
+      });
+      if (refreshed?.session) {
+        finalAccessToken = refreshed.session.access_token;
+        finalRefreshToken = refreshed.session.refresh_token;
+      }
+    } catch {
+      // Yenileme başarısız olursa orijinal token'ı kullan (yine de giriş olur).
+    }
+
     return json({
-      access_token: signIn.session.access_token,
-      refresh_token: signIn.session.refresh_token,
+      access_token: finalAccessToken,
+      refresh_token: finalRefreshToken,
       org: { id: org.id, kind: org.kind, isSubscriber: org.is_subscriber },
       orgRole: user.org_role,
+      sponsorOrgId,
     });
   } catch (e) {
-    // Hata detayı istemciye SIZDIRILMAZ; sunucu log'unda kalır.
     console.error('login failed', e);
     return json({ error: 'INTERNAL' }, 500);
   }

@@ -1,78 +1,94 @@
-import { Button } from '@/components/ui/Button';
-import { formatDateTime } from '@/lib/format';
-import { SSH_STATUS_META, isSshClosed, nextSshStatus } from '../domain/labels';
+import { SSH_STATUS_META } from '../domain/labels';
 import type { SshRequest } from '../api/useSshRequests';
+import { formatDate } from '@/lib/format';
 
 interface Props {
   requests: SshRequest[];
   myOrgId: string;
-  busyId?: string | undefined;
-  onAdvance: (r: SshRequest) => void;
-  onCancel: (r: SshRequest) => void;
+  isManufacturer?: boolean;
   onOpen: (r: SshRequest) => void;
+  onOpenStatusModal?: (r: SshRequest) => void;
 }
 
-export function SshList({ requests, myOrgId, busyId, onAdvance, onCancel, onOpen }: Props) {
+export function SshList({
+  requests,
+  myOrgId,
+  isManufacturer = false,
+  onOpen,
+  onOpenStatusModal,
+}: Props) {
   if (requests.length === 0) {
     return (
-      <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
-        Servis talebi yok.
-      </p>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center text-xs font-semibold text-slate-400">
+        Henüz gösterilecek SSH (servis) talebi bulunmuyor.
+      </div>
     );
   }
 
   return (
-    <ul className="space-y-3">
-      {requests.map((r) => {
-        const meta = SSH_STATUS_META[r.status];
-        // Servis akışını yalnız üretici ilerletir; perakendeci iptal edebilir.
-        const iAmManufacturer = r.manufacturerOrgId === myOrgId;
-        const next = iAmManufacturer ? nextSshStatus(r.status) : null;
+    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+      <div className="overflow-x-auto w-full">
+        <table className="min-w-[850px] w-full text-left text-xs">
+          <thead className="border-b border-slate-100 bg-slate-50/70 font-extrabold uppercase tracking-wider text-slate-400">
+            <tr>
+              <th className="px-5 py-3.5">TARİH</th>
+              {isManufacturer && <th className="px-5 py-3.5">PERAKENDECİ</th>}
+              <th className="px-5 py-3.5">SİPARİŞ NO</th>
+              <th className="px-5 py-3.5">SSH KODU</th>
+              <th className="px-5 py-3.5">SON KULLANICI</th>
+              <th className="px-5 py-3.5">AÇIKLAMA</th>
+              <th className="px-5 py-3.5">DURUM</th>
+              <th className="px-5 py-3.5 text-right">İŞLEMLER</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+            {requests.map((r) => {
+              const meta = SSH_STATUS_META[r.status];
+              const isOwnerManufacturer = r.manufacturerOrgId === myOrgId;
 
-        return (
-          <li
-            key={r.id}
-            className="flex flex-wrap items-start justify-between gap-3 rounded-xl bg-white p-5 ring-1 ring-inset ring-slate-200"
-          >
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium text-slate-900">{r.title}</p>
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}
-                >
-                  {meta.label}
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-slate-500">
-                {r.counterpartyName} · {formatDateTime(r.createdAt)}
-                {r.customerName && ` · Müşteri: ${r.customerName}`}
-              </p>
-              {r.description && (
-                <p className="mt-2 max-w-2xl text-sm text-slate-600">{r.description}</p>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              {/* Detay kapalı talepte de açılır: geçmiş ve fotoğraflar okunabilir kalmalı. */}
-              <Button variant="secondary" onClick={() => onOpen(r)}>
-                Detay
-              </Button>
-              {!isSshClosed(r.status) && (
-                <>
-                  <Button variant="ghost" disabled={busyId === r.id} onClick={() => onCancel(r)}>
-                    İptal
-                  </Button>
-                  {next && (
-                    <Button loading={busyId === r.id} onClick={() => onAdvance(r)}>
-                      {SSH_STATUS_META[next].label}
-                    </Button>
+              return (
+                <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-5 py-4 text-slate-400 whitespace-nowrap">{formatDate(r.createdAt)}</td>
+                  {isManufacturer && (
+                    <td className="px-5 py-4 font-bold text-slate-800">{r.counterpartyName}</td>
                   )}
-                </>
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+                  <td className="px-5 py-4 font-mono font-bold text-slate-800">{r.orderNo}</td>
+                  <td className="px-5 py-4 font-mono font-black text-slate-900">{r.sshCode}</td>
+                  <td className="px-5 py-4 text-slate-700 font-semibold">{r.customerName || '—'}</td>
+                  <td className="px-5 py-4 text-slate-500 max-w-xs truncate" title={r.description || r.title}>
+                    {r.description || r.title}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${meta.className}`}>
+                      {meta.label}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpen(r)}
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 font-bold text-slate-700 text-xs shadow-2xs transition-colors cursor-pointer"
+                      >
+                        İncele
+                      </button>
+                      {isOwnerManufacturer && onOpenStatusModal && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenStatusModal(r)}
+                          className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 font-bold text-slate-700 text-xs shadow-2xs transition-colors cursor-pointer"
+                        >
+                          Güncelle
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

@@ -73,6 +73,7 @@ export { CatalogRow } from './components/CatalogRow';
 export { GroupManager } from './components/GroupManager';
 export { ProductToolbar } from './components/ProductToolbar';
 export { CatalogTree } from './components/CatalogTree';
+export { RetailerCatalogTree } from './components/RetailerCatalogTree';
 export { CatalogGrid } from './components/CatalogGrid';
 export { ProductCard } from './components/ProductCard';
 export { ProductPreview } from './components/ProductPreview';

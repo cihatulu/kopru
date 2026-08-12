@@ -24,9 +24,10 @@ export interface AddCounterpartyResult {
 
 function useInvalidate() {
   const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: ['counterparties'] });
-    void queryClient.invalidateQueries({ queryKey: ['auth-session'] });
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: ['counterparties'] });
+    await queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    await queryClient.invalidateQueries({ queryKey: ['auth-session'] });
   };
 }
 
@@ -133,6 +134,40 @@ export function useRequestSubscription() {
         p_note: note ?? undefined,
       }));
       if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useToggleCatalogPermission() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ relationshipId, nextVal }: { relationshipId: string; nextVal: boolean }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from('relationships')
+        .update({ can_edit_catalog: nextVal })
+        .eq('id', relationshipId);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteCounterparty() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (relationshipId: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).rpc('delete_counterparty', rpcArgs({
+        p_relationship_id: relationshipId,
+      }));
+      if (error) {
+        if ((error as { message?: string }).message?.includes('HAS_TRANSACTIONS')) {
+          throw new Error('Bu firmanın geçmiş işlem (sipariş/fatura) kayıtları olduğu için silinemez.');
+        }
+        throw error;
+      }
     },
     onSuccess: invalidate,
   });

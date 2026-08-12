@@ -60,6 +60,11 @@ export interface SaveProductInput {
   height?: number | undefined;
   /** undefined = stok değişmesin. 0 geçerli bir değerdir. */
   stock?: number | undefined;
+  /**
+   * Perakendeci, misafir üreticiye ait ürün kaydetmek için bu alanı doldurur.
+   * Boşsa çağıranın kendi org'u kullanılır (üretici kendi ürünleri için).
+   */
+  ownerOrgId?: string | undefined;
 }
 
 function useInvalidate() {
@@ -96,6 +101,7 @@ export function useSaveProduct() {
         p_height: input.height ?? undefined,
         p_stock: input.stock ?? undefined,
         p_category: input.category ?? undefined,
+        p_owner_org_id: input.ownerOrgId ?? undefined,
       }));
       if (error) throw toProductError(error);
       return data;
@@ -107,11 +113,12 @@ export function useSaveProduct() {
 export function useSetProductActive() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+    mutationFn: async ({ id, isActive, ownerOrgId }: { id: string; isActive: boolean; ownerOrgId?: string }) => {
       // Soft delete (kilitli kural 16); gerçek DELETE yok.
       const { error } = await supabase.rpc('set_product_active', rpcArgs({
         p_id: id,
         p_active: isActive,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (error) throw error;
     },
@@ -130,9 +137,31 @@ export function useSetProductActive() {
 export function useDeleteProductPermanently() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('delete_product_permanently', rpcArgs({ p_id: id }));
+    mutationFn: async ({ id, ownerOrgId }: { id: string; ownerOrgId?: string }) => {
+      const { error } = await supabase.rpc('delete_product_permanently', rpcArgs({
+        p_id: id,
+        p_owner_org_id: ownerOrgId ?? undefined,
+      }));
       if (error) throw toProductError(error);
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Üretici maliyet fiyatını (KATMAN 1) kaydeder/günceller. */
+export function useSaveProductCost() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ productId, costPrice }: { productId: string; costPrice: number }) => {
+      const { error } = await supabase.from('product_costs').upsert(
+        {
+          product_id: productId,
+          cost_price: costPrice,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'product_id' },
+      );
+      if (error) throw error;
     },
     onSuccess: invalidate,
   });

@@ -22,15 +22,15 @@ interface StatusMeta {
 }
 
 export const ORDER_STATUS_META: Record<OrderStatus, StatusMeta> = {
-  pending: { label: 'Onay bekliyor', className: 'bg-amber-50 text-amber-700' },
-  confirmed: { label: 'Onaylandı', className: 'bg-blue-50 text-blue-700' },
-  in_production: { label: 'Üretimde', className: 'bg-indigo-50 text-indigo-700' },
-  partially_shipped: { label: 'Kısmi sevk', className: 'bg-cyan-50 text-cyan-700' },
-  shipped: { label: 'Sevk edildi', className: 'bg-teal-50 text-teal-700' },
-  delivered: { label: 'Teslim edildi', className: 'bg-emerald-50 text-emerald-700' },
-  cancelled: { label: 'İptal', className: 'bg-slate-100 text-slate-600' },
-  return_requested: { label: 'İade talebi', className: 'bg-orange-50 text-orange-700' },
-  returned: { label: 'İade edildi', className: 'bg-rose-50 text-rose-700' },
+  pending: { label: 'Bekliyor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  confirmed: { label: 'Bekliyor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  in_production: { label: 'Üretiliyor', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
+  partially_shipped: { label: 'Kısmi Sevk', className: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+  shipped: { label: 'Sevkiyatta', className: 'bg-purple-50 text-purple-700 border border-purple-200' },
+  delivered: { label: 'Teslim Edildi', className: 'bg-green-50 text-green-700 border border-green-200' },
+  cancelled: { label: 'İptal Edildi', className: 'bg-red-50 text-red-700 border border-red-200' },
+  return_requested: { label: 'İade Sürecinde', className: 'bg-orange-50 text-orange-700 border border-orange-200' },
+  returned: { label: 'İade Edildi', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
 };
 
 const CLOSED: OrderStatus[] = ['cancelled', 'returned', 'delivered'];
@@ -81,7 +81,30 @@ export function nextAction(
   return null;
 }
 
-/** İptal, sevkiyattan önce ve her iki tarafça yapılabilir. */
+/** İptal, kapalı (teslim edilen veya zaten iptal/iade edilmiş) olmayan her siparişte yapılabilir. */
 export function canCancel(status: OrderStatus): boolean {
-  return !isClosed(status) && status !== 'shipped' && status !== 'partially_shipped';
+  return !isClosed(status);
+}
+
+/** Kullanıcının durum dropdown'ında seçebileceği geçiş hedefleri. */
+export function getAvailableTransitions(
+  status: OrderStatus,
+  myKind: OrgKind,
+): { value: OrderStatus; label: string }[] {
+  const list: { value: OrderStatus; label: string }[] = [
+    { value: status, label: ORDER_STATUS_META[status].label },
+  ];
+
+  if (isClosed(status)) return list;
+
+  const next = nextAction(status, myKind);
+  if (next) {
+    list.push({ value: next.to, label: ORDER_STATUS_META[next.to].label });
+  }
+
+  if (canCancel(status)) {
+    list.push({ value: 'cancelled', label: 'İptal Et' });
+  }
+
+  return list;
 }

@@ -19,18 +19,30 @@ export function useCreateSsh() {
       relationshipId: string;
       title: string;
       description?: string;
+      orderId?: string;
+      productId?: string;
       customerName?: string;
       customerPhone?: string;
-    }) => {
-      const { error } = await supabase.rpc('create_ssh_request', rpcArgs({
+    }): Promise<string> => {
+      const isUuid = (val?: string) =>
+        !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+      const { data, error } = await supabase.rpc('create_ssh_request', rpcArgs({
         p_relationship_id: input.relationshipId,
         p_title: input.title,
-        p_description: input.description ?? undefined,
-        p_order_id: undefined,
-        p_product_id: undefined,
-        p_customer: { name: input.customerName ?? '', phone: input.customerPhone ?? '' },
+        p_description: input.description?.trim() || undefined,
+        p_order_id: isUuid(input.orderId) ? input.orderId : undefined,
+        p_product_id: isUuid(input.productId) ? input.productId : undefined,
+        p_customer: (input.customerName?.trim() || input.customerPhone?.trim())
+          ? { name: input.customerName?.trim() || '', phone: input.customerPhone?.trim() || '' }
+          : undefined,
       }));
-      if (error) throw error;
+      if (error) {
+        console.error('[create_ssh_request] rpc error:', error.message, error.details, error.hint);
+        throw error;
+      }
+      console.log('[create_ssh_request] success, new ssh id:', data);
+      return String(data);
     },
     onSuccess: invalidate,
   });

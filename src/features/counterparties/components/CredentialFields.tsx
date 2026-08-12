@@ -32,7 +32,7 @@ export function CredentialFields({
 
       <label className="block">
         <span className="label">Kullanıcı Kodu (Giriş ID)</span>
-        <input className="input" value={userCode} onChange={(e) => onUserCode(e.target.value.toLowerCase())} />
+        <input autoComplete="off" className="input" value={userCode} onChange={(e) => onUserCode(e.target.value.toLowerCase())} />
         <p className="mt-1 text-xs text-slate-500">
           Vergi numarasından otomatik dolar; isterseniz değiştirebilirsiniz. Küçük harf ve rakam,
           3-32 karakter.
@@ -44,6 +44,7 @@ export function CredentialFields({
           <span className="label">Şifre</span>
           <input
             type="password"
+            autoComplete="new-password"
             className="input"
             value={password}
             onChange={(e) => onPassword(e.target.value)}
@@ -53,6 +54,7 @@ export function CredentialFields({
           <span className="label">Şifre Tekrar</span>
           <input
             type="password"
+            autoComplete="new-password"
             className="input"
             value={passwordRepeat}
             onChange={(e) => onPasswordRepeat(e.target.value)}

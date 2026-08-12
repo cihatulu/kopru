@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { normalizeVknTc } from '@/lib/tckn';
-import type { OrgKind } from '@/constants';
+import { ORG_KIND, type OrgKind } from '@/constants';
 import { useOrgLookup } from '../api/useOrgLookup';
 import {
   canSubmit,
@@ -64,12 +64,14 @@ export function CustomerDialog({
 
   return (
     <Modal
-      label="Yeni müşteri ekle"
+      label={myKind === ORG_KIND.manufacturer ? 'Yeni Müşteri Ekle' : 'Yeni Üretici Ekle'}
       panelClassName="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
       onClose={onClose}
       closeDisabled={pending}
     >
-      <h2 className="text-lg font-extrabold text-slate-800">Yeni Müşteri Ekle (Cari Kart)</h2>
+      <h2 className="text-lg font-extrabold text-slate-800">
+        {myKind === ORG_KIND.manufacturer ? 'Yeni Müşteri Ekle' : 'Yeni Üretici Ekle'} (Cari Kart)
+      </h2>
 
       <div className="mt-5 space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">

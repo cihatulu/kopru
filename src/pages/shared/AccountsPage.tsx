@@ -1,59 +1,79 @@
 import { useState } from 'react';
-import { LedgerPanel } from '@/features/accounts';
-import { PartyPicker, useCounterparties, otherParty, type Edge } from '@/features/counterparties';
+import {
+  AccountDetailDialog,
+  AccountsTable,
+  filterAccounts,
+  useLedgerAccounts,
+  type AccountRow,
+} from '@/features/accounts';
 import { useAuthSession } from '@/features/auth';
 import { Spinner } from '@/components/ui/Spinner';
 import { ORG_KIND } from '@/constants';
 
-/** Cari hesaplar — karşı taraf seç, ekstreyi gör. YALNIZ KOMPOZİSYON (A20). */
+/** Cari Hesaplar — liste + hesap detayı. YALNIZ KOMPOZİSYON (A20). */
 export default function AccountsPage() {
   const { data: user } = useAuthSession();
-  const [relId, setRelId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState<AccountRow | null>(null);
 
-  const list = useCounterparties();
+  const accounts = useLedgerAccounts();
 
   if (!user?.org) return null;
-  const orgId = user.org.id;
-  const edges: Edge[] = (list.data?.pages.flat() ?? []).filter((e) => e.status === 'active');
-  const isManufacturer = user.org.kind === ORG_KIND.manufacturer;
-  const selected = edges.find((e) => e.id === relId);
 
-  // KİLİTLİ KURAL 8: cari hareketi perakendeci veya muhasebeci girer;
-  // üretici yalnızca izler. Sunucu da aynı kontrolü yapar.
-  const canWrite = !isManufacturer && (user.orgRole === 'owner' || user.orgRole === 'accountant');
+  const isManufacturer = user.org.kind === ORG_KIND.manufacturer;
+
+  /**
+   * KİLİTLİ KURAL 8 (son hali):
+   *   - Yalnız ABONE org yazabilir (misafir izler).
+   *   - Abone org içinde yalnız owner veya accountant.
+   *   - Sunucu da bu kontrolü yapar (request_manual_transaction RPC).
+   */
+  const canWrite =
+    user.org.isSubscriber &&
+    (user.orgRole === 'owner' || user.orgRole === 'accountant');
+
+  const rows = filterAccounts(accounts.data ?? [], search);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-bold text-slate-900">Cari Hesaplar</h2>
-        <p className="mt-1 max-w-2xl text-sm text-slate-500">
-          Tutarlar üreticinin satış fiyatı üzerinden işler.{' '}
-          {isManufacturer
-            ? 'Bu ekran salt okunurdur; hareket girişini perakendeci yapar.'
-            : 'Sipariş verdiğinizde borç, ödeme kaydettiğinizde alacak oluşur.'}
-        </p>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Cari Hesaplar</h2>
+          <p className="mt-1 max-w-2xl text-sm text-slate-500">
+            Tutarlar üreticinin satış fiyatı üzerinden işler. Kayıtlar silinemez; düzeltme ters
+            yönde yeni kayıtla yapılır.
+          </p>
+        </div>
+        <label className="w-full sm:w-72">
+          <span className="sr-only">Firma ara</span>
+          <input
+            className="input"
+            placeholder="Firma adı veya VKN ile ara…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
       </div>
 
-      {list.isPending ? (
-        <div className="flex justify-center py-12">
+      {accounts.isPending ? (
+        <div className="flex justify-center py-16">
           <Spinner />
         </div>
+      ) : accounts.isError ? (
+        <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          Cari hesaplar yüklenemedi.
+        </p>
       ) : (
-        <PartyPicker
-          edges={edges}
-          myOrgId={orgId}
-          selectedId={relId}
-          emptyText="Aktif ticari ilişkiniz yok."
-          onSelect={(e) => setRelId(e.id)}
-        />
+        <AccountsTable rows={rows} isManufacturer={isManufacturer} onOpen={setOpen} />
       )}
 
-      {selected && (
-        <LedgerPanel
-          relationshipId={selected.id}
-          counterpartyName={otherParty(selected, orgId).companyName}
+      {open && (
+        <AccountDetailDialog
+          account={open}
           isManufacturer={isManufacturer}
           canWrite={canWrite}
+          myOrgId={user.org.id}
+          onClose={() => setOpen(null)}
         />
       )}
     </div>

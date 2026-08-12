@@ -27,6 +27,7 @@ export interface Edge {
   manufacturerOrgId: string;
   manufacturer: Party;
   retailer: Party;
+  canEditCatalog?: boolean;
 }
 
 /** Kenarın bana göre karşı ucu. */

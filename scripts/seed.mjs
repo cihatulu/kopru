@@ -61,7 +61,7 @@ async function api(path, init = {}) {
  *
  * Rastgele istenirse: SEED_PASSWORD=random
  */
-const FIXED_PASSWORD = 'kopru2026test';
+const FIXED_PASSWORD = '1q2w3e4r';
 
 function password() {
   const requested = process.env.SEED_PASSWORD;

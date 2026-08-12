@@ -98,6 +98,7 @@ describe('LoginFormFields — alanlar sekmeye göre değişir', () => {
     const onSubmit = vi.fn();
     render(<LoginFormFields {...base} tab={tabById('member-retailer')} onSubmit={onSubmit} />);
 
+    await userEvent.click(screen.getByLabelText('Yetkili Girişi'));
     await userEvent.type(screen.getByLabelText(/Vergi No/), '111111111'); // 9 hane — geçersiz format
     await userEvent.type(screen.getByLabelText('Şifre'), 'sifre123');
     await userEvent.click(screen.getByRole('button', { name: 'Giriş Yap' }));
@@ -110,6 +111,7 @@ describe('LoginFormFields — alanlar sekmeye göre değişir', () => {
     const onSubmit = vi.fn();
     render(<LoginFormFields {...base} tab={tabById('member-retailer')} onSubmit={onSubmit} />);
 
+    await userEvent.click(screen.getByLabelText('Yetkili Girişi'));
     await userEvent.type(screen.getByLabelText(/Vergi No/), '123-456 7890');
     await userEvent.type(screen.getByLabelText('Şifre'), 'sifre123');
     await userEvent.click(screen.getByRole('button', { name: 'Giriş Yap' }));
@@ -122,6 +124,7 @@ describe('LoginFormFields — alanlar sekmeye göre değişir', () => {
     const onSubmit = vi.fn();
     render(<LoginFormFields {...base} tab={tabById('guest-retailer')} onSubmit={onSubmit} />);
 
+    await userEvent.click(screen.getByLabelText('Yetkili Girişi'));
     await userEvent.type(screen.getByLabelText(/Sizi ekleyen üreticinin/), '1234567890');
     await userEvent.type(screen.getByLabelText(/Vergi No/), '1234567890');
     await userEvent.type(screen.getByLabelText('Şifre'), 'sifre123');

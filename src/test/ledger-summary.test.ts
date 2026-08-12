@@ -79,9 +79,20 @@ describe('ledger_period_summary', () => {
 describe('elle cari hareketi — kilitli kural 8', () => {
   const manual = functionBody('add_manual_transaction');
 
-  test('yalnız PERAKENDECİ tarafı yazabilir', () => {
-    // Üretici cariyi yalnızca izler.
-    expect(manual).toMatch(/v_rel\.retailer_org_id <> v_me/i);
+  test('yalnız ilişkinin TARAFI olan org yazabilir', () => {
+    // Kural 8 güncellendi: parayı tahsil eden üretici de, ödeyen perakendeci
+    // de kendi kaydını girer. Sınır taraf olmaktır — üçüncü bir org yazamaz.
+    expect(manual).toMatch(
+      /v_me not in \(v_rel\.manufacturer_org_id, v_rel\.retailer_org_id\)/i,
+    );
+  });
+
+  test('kaydı KİMİN girdiği saklanır', () => {
+    // İki taraf da yazabildiğine göre, sonradan "bu kaydı kim girdi"
+    // sorusunun cevabı satırın kendisinde olmalı.
+    expect(manual).toMatch(/created_by_org_id/i);
+    expect(manual).toMatch(/created_by_user_id/i);
+    expect(manual).toMatch(/v_me, public\.get_my_user_id\(\)/i);
   });
 
   test('yalnız owner veya accountant', () => {

@@ -3,7 +3,8 @@
 
 export const ORG_LIST_COLUMNS =
   'id, kind, company_name, vkn_tc, email, phone, authorized_name, ' +
-  'is_subscriber, plan, subdomain, is_active, active_relationship_count, created_at';
+  'is_subscriber, plan, subdomain, is_active, active_relationship_count, created_by_org_id, created_at, ' +
+  'creator:created_by_org_id(company_name)';
 
 // Gömme ipucu KISIT ADIYLA verilir — `relationships` → `organizations` yabancı
 // anahtarı A15 gereği bileşiktir ve PostgREST onu kolon adından çözemez

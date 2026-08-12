@@ -14,7 +14,7 @@ const PARTY = 'id, company_name, vkn_tc, is_subscriber, phone, email, authorized
 const MFR_FK = 'relationships_manufacturer_org_id_manufacturer_kind_fkey';
 const RTL_FK = 'relationships_retailer_org_id_retailer_kind_fkey';
 const EDGE_COLUMNS =
-  `id, status, discount_rate, created_at, initiated_by_org_id, manufacturer_org_id, ` +
+  `id, status, discount_rate, created_at, initiated_by_org_id, manufacturer_org_id, can_edit_catalog, ` +
   `manufacturer:organizations!${MFR_FK}(${PARTY}), retailer:organizations!${RTL_FK}(${PARTY})`;
 
 export interface Cursor {
@@ -46,6 +46,7 @@ function toEdge(raw: unknown): Edge {
     manufacturerOrgId: row.manufacturer_org_id as string,
     manufacturer: toParty(row.manufacturer as Record<string, unknown> | null),
     retailer: toParty(row.retailer as Record<string, unknown> | null),
+    canEditCatalog: (row.can_edit_catalog as boolean) ?? true,
   };
 }
 

@@ -10,6 +10,7 @@ import {
 import {
   useDeleteProductPermanently,
   useSaveProduct,
+  useSaveProductCost,
   useSetProductActive,
 } from './useProductMutations';
 
@@ -22,6 +23,7 @@ import {
  */
 export function useCatalogAdmin() {
   const saveProduct = useSaveProduct();
+  const saveCost = useSaveProductCost();
   const setActive = useSetProductActive();
   const deleteProduct = useDeleteProductPermanently();
   const saveGroup = useSaveProductGroup();
@@ -32,6 +34,7 @@ export function useCatalogAdmin() {
 
   return {
     saveProduct,
+    saveCost,
     setActive,
     deleteProduct,
     saveGroup,

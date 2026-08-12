@@ -1,18 +1,19 @@
 import { describe, expect, test } from 'vitest';
 import { CSV_HEADERS, parseCsv, parseQuantity, toCsv } from './csv';
 
-const BOM = '﻿';
+const BOM = '\uFEFF';
 
 const row = {
   productId: '11111111-1111-1111-1111-111111111111',
-  productCode: 'GRD-01',
   productName: 'Gardırop',
+  productCode: 'GRD-01',
+  category: null,
+  groupName: null,
   quantity: 12,
 };
 
 describe('toCsv', () => {
   test('BOM ile başlar', () => {
-    // BOM olmazsa Excel UTF-8'i sistem kod sayfası sanar: "Gardırop" → "GardÄ±rop".
     expect(toCsv([row]).startsWith(BOM)).toBe(true);
   });
 
@@ -50,7 +51,6 @@ describe('parseQuantity', () => {
   });
 
   test('Türkçe binlik + ondalık', () => {
-    // "1.234,5" → 1234.5. Nokta binlik ayıracıdır, atılır.
     expect(parseQuantity('1.234,5')).toBe(1234.5);
   });
 
@@ -59,9 +59,6 @@ describe('parseQuantity', () => {
   });
 
   test('yalnız binlik ayıracı olan Türkçe sayı', () => {
-    // "1.234" burada 1.234 (bin iki yüz otuz dört) DEĞİL, 1.234 okunur.
-    // Belirsiz bir durum; kural "son ayraç ondalıktır" olduğu için 1.234 döner.
-    // Testin amacı bu davranışı SABİTLEMEK — sessizce değişirse yakalanır.
     expect(parseQuantity('1.234')).toBe(1.234);
   });
 
@@ -80,7 +77,6 @@ describe('parseQuantity', () => {
   });
 
   test('sıfır geçerlidir', () => {
-    // Stoğu sıfırlamak meşru bir işlem; "boş" ile karıştırılmamalı.
     expect(parseQuantity('0')).toBe(0);
   });
 });
@@ -93,63 +89,60 @@ describe('parseCsv', () => {
   });
 
   test('BOM başlığı bozmaz', () => {
-    const csv = `${BOM}urun_id;urun_kodu;urun_adi;stok\r\nabc;K1;Masa;5`;
+    const csv = `${BOM}Ürün ID (DEĞİŞTİRMEYİN);Ürün Adı;Model;Kategori;Grup Adı;Mevcut Stok\r\nabc;Masa;K1;;;5`;
     const parsed = parseCsv(csv);
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.rows[0]?.productId).toBe('abc');
   });
 
   test('virgül ayraçlı dosya da okunur', () => {
-    // Kullanıcı dosyayı başka bir araçla kaydetmiş olabilir.
-    const parsed = parseCsv('urun_id,urun_kodu,urun_adi,stok\nabc,K1,Masa,5');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN),Ürün Adı,Model,Kategori,Grup Adı,Mevcut Stok\nabc,Masa,K1,,,5');
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.rows[0]?.quantity).toBe(5);
   });
 
   test('sekme ayraçlı dosya da okunur', () => {
-    const parsed = parseCsv('urun_id\turun_kodu\turun_adi\tstok\nabc\tK1\tMasa\t5');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN)\tÜrün Adı\tModel\tKategori\tGrup Adı\tMevcut Stok\nabc\tMasa\tK1\t\t\t5');
     expect(parsed.rows).toHaveLength(1);
   });
 
   test('başlıksız dosya da işlenir', () => {
-    const parsed = parseCsv('abc;K1;Masa;5');
+    const parsed = parseCsv('abc;Masa;K1;;;5');
     expect(parsed.rows).toHaveLength(1);
   });
 
   test('boş satırlar atlanır', () => {
-    const parsed = parseCsv('urun_id;a;b;stok\n\nabc;K1;Masa;5\n\n');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n\nabc;Masa;K1;;;5\n\n');
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.errors).toEqual([]);
   });
 
   test('bozuk satır SESSİZCE yutulmaz', () => {
-    // En tehlikeli davranış: 100 satırlık dosyanın 3'ünü atlayıp "tamam" demek.
-    const parsed = parseCsv('urun_id;a;b;stok\nabc;K1;Masa;5\nxyz;K2;Sandalye;abc');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\nabc;Masa;K1;;;5\nxyz;Sandalye;K2;;;abc');
     expect(parsed.rows).toHaveLength(1);
     expect(parsed.errors).toHaveLength(1);
     expect(parsed.errors[0]?.reason).toContain('sayı değil');
   });
 
   test('hata satır numarası DOSYADAKİ numaradır', () => {
-    // Kullanıcı Excel'de o satıra gidebilmeli; 0 tabanlı indeks işe yaramaz.
-    const parsed = parseCsv('urun_id;a;b;stok\nabc;K1;Masa;5\n;K2;Sandalye;3');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\nabc;Masa;K1;;;5\n;Sandalye;K2;;;3');
     expect(parsed.errors[0]?.line).toBe(3);
   });
 
   test('ürün kimliği boş satır hata verir', () => {
-    const parsed = parseCsv('urun_id;a;b;stok\n;K1;Masa;5');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;Masa;K1;;;5');
     expect(parsed.rows).toHaveLength(0);
     expect(parsed.errors[0]?.reason).toContain('kimliği boş');
   });
 
   test('tırnaklı ve ayraç içeren ad doğru çözülür', () => {
-    const parsed = parseCsv('urun_id;urun_kodu;urun_adi;stok\nabc;K1;"Koltuk; 3+2";5');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);Ürün Adı;Model;Kategori;Grup Adı;Mevcut Stok\nabc;"Koltuk; 3+2";K1;;;5');
     expect(parsed.rows[0]?.productName).toBe('Koltuk; 3+2');
     expect(parsed.rows[0]?.quantity).toBe(5);
   });
 
   test('CRLF ve LF birlikte gelse de bölünür', () => {
-    const parsed = parseCsv('urun_id;a;b;stok\r\nabc;K1;Masa;5\nxyz;K2;Sandalye;7');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\r\nabc;Masa;K1;;;5\nxyz;Sandalye;K2;;;7');
     expect(parsed.rows).toHaveLength(2);
   });
 

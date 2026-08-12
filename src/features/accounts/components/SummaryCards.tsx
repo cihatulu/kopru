@@ -18,6 +18,9 @@ interface Props {
 export function SummaryCards({ summary, periodActive, isManufacturer }: Props) {
   const consistent = isSummaryConsistent(summary);
 
+  const debitValue = isManufacturer ? summary.totalCredit : summary.totalDebit;
+  const creditValue = isManufacturer ? summary.totalDebit : summary.totalCredit;
+
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -26,8 +29,8 @@ export function SummaryCards({ summary, periodActive, isManufacturer }: Props) {
           value={formatMoney(summary.openingBalance)}
           tone="neutral"
         />
-        <Card label="Toplam borç" value={formatMoney(summary.totalDebit)} tone="debit" />
-        <Card label="Toplam alacak" value={formatMoney(summary.totalCredit)} tone="credit" />
+        <Card label="Toplam borç" value={formatMoney(debitValue)} tone="debit" />
+        <Card label="Toplam alacak" value={formatMoney(creditValue)} tone="credit" />
         <Card
           label="Kapanış bakiye"
           value={formatMoney(summary.closingBalance)}

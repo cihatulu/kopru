@@ -37,9 +37,9 @@ export default function AdminRequestsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900">Abonelik Talepleri</h2>
+        <h2 className="text-lg font-bold text-slate-900">Üyelik Talepleri</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Onay, organizasyonu aboneye yükseltir. Mevcut ticari ilişkileri ve geçmişi korunur.
+          Onay, organizasyonu üyeliğe yükseltir. Mevcut ticari ilişkileri ve geçmişi korunur.
         </p>
       </div>
 

@@ -76,8 +76,29 @@ Deno.serve(async (req) => {
 
     if (!org) return json({ error: 'ORG_NOT_FOUND' }, 404);
 
-    const userCode = await nextUserCode(auth.orgId, String(org.vkn_tc));
-    if (!userCode) return json({ error: 'CODE_LIMIT_REACHED' }, 409);
+    let userCode = (body.userCode ?? '').trim().toLowerCase();
+    if (userCode) {
+      if (userCode.length < 3 || userCode.length > 32) {
+        return json({ error: 'INVALID_CODE_LENGTH' }, 400);
+      }
+      if (!/^[a-z0-9]+$/.test(userCode)) {
+        return json({ error: 'INVALID_CODE_CHARS' }, 400);
+      }
+      if (!/[a-z]/.test(userCode)) {
+        return json({ error: 'INVALID_CODE_NUMERIC_ONLY' }, 400);
+      }
+      
+      const { data: existing } = await admin
+        .from('users')
+        .select('id')
+        .eq('user_code', userCode)
+        .maybeSingle();
+      if (existing) return json({ error: 'CODE_ALREADY_TAKEN' }, 409);
+    } else {
+      const generated = await nextUserCode(auth.orgId, String(org.vkn_tc));
+      if (!generated) return json({ error: 'CODE_LIMIT_REACHED' }, 409);
+      userCode = generated;
+    }
 
     const authEmail = `${userCode}@users.kopru.local`;
 

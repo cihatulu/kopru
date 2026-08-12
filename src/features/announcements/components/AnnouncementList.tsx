@@ -56,6 +56,12 @@ export function AnnouncementList({ announcements, isOwnerView, busyId, onToggleA
             )}
           </div>
 
+          {a.imageUrl && (
+            <div className="mt-3 max-w-md overflow-hidden rounded-xl border border-slate-100 shadow-sm">
+              <img src={a.imageUrl} alt={a.title} className="h-48 w-full object-cover" />
+            </div>
+          )}
+
           <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700">
             {a.body}
           </p>

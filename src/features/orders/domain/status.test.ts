@@ -74,10 +74,9 @@ describe('canCancel', () => {
     expect(canCancel('in_production')).toBe(true);
   });
 
-  test('sevk edilmiş sipariş iptal edilemez', () => {
-    // Mal yola çıktıysa iptal değil, iade süreci işler.
-    expect(canCancel('shipped')).toBe(false);
-    expect(canCancel('partially_shipped')).toBe(false);
+  test('sevkiyat ve öncesindeki açık siparişler iptal edilebilir', () => {
+    expect(canCancel('shipped')).toBe(true);
+    expect(canCancel('partially_shipped')).toBe(true);
   });
 
   test('kapalı sipariş iptal edilemez', () => {

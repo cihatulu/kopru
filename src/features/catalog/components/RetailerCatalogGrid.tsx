@@ -3,14 +3,17 @@ import { Spinner } from '@/components/ui/Spinner';
 import { discountedPrice } from '../domain/productSchema';
 import { useProductStock } from '../api/useProductStock';
 import { useRetailerStock } from '../api/useRetailerStock';
+import { useRetailPrices } from '../api/useRetailPrices';
 import { RetailerProductCard } from './RetailerProductCard';
 import { ProductPreview } from './ProductPreview';
 import type { CatalogProduct } from '../api/useProducts';
 
 interface Props {
   products: CatalogProduct[];
-  /** Tedarikçiyle aramızdaki iskonto oranı (%). */
-  discountRate: number;
+  /** Tedarikçiyle aramızdaki iskonto oranı (%). Tek tedarikçi modunda kullanılır. */
+  discountRate?: number;
+  /** Tedarikçi bazlı iskonto haritası. Tüm üreticiler modunda kullanılır. */
+  discountMap?: Record<string, number>;
   /**
    * Perakendeci ABONE mi.
    *
@@ -19,19 +22,25 @@ interface Props {
    */
   isSubscriber: boolean;
   loading: boolean;
-  onAdd: (product: CatalogProduct, unitPrice: number) => void;
+  onAdd: (
+    product: CatalogProduct,
+    unitPrice: number,
+    customDescription?: string,
+    priceDifference?: number
+  ) => void;
 }
 
 /**
  * Perakendecinin katalog ızgarası.
  *
- * Arama İSTEMCİDE yapılıyor: bu ekran tek bir tedarikçinin ürünlerini
+ * Arama İSTEMCİDE yapılıyor: bu ekran tek veya tüm tedarikçilerin ürünlerini
  * gösterir ve o küme zaten sayfalanmış olarak gelir; her tuşta sunucuya
  * gitmek listeyi titretirdi.
  */
 export function RetailerCatalogGrid({
   products,
-  discountRate,
+  discountRate = 0,
+  discountMap,
   isSubscriber,
   loading,
   onAdd,
@@ -42,6 +51,7 @@ export function RetailerCatalogGrid({
   const ids = products.map((p) => p.id);
   const stock = useProductStock(ids);
   const ownStock = useRetailerStock(ids, isSubscriber);
+  const retailPrices = useRetailPrices(ids);
 
   const term = search.trim().toLocaleLowerCase('tr');
   const visible = term
@@ -52,7 +62,14 @@ export function RetailerCatalogGrid({
       )
     : products;
 
-  const priceOf = (p: CatalogProduct) => discountedPrice(p.supplierPrice, discountRate);
+  const costPriceOf = (p: CatalogProduct) => {
+    const rate = discountMap ? (discountMap[p.ownerOrgId] ?? 0) : discountRate;
+    return discountedPrice(p.supplierPrice, rate);
+  };
+
+  const displayPriceOf = (p: CatalogProduct) => {
+    return retailPrices.data?.[p.id] ?? costPriceOf(p);
+  };
 
   return (
     <div className="space-y-5">
@@ -111,11 +128,11 @@ export function RetailerCatalogGrid({
             <RetailerProductCard
               key={p.id}
               product={p}
-              unitPrice={priceOf(p)}
+              unitPrice={displayPriceOf(p)}
               stock={stock.data?.[p.id] ?? null}
               ownStock={isSubscriber ? (ownStock.data?.[p.id] ?? 0) : undefined}
               onOpen={setPreview}
-              onAdd={(product) => onAdd(product, priceOf(product))}
+              onAdd={(product) => onAdd(product, displayPriceOf(product))}
             />
           ))}
         </div>
@@ -126,9 +143,9 @@ export function RetailerCatalogGrid({
           product={preview}
           groupName={null}
           stock={stock.data?.[preview.id] ?? null}
-          priceOverride={priceOf(preview)}
-          onAddToCart={() => {
-            onAdd(preview, priceOf(preview));
+          priceOverride={displayPriceOf(preview)}
+          onAddToCart={(customDesc, priceDiff) => {
+            onAdd(preview, displayPriceOf(preview), customDesc, priceDiff);
             setPreview(null);
           }}
           onClose={() => setPreview(null)}

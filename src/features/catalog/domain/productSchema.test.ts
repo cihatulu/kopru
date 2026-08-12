@@ -26,13 +26,8 @@ describe('productSchema', () => {
     expect(productSchema.safeParse({ ...base, supplierPrice: -1 }).success).toBe(false);
   });
 
-  test('geçersiz karakterli kod reddedilir', () => {
-    expect(productSchema.safeParse({ ...base, code: 'KOD 01' }).success).toBe(false);
-    expect(productSchema.safeParse({ ...base, code: 'KOD@01' }).success).toBe(false);
-  });
-
   test('geçerli kod biçimleri kabul edilir', () => {
-    for (const code of ['A1', 'KOLTUK-01', 'SET.2/B', 'x_y']) {
+    for (const code of ['A1', 'KOLTUK-01', 'SET.2/B', 'x_y', 'KOD 01', 'Zümrüt Şifonyer', 'MODEL #123']) {
       expect(productSchema.safeParse({ ...base, code }).success, code).toBe(true);
     }
   });

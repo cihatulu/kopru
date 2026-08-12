@@ -9,6 +9,8 @@
  *     Yeni şifre BİR KEZ döner, hiçbir yere kaydedilmez.
  *   · self        — kullanıcı kendi şifresini değiştirir; mevcut şifresini
  *     doğrulamak ZORUNDADIR (oturum çalınmışsa şifre değiştirilememeli).
+ *   · staff_update — org sahibi, kendi ekibindeki personelin bilgilerini veya
+ *     şifresini günceller.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/cors.ts';
@@ -31,18 +33,12 @@ function anonClient() {
   );
 }
 
+function validPassword(p: string): boolean {
+  return p.length >= 8 && /[A-Za-zÇĞİÖŞÜçğıöşü]/.test(p) && /\d/.test(p);
+}
+
 /**
  * Sponsor, MİSAFİR müşterisinin şifresini yeniler.
- *
- * Sınır dar ve bilinçli:
- *   · Hedef org MİSAFİR olmak zorunda. Abone bir perakendeci de müşteriniz
- *     olabilir ama hesabı KENDİSİNE aittir; onun şifresini değiştirebilmek
- *     başka bir firmanın hesabını ele geçirmek olurdu.
- *   · Aramızda gerçekten bir ilişki kenarı olmalı.
- *   · Çağıran org SAHİBİ olmalı; personel şifre sıfırlayamaz.
- *
- * Şifreyi çağıran belirler (geçici şifre üretilmez): kaynak üründeki davranış
- * budur ve sponsor şifreyi müşterisine zaten kendisi iletir.
  */
 async function sponsorReset(req: Request, orgId: string, newPassword: string) {
   const header = req.headers.get('Authorization') ?? '';
@@ -122,7 +118,6 @@ async function adminReset(req: Request, orgId: string) {
     .maybeSingle();
 
   if (!user) {
-    // Henüz girişi olmayan bir org. Şifre yenilemek yerine hesabın açılması gerekir.
     return json({ error: 'NO_OWNER_USER' }, 404);
   }
 
@@ -133,7 +128,6 @@ async function adminReset(req: Request, orgId: string) {
     return json({ error: 'UPDATE_FAILED' }, 500);
   }
 
-  // Kilitlenme sayacı sıfırlanır: yeni şifreyle hemen giriş yapılabilmeli.
   await admin.from('users').update({ failed_attempts: 0, locked_until: null }).eq('id', user.id);
 
   await admin.from('system_logs').insert({
@@ -145,7 +139,6 @@ async function adminReset(req: Request, orgId: string) {
     meta: { by: 'platform_admin' },
   });
 
-  // Şifre YALNIZ burada, bir kez döner.
   return json({ userCode: user.user_code, tempPassword: password });
 }
 
@@ -162,8 +155,6 @@ async function selfChange(req: Request, currentPassword: string, newPassword: st
     return json({ error: 'WEAK_PASSWORD' }, 400);
   }
 
-  // Mevcut şifre doğrulanmadan değiştirme YAPILMAZ: çalınmış bir oturumla
-  // hesabın ele geçirilmesini engelleyen tek kontrol budur.
   const { data: row } = await admin
     .from('users')
     .select('auth_email')
@@ -189,6 +180,119 @@ async function selfChange(req: Request, currentPassword: string, newPassword: st
   return json({ ok: true });
 }
 
+/** Org sahibi kendi ekibindeki personelin bilgilerini veya şifresini günceller. */
+async function staffUpdate(
+  req: Request,
+  targetUserId: string,
+  updates: {
+    fullName?: string;
+    userCode?: string;
+    email?: string;
+    phone?: string;
+    password?: string;
+  },
+) {
+  const header = req.headers.get('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (!token) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data: authUser, error: authError } = await admin.auth.getUser(token);
+  if (authError || !authUser.user) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  const { data: me } = await admin
+    .from('users')
+    .select('org_id, org_role, is_active')
+    .eq('id', authUser.user.id)
+    .maybeSingle();
+
+  if (!me || !me.is_active || me.org_role !== 'owner') return json({ error: 'FORBIDDEN' }, 403);
+
+  // Target kullanıcı aynı org'da mı ve owner değil mi?
+  const { data: target } = await admin
+    .from('users')
+    .select('id, org_id, org_role')
+    .eq('id', targetUserId)
+    .maybeSingle();
+
+  if (!target) return json({ error: 'USER_NOT_FOUND' }, 404);
+  if (target.org_id !== me.org_id) return json({ error: 'FORBIDDEN' }, 403);
+  if (target.org_role === 'owner') return json({ error: 'CANNOT_UPDATE_OWNER' }, 400);
+
+  const authUpdates: Record<string, any> = {};
+  const dbUpdates: Record<string, any> = {};
+
+  if (updates.fullName !== undefined) {
+    dbUpdates.full_name = updates.fullName.trim() || null;
+  }
+  if (updates.email !== undefined) {
+    dbUpdates.email = updates.email.trim() || null;
+  }
+  if (updates.phone !== undefined) {
+    dbUpdates.phone = updates.phone.trim() || null;
+  }
+
+  if (updates.userCode) {
+    const userCode = updates.userCode.trim().toLowerCase();
+    if (userCode.length < 3 || userCode.length > 32 || !/^[a-z0-9]+$/.test(userCode) || !/[a-z]/.test(userCode)) {
+      return json({ error: 'INVALID_CODE' }, 400);
+    }
+    // kod kullanımda mı?
+    const { data: existing } = await admin
+      .from('users')
+      .select('id')
+      .eq('user_code', userCode)
+      .neq('id', targetUserId)
+      .maybeSingle();
+    if (existing) return json({ error: 'CODE_ALREADY_TAKEN' }, 409);
+
+    dbUpdates.user_code = userCode;
+    const authEmail = `${userCode}@users.kopru.local`;
+    dbUpdates.auth_email = authEmail;
+    authUpdates.email = authEmail;
+  }
+
+  if (updates.password) {
+    if (!validPassword(updates.password)) {
+      return json({ error: 'WEAK_PASSWORD' }, 400);
+    }
+    authUpdates.password = updates.password;
+  }
+
+  // 1. auth.users güncelle
+  if (Object.keys(authUpdates).length > 0) {
+    const { error: authError } = await admin.auth.admin.updateUserById(targetUserId, authUpdates);
+    if (authError) {
+      console.error('auth update failed', authError);
+      return json({ error: 'AUTH_UPDATE_FAILED' }, 500);
+    }
+  }
+
+  // 2. public.users güncelle
+  if (Object.keys(dbUpdates).length > 0) {
+    const { error: dbError } = await admin.from('users').update(dbUpdates).eq('id', targetUserId);
+    if (dbError) {
+      console.error('db update failed', dbError);
+      return json({ error: 'DB_UPDATE_FAILED' }, 500);
+    }
+  }
+
+  // Şifre değiştiyse kilitleri aç
+  if (updates.password) {
+    await admin.from('users').update({ failed_attempts: 0, locked_until: null }).eq('id', targetUserId);
+  }
+
+  await admin.from('system_logs').insert({
+    actor_user_id: authUser.user.id,
+    actor_org_id: me.org_id,
+    action: 'staff.updated',
+    entity: 'users',
+    entity_id: targetUserId,
+    meta: { updates: Object.keys(dbUpdates) },
+  });
+
+  return json({ ok: true });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
@@ -196,9 +300,16 @@ Deno.serve(async (req) => {
   let body: {
     mode?: string;
     orgId?: string;
+    userId?: string;
     newPassword?: string;
     currentPassword?: string;
-    newPassword?: string;
+    updates?: {
+      fullName?: string;
+      userCode?: string;
+      email?: string;
+      phone?: string;
+      password?: string;
+    };
   };
   try {
     body = await req.json();
@@ -221,6 +332,12 @@ Deno.serve(async (req) => {
         return json({ error: 'BAD_REQUEST' }, 400);
       }
       return await selfChange(req, body.currentPassword, body.newPassword);
+    }
+    if (body.mode === 'staff_update') {
+      if (!body.userId || !body.updates) {
+        return json({ error: 'BAD_REQUEST' }, 400);
+      }
+      return await staffUpdate(req, body.userId, body.updates);
     }
     return json({ error: 'BAD_REQUEST' }, 400);
   } catch (e) {

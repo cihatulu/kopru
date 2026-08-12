@@ -9,13 +9,14 @@ interface Props {
   onDowngrade: (org: AdminOrg) => void;
   onToggleActive: (org: AdminOrg) => void;
   onResetPassword: (org: AdminOrg) => void;
+  onDelete?: (org: AdminOrg) => void;
 }
 
 const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
 const TD = 'px-4 py-3 align-middle';
 
 export function OrgTable(props: Props) {
-  const { orgs, busyId, onUpgrade, onDowngrade, onToggleActive, onResetPassword } = props;
+  const { orgs, busyId, onUpgrade, onDowngrade, onToggleActive, onResetPassword, onDelete } = props;
   if (orgs.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -31,6 +32,7 @@ export function OrgTable(props: Props) {
           <tr>
             <th className={TH}>Firma</th>
             <th className={TH}>VKN / T.C.</th>
+            <th className={TH}>Ekleyen Firma</th>
             <th className={TH}>Durum</th>
             <th className={TH}>İlişki</th>
             <th className={TH}>Subdomain</th>
@@ -47,6 +49,17 @@ export function OrgTable(props: Props) {
                 )}
               </td>
               <td className={`${TD} font-mono text-xs text-slate-600`}>{org.vknTc}</td>
+              <td className={`${TD} text-xs font-semibold text-slate-700`}>
+                {org.createdByName ? (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-slate-700">
+                    {org.createdByName}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2.5 py-1 font-extrabold text-indigo-700 border border-indigo-100">
+                    Admin
+                  </span>
+                )}
+              </td>
               <td className={TD}>
                 <div className="flex flex-wrap gap-1.5">
                   <SubscriberBadge isSubscriber={org.isSubscriber} plan={org.plan} />
@@ -67,7 +80,7 @@ export function OrgTable(props: Props) {
                     </Button>
                   ) : (
                     <Button loading={busyId === org.id} onClick={() => onUpgrade(org)}>
-                      Aboneye yükselt
+                      Üyeliğe yükselt
                     </Button>
                   )}
                   {/* Şifre yenileme yalnız girişi olan org'lar için anlamlı;
@@ -82,6 +95,15 @@ export function OrgTable(props: Props) {
                   <Button variant="secondary" onClick={() => onToggleActive(org)}>
                     {org.isActive ? 'Pasifleştir' : 'Aktifleştir'}
                   </Button>
+                  {onDelete && (
+                    <Button
+                      variant="danger"
+                      loading={busyId === org.id}
+                      onClick={() => onDelete(org)}
+                    >
+                      Sil
+                    </Button>
+                  )}
                 </div>
               </td>
             </tr>

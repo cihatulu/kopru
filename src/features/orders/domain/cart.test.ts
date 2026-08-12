@@ -30,6 +30,7 @@ describe('cartTotals', () => {
     const t = cartTotals([line(), line({ productId: 'p2', unitPrice: 500, quantity: 4 })]);
     expect(t.supplierTotal).toBe(20000);
     expect(t.lineCount).toBe(2);
+    expect(t.itemCount).toBe(6);
   });
 
   test('tüm satırlar fiyatlıysa ciro ve kâr hesaplanır', () => {
@@ -96,8 +97,9 @@ describe('toOrderItems', () => {
     ]);
   });
 
-  test('fiyatsız satırda retail_unit_price gönderilmez', () => {
-    // Anahtarın hiç olmaması ile null olması farklı; RPC null bekliyor değil.
-    expect(toOrderItems([line()])).toEqual([{ product_id: 'p1', quantity: 2 }]);
+  test('retailPrice belirtilmediğinde unitPrice varsayılan perakende fiyatı olarak gönderilir', () => {
+    expect(toOrderItems([line()])).toEqual([
+      { product_id: 'p1', quantity: 2, retail_unit_price: 9000 },
+    ]);
   });
 });

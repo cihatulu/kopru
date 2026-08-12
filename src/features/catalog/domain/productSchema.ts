@@ -7,79 +7,101 @@
  */
 import { z } from 'zod';
 
-const money = z.coerce
-  .number({ invalid_type_error: 'Sayı girin' })
-  .min(0, 'Negatif olamaz')
-  .max(99_999_999, 'Çok büyük');
+const parseNumber = (v: unknown): unknown => {
+  if (v === '' || v === null || v === undefined) return undefined;
+  if (typeof v === 'string') {
+    const normalized = v.replace(/\s/g, '').replace(',', '.');
+    if (normalized === '') return undefined;
+    const n = Number(normalized);
+    return Number.isFinite(n) ? n : v;
+  }
+  return v;
+};
 
-/**
- * Boş bırakılabilen sayı. Boşluk kontrolü coercion'dan ÖNCE yapılır —
- * `z.coerce.number()` boş dizeyi 0'a çevirir ve "girilmedi" ile "sıfır"
- * birbirine karışır (maliyet alanında tam olarak bu hata yaşandı).
- */
-const optionalNumber = z.preprocess(
-  (v) => (v === '' || v === null ? undefined : v),
-  z.coerce.number().min(0, 'Negatif olamaz').max(99_999).optional(),
+const money = z.preprocess(
+  parseNumber,
+  z
+    .number({ invalid_type_error: 'Geçerli bir sayı girin' })
+    .min(0, 'Negatif olamaz')
+    .max(99_999_999, 'Çok büyük'),
 );
 
-export const productSchema = z
-  .object({
-    name: z.string().trim().min(2, 'En az 2 karakter').max(200),
-    code: z
-      .string()
-      .trim()
-      .min(1, 'Zorunlu')
-      .max(64)
-      .regex(/^[A-Za-z0-9._/-]+$/, 'Harf, rakam ve . _ / - kullanın'),
-    /**
-     * Grup › Kategori › Model hiyerarşisinin ORTA kademesi.
-     *
-     * Serbest metin: üretici ürün eklerken kategoriyi oracıkta yazabilmeli.
-     * Yazım tutarlılığı, formdaki öneri listesiyle (daha önce kullanılanlar)
-     * sağlanır — ayrı bir yönetim ekranı gerektirmez.
-     */
-    category: z
-      .string()
-      .trim()
-      .max(120)
-      .optional()
-      .transform((v) => (v === '' ? undefined : v)),
-    supplierPrice: money,
-    /**
-     * Boş bırakılabilir: "maliyeti bilmiyorum" ile "maliyeti sıfır" farklıdır.
-     *
-     * DİKKAT: boşluk kontrolü coercion'dan ÖNCE yapılmak zorunda. `z.coerce.number()`
-     * boş dizeyi 0'a çevirir; union içinde kullanılırsa maliyet sessizce sıfırlanır
-     * ve ürün %100 marjla görünür.
-     */
-    costPrice: z.preprocess(
-      (v) => (v === '' || v === null ? undefined : v),
-      money.optional(),
-    ),
-    /**
-     * Sınır 5000: mobilya açıklamaları (malzeme, ölçü, bakım) uzun olur ve
-     * 2000 karakterde kesiliyordu. DB kolonu 'text'; sınır yalnız kazara
-     * yapıştırılan devasa metni engellemek için var.
-     */
-    description: z
-      .string()
-      .trim()
-      .max(5000, 'Açıklama en fazla 5000 karakter olabilir')
-      .optional()
-      .transform((v) => (v === '' ? undefined : v)),
+const optionalMoney = z.preprocess(
+  parseNumber,
+  z
+    .number({ invalid_type_error: 'Geçerli bir sayı girin' })
+    .min(0, 'Negatif olamaz')
+    .max(99_999_999, 'Çok büyük')
+    .optional(),
+);
 
-    // Boyut ve stok isteğe bağlı; girilmezse kayıt güncellenmez.
-    width: optionalNumber,
-    depth: optionalNumber,
-    height: optionalNumber,
-    stock: optionalNumber,
-  })
-  .refine((v) => v.costPrice === undefined || v.costPrice <= v.supplierPrice, {
-    message: 'Maliyet, satış fiyatından büyük olamaz',
-    path: ['costPrice'],
-  });
+/**
+ * Boş bırakılabilen sayı. Boşluk kontrolü ve virgül dönüşümü coercion'dan ÖNCE yapılır.
+ */
+const optionalNumber = z.preprocess(
+  parseNumber,
+  z.number({ invalid_type_error: 'Geçerli bir sayı girin' }).min(0, 'Negatif olamaz').max(99_999).optional(),
+);
 
-export type ProductForm = z.input<typeof productSchema>;
+/** Ortak alan tanımı — refine'siz temel nesne. */
+const baseProductObject = z.object({
+  name: z.string().trim().min(2, 'En az 2 karakter').max(200),
+  code: z
+    .string()
+    .trim()
+    .min(1, 'Zorunlu')
+    .max(64),
+  category: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
+  supplierPrice: money,
+  /**
+   * Boş bırakılabilir: "maliyeti bilmiyorum" ile "maliyeti sıfır" farklıdır.
+   */
+  costPrice: optionalMoney,
+  /**
+   * Sınır 5000: mobilya açıklamaları (malzeme, ölçü, bakım) uzun olur ve
+   * 2000 karakterde kesiliyordu. DB kolonu 'text'; sınır yalnız kazara
+   * yapıştırılan devasa metni engellemek için var.
+   */
+  description: z
+    .string()
+    .trim()
+    .max(5000, 'Açıklama en fazla 5000 karakter olabilir')
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
+
+  // Boyut ve stok isteğe bağlı; girilmezse kayıt güncellenmez.
+  width: optionalNumber,
+  depth: optionalNumber,
+  height: optionalNumber,
+  stock: optionalNumber,
+});
+
+/**
+ * Üretici modunda: üretim maliyeti ≤ satış fiyatı.
+ *   costPrice   = üretim maliyeti (gizli)
+ *   supplierPrice = perakendeciye satış fiyatı
+ */
+export const productSchema = baseProductObject.refine(
+  (v) => v.costPrice === undefined || v.costPrice <= v.supplierPrice,
+  { message: 'Maliyet, satış fiyatından büyük olamaz', path: ['costPrice'] },
+);
+
+/**
+ * Perakendeci modunda: alış maliyeti ≤ satış fiyatı.
+ *   supplierPrice = tedarikçiden alış maliyeti
+ *   costPrice     = müşteriye perakende satış fiyatı
+ */
+export const retailerProductSchema = baseProductObject.refine(
+  (v) => v.costPrice === undefined || v.supplierPrice <= v.costPrice,
+  { message: 'Alış maliyeti, satış fiyatından büyük olamaz', path: ['costPrice'] },
+);
+
+export type ProductForm = z.input<typeof baseProductObject>;
 
 /** Üreticinin bu satıştaki kâr marjı — yalnız üretici tarafında hesaplanır. */
 export function marginPercent(supplierPrice: number, costPrice: number | undefined): number | null {

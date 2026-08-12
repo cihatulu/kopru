@@ -1,10 +1,8 @@
 /**
  * Stok CSV'sinin ayrıştırılması ve üretilmesi — SAF (A20).
  *
- * Bu dosya Türkçe Excel gerçeğine göre yazıldı: kullanıcı dosyayı Excel'de
- * açıp kaydettiğinde ayraç `;` olur, ondalık ayıracı `,` olur ve dosyanın
- * başına BOM eklenir. Bunların hiçbiri varsayılan CSV kabullerine uymaz;
- * hesaba katılmazsa içe aktarma sessizce sıfır satır işler.
+ * Excel/CSV şablonu furniture-platform ile birebir uyumludur:
+ * ['Ürün ID (DEĞİŞTİRMEYİN)', 'Ürün Adı', 'Model', 'Kategori', 'Grup Adı', 'Mevcut Stok']
  */
 import { parseDecimal } from '@/lib/format';
 
@@ -12,6 +10,8 @@ export interface StockCsvRow {
   productId: string;
   productName: string;
   productCode: string;
+  category: string | null;
+  groupName: string | null;
   quantity: number;
 }
 
@@ -21,21 +21,21 @@ export interface ParsedCsv {
   errors: { line: number; reason: string }[];
 }
 
-export const CSV_HEADERS = ['urun_id', 'urun_kodu', 'urun_adi', 'stok'] as const;
+export const CSV_HEADERS = [
+  'Ürün ID (DEĞİŞTİRMEYİN)',
+  'Ürün Adı',
+  'Model',
+  'Kategori',
+  'Grup Adı',
+  'Mevcut Stok',
+] as const;
 
 /** Excel'in Türkçe yerelinde beklediği ayraç. */
 const SEPARATOR = ';';
 
-/**
- * UTF-8 bayt sırası imi.
- *
- * Kaçış dizisiyle yazılır, kaynağa gömülmez: görünmez bir karakter olarak
- * dosyada durursa hem lint takılır hem de sonradan okuyan biri onu yanlışlıkla
- * siler.
- */
+/** UTF-8 bayt sırası imi. */
 const BOM = '\uFEFF';
 
-/** Excel bir alanı ancak tırnaklanmışsa metin sayar; ayraç içeren adlar bozulmasın. */
 function quote(value: string): string {
   return `"${value.replace(/"/g, '""')}"`;
 }
@@ -44,7 +44,7 @@ function quote(value: string): string {
  * İndirilecek şablon.
  *
  * BOM ZORUNLU: Excel BOM'suz UTF-8'i sistem kod sayfası sanar ve Türkçe
- * karakterler bozulur ("Gardırop" → "GardÄ±rop").
+ * karakterler bozulur.
  */
 export function toCsv(rows: StockCsvRow[]): string {
   const lines = [CSV_HEADERS.join(SEPARATOR)];
@@ -52,8 +52,10 @@ export function toCsv(rows: StockCsvRow[]): string {
     lines.push(
       [
         quote(r.productId),
-        quote(r.productCode),
         quote(r.productName),
+        quote(r.productCode),
+        quote(r.category ?? ''),
+        quote(r.groupName ?? ''),
         // Ondalık ayıracı virgül: Excel'in Türkçe yerelinde sayı böyle okunur.
         String(r.quantity).replace('.', ','),
       ].join(SEPARATOR),
@@ -94,12 +96,7 @@ function splitLine(line: string, sep: string): string[] {
   return out;
 }
 
-/**
- * Ayracı ilk satırdan tahmin eder.
- *
- * Dosya bizim şablonumuzdan gelmiş olsa bile kullanıcı onu başka bir araçla
- * kaydetmiş olabilir; ayracı sabit varsaymak tüm satırı tek alan yapar.
- */
+/** Ayracı tahmin eder. */
 function detectSeparator(headerLine: string): string {
   const counts: [string, number][] = [';', ',', '\t'].map((s) => [
     s,
@@ -109,28 +106,25 @@ function detectSeparator(headerLine: string): string {
   return counts[0]![1] > 0 ? counts[0]![0] : SEPARATOR;
 }
 
-/**
- * Miktarı okur.
- *
- * "1.234,5" (Türkçe) ve "1234.5" (İngilizce) biçimlerinin ikisi de gelir.
- * Ayrım kurala bağlanır: son ayraç hangisiyse ondalık ayıracı odur; diğeri
- * binlik ayıracıdır ve atılır.
- */
+/** Miktarı okur. */
 export function parseQuantity(raw: string): number | null {
   const n = parseDecimal(raw);
-  // Negatif stok anlamlı değil; ayrıştırma ortak, kısıt buraya ait.
   if (n === null || n < 0) return null;
   return n;
 }
 
-/** Başlık satırını tanır — kullanıcı sütunları yeniden adlandırmış olabilir. */
+/** Başlık satırını tanır. */
 function isHeader(fields: string[]): boolean {
   const first = (fields[0] ?? '').trim().toLowerCase();
-  return first === 'urun_id' || first === 'ürün_id' || first === 'id';
+  return (
+    first.includes('ürün id') ||
+    first.includes('urun id') ||
+    first.includes('id') ||
+    first === 'ürün id (değiştirmeyin)'
+  );
 }
 
 export function parseCsv(text: string): ParsedCsv {
-  // BOM'u at: kalırsa ilk alan BOM+"urun_id" olur ve başlık tanınmaz.
   const clean = text.startsWith(BOM) ? text.slice(BOM.length) : text;
   const lines = clean.split(/\r\n|\n|\r/).filter((l) => l.trim() !== '');
 
@@ -144,7 +138,9 @@ export function parseCsv(text: string): ParsedCsv {
   for (let i = start; i < lines.length; i++) {
     const fields = splitLine(lines[i]!, sep).map((f) => f.trim());
     const productId = fields[0] ?? '';
-    const quantity = parseQuantity(fields[3] ?? '');
+    // Mevcut stok son kolondadır (index 5 veya son eleman)
+    const rawQuantity = fields[5] !== undefined ? fields[5] : fields[fields.length - 1];
+    const quantity = parseQuantity(rawQuantity ?? '');
 
     if (!productId) {
       errors.push({ line: i + 1, reason: 'Ürün kimliği boş' });
@@ -157,8 +153,10 @@ export function parseCsv(text: string): ParsedCsv {
 
     rows.push({
       productId,
-      productCode: fields[1] ?? '',
-      productName: fields[2] ?? '',
+      productName: fields[1] ?? '',
+      productCode: fields[2] ?? '',
+      category: fields[3] || null,
+      groupName: fields[4] || null,
       quantity,
     });
   }

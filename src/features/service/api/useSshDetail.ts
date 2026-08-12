@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 import { signServicePhotos } from '@/lib/servicePhotos';
-import { nullableStr, str, type Row, type SshStatus } from './shared';
+import { nested, nullableStr, str, type Row, type SshStatus } from './shared';
 
 const LOG_COLUMNS =
   'id, from_status, to_status, note, created_at, actor_org_id, actor_user_id';
@@ -10,7 +10,9 @@ const LOG_COLUMNS =
 const DETAIL_COLUMNS =
   'id, title, description, status, created_at, updated_at, images, relationship_id, ' +
   'order_id, product_id, customer_name, customer_phone, ' +
-  'manufacturer_org_id, retailer_org_id';
+  'manufacturer_org_id, retailer_org_id, ' +
+  'orders(order_no, order_items(id, quantity, product_snapshot)), ' +
+  'retailer:retailer_org_id(company_name), manufacturer:manufacturer_org_id(company_name)';
 
 export interface SshLogEntry {
   id: string;
@@ -23,6 +25,8 @@ export interface SshLogEntry {
 
 export interface SshDetail {
   id: string;
+  sshCode: string;
+  orderNo: string;
   title: string;
   description: string | null;
   status: SshStatus;
@@ -31,8 +35,10 @@ export interface SshDetail {
   relationshipId: string;
   manufacturerOrgId: string;
   retailerOrgId: string;
+  retailerName: string;
   customerName: string | null;
   customerPhone: string | null;
+  items: { name: string; quantity: number }[];
   /** Depolama yolları — kalıcı kimlik budur. */
   imagePaths: string[];
   /** `imagePaths` ile AYNI sırada imzalı görüntüleme URL'leri. */
@@ -52,13 +58,6 @@ function toLog(raw: unknown): SshLogEntry {
   };
 }
 
-/**
- * Tek servis talebinin tam görünümü: kayıt + durum geçmişi + fotoğraflar.
- *
- * Fotoğraflar private bucket'ta durduğu için her açılışta imzalanır; imzalı URL
- * kısa ömürlüdür, bu yüzden ÖNBELLEĞE UZUN SÜRE alınamaz — `staleTime` bilerek
- * kısa tutulur (imza süresi dolmuş bir URL kırık görsel demek olurdu).
- */
 export function useSshDetail(sshId: string | null) {
   return useQuery({
     queryKey: ['service', 'ssh-detail', sshId],
@@ -73,6 +72,27 @@ export function useSshDetail(sshId: string | null) {
       if (error) throw error;
 
       const r = data as unknown as Row;
+      const id = str(r.id);
+      const createdAt = str(r.created_at);
+      const datePart = createdAt ? createdAt.split('T')[0].replace(/-/g, '') : '20260812';
+      const sshCode = `SSH-${datePart}-${id.slice(0, 4).toUpperCase()}`;
+
+      const orderObj = nested(r.orders);
+      const orderNo = str(orderObj.order_no) || '—';
+      const orderItemsRaw = (Array.isArray(orderObj.order_items) ? orderObj.order_items : []) as Row[];
+
+      const items = orderItemsRaw.map((oi) => {
+        const snap = nested(oi.product_snapshot);
+        return {
+          name: str(snap.name) || str(r.title) || 'Ürün',
+          quantity: Number(oi.quantity || 1),
+        };
+      });
+
+      if (items.length === 0 && r.title) {
+        items.push({ name: str(r.title), quantity: 1 });
+      }
+
       const paths = Array.isArray(r.images) ? (r.images as string[]) : [];
 
       const { data: logRows, error: logError } = await supabase
@@ -83,18 +103,25 @@ export function useSshDetail(sshId: string | null) {
         .order('id', { ascending: true });
       if (logError) throw logError;
 
+      const retailerObj = nested(r.retailer);
+      const retailerName = str(retailerObj.company_name) || 'Perakendeci Firma';
+
       return {
-        id: str(r.id),
+        id,
+        sshCode,
+        orderNo,
         title: str(r.title),
         description: nullableStr(r.description),
         status: r.status as SshStatus,
-        createdAt: str(r.created_at),
+        createdAt,
         updatedAt: str(r.updated_at),
         relationshipId: str(r.relationship_id),
         manufacturerOrgId: str(r.manufacturer_org_id),
         retailerOrgId: str(r.retailer_org_id),
+        retailerName,
         customerName: nullableStr(r.customer_name),
         customerPhone: nullableStr(r.customer_phone),
+        items,
         imagePaths: paths,
         imageUrls: await signServicePhotos(paths),
         logs: (logRows ?? []).map(toLog),

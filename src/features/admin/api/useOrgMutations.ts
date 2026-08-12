@@ -127,3 +127,14 @@ export function useDecideSubscriptionRequest() {
     onSuccess: () => invalidate(queryClient),
   });
 }
+
+export function useDeleteOrg() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orgId: string) => {
+      const { error } = await supabase.rpc('admin_delete_org', rpcArgs({ p_org_id: orgId }));
+      if (error) throw error;
+    },
+    onSuccess: () => invalidate(queryClient),
+  });
+}

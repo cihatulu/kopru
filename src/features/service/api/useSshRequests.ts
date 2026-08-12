@@ -14,37 +14,84 @@ import {
   type SshStatus,
 } from './shared';
 
+export interface SshProductItem {
+  name: string;
+  quantity: number;
+}
+
 export interface SshRequest extends Cursor {
   id: string;
+  sshCode: string;
   title: string;
   description: string | null;
   status: SshStatus;
   createdAt: string;
+  orderNo: string;
   customerName: string | null;
+  customerPhone: string | null;
   counterpartyName: string;
   manufacturerOrgId: string;
+  retailerOrgId: string;
+  relationshipId: string;
+  items: SshProductItem[];
 }
 
 function toSsh(raw: unknown, myOrgId: string): SshRequest {
-  const r = raw as Row;
-  return {
-    id: str(r.id),
-    title: str(r.title),
-    description: nullableStr(r.description),
-    status: r.status as SshStatus,
-    createdAt: str(r.created_at),
-    customerName: nullableStr(r.customer_name),
-    counterpartyName: counterpartyName(r, myOrgId),
-    manufacturerOrgId: str(r.manufacturer_org_id),
-  };
+  try {
+    const r = (raw && typeof raw === 'object' ? raw : {}) as Row;
+    const id = str(r.id);
+    const createdAt = str(r.created_at);
+    const datePart = createdAt ? createdAt.split('T')[0].replace(/-/g, '') : '20260812';
+    const sshCode = id ? `SSH-${datePart}-${id.slice(0, 4).toUpperCase()}` : 'SSH-0000';
+
+    const rawOrders = r.orders;
+    const orderObj = Array.isArray(rawOrders) ? (rawOrders[0] || {}) : (rawOrders || {});
+    const orderNo = str(orderObj.order_no) || '—';
+
+    const items: SshProductItem[] = [];
+    if (r.title) {
+      items.push({ name: str(r.title), quantity: 1 });
+    }
+
+    return {
+      id,
+      sshCode,
+      title: str(r.title),
+      description: nullableStr(r.description),
+      status: (r.status as SshStatus) || 'bekliyor',
+      createdAt,
+      orderNo,
+      customerName: nullableStr(r.customer_name),
+      customerPhone: nullableStr(r.customer_phone),
+      counterpartyName: counterpartyName(r, myOrgId),
+      manufacturerOrgId: str(r.manufacturer_org_id),
+      retailerOrgId: str(r.retailer_org_id),
+      relationshipId: str(r.relationship_id),
+      items,
+    };
+  } catch (err) {
+    console.error('[toSsh] parse error:', err, raw);
+    return {
+      id: str((raw as any)?.id),
+      sshCode: 'SSH-ERR',
+      title: 'Talep',
+      description: null,
+      status: 'bekliyor',
+      createdAt: new Date().toISOString(),
+      orderNo: '—',
+      customerName: null,
+      customerPhone: null,
+      counterpartyName: '—',
+      manufacturerOrgId: '',
+      retailerOrgId: '',
+      relationshipId: '',
+      items: [],
+    };
+  }
 }
 
 /**
  * SSH talepleri — keyset sayfalama (A17). RLS kapsamı daraltır (A16).
- *
- * Filtreler sorgu ANAHTARININ parçasıdır: değiştiğinde react-query yeni bir
- * önbellek girdisi açar ve sayfalama baştan başlar. Aynı anahtarda kalsalardı
- * eski imleç yeni filtreyle karışır, liste rastgele bir yerinden devam ederdi.
  */
 export function useSshRequests(myOrgId: string, myKind: string, filters: ServiceFilters) {
   return useInfiniteQuery({
@@ -67,7 +114,10 @@ export function useSshRequests(myOrgId: string, myKind: string, filters: Service
       if (pageParam) q = q.or(keyset(pageParam));
 
       const { data, error } = await q;
-      if (error) throw error;
+      if (error) {
+        console.error('[useSshRequests] fetch error:', error);
+        throw error;
+      }
       return (data ?? []).map((raw) => toSsh(raw, myOrgId));
     },
     getNextPageParam: (last) => next(last, PAGE_SIZE),

@@ -7,6 +7,7 @@ interface Props {
   companyName: string;
   open: boolean;
   onClose: () => void;
+  unreadAnnouncementsCount?: number | undefined;
   /**
    * Menü maddelerinin altına yerleştirilecek dinamik içerik.
    *
@@ -17,7 +18,7 @@ interface Props {
 }
 
 /** Koyu sol menü. Mobilde kayarak açılır, masaüstünde sabittir. */
-export function Sidebar({ items, companyName, open, onClose, slots }: Props) {
+export function Sidebar({ items, companyName, open, onClose, unreadAnnouncementsCount, slots }: Props) {
   return (
     <>
       {open && (
@@ -78,6 +79,11 @@ export function Sidebar({ items, companyName, open, onClose, slots }: Props) {
                   <path d={item.icon} />
                 </svg>
                 <span className="truncate">{item.label}</span>
+                {item.label === 'Duyurular' && !!unreadAnnouncementsCount && unreadAnnouncementsCount > 0 && (
+                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black text-white shadow-sm">
+                    {unreadAnnouncementsCount > 99 ? '99+' : unreadAnnouncementsCount}
+                  </span>
+                )}
               </NavLink>
 
               {/* Dinamik içerik (ör. katalog ağacı) maddenin hemen altında. */}

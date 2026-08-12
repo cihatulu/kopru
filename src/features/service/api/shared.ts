@@ -4,12 +4,13 @@
 export const SSH_COLUMNS =
   'id, title, description, status, created_at, order_id, customer_name, customer_phone, ' +
   'manufacturer_org_id, retailer_org_id, relationship_id, ' +
+  'orders(order_no), ' +
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name)';
 
 export const RETURN_COLUMNS =
   'id, status, reason, items, approved_amount, created_at, decided_at, order_id, ' +
   'manufacturer_org_id, retailer_org_id, relationship_id, ' +
-  'orders(order_no), manufacturer:manufacturer_org_id(company_name), ' +
+  'orders(order_no, order_items(id, product_snapshot)), manufacturer:manufacturer_org_id(company_name), ' +
   'retailer:retailer_org_id(company_name)';
 
 export type SshStatus = 'bekliyor' | 'inceleniyor' | 'parca_gonderildi' | 'tamamlandi' | 'iptal';
@@ -23,7 +24,9 @@ export const nested = (v: unknown): Row => (v && typeof v === 'object' ? (v as R
 
 /** Kenarın bana göre karşı ucu — sorgu iki ucu da çeker, çeviri burada olur. */
 export function counterpartyName(r: Row, myOrgId: string): string {
-  const other = nested(r.manufacturer_org_id === myOrgId ? r.retailer : r.manufacturer);
+  const mfr = Array.isArray(r.manufacturer) ? nested(r.manufacturer[0]) : nested(r.manufacturer);
+  const rtl = Array.isArray(r.retailer) ? nested(r.retailer[0]) : nested(r.retailer);
+  const other = r.manufacturer_org_id === myOrgId ? rtl : mfr;
   return str(other.company_name) || '—';
 }
 

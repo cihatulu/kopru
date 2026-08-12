@@ -15,6 +15,8 @@ export {
   useSetCounterpartyStatus,
   useSetCounterpartyDiscount,
   useRequestSubscription,
+  useToggleCatalogPermission,
+  useDeleteCounterparty,
 } from './api/useCounterpartyMutations';
 export type {
   AddCounterpartyInput,

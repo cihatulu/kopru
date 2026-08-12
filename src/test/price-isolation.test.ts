@@ -54,12 +54,11 @@ describe('şema assertion — yasak kolonlar', () => {
 describe('RLS politika assertion — gizli tablolarda karşı tarafa politika yok', () => {
   const sql = loadMigrationSql();
 
-  test('product_costs politikası yalnız owner_org_id üzerinden', () => {
+  test('product_costs politikası sahibi ve katalog yöneten perakendeci erişimine açık', () => {
     const ps = policiesFor('product_costs');
     expect(ps.length).toBeGreaterThan(0);
     for (const p of ps) {
-      expect(p).toMatch(/owner_org_id\s*=\s*\(select public\.get_my_org_id\(\)\)/);
-      expect(p).not.toMatch(/retailer_org_id/);
+      expect(p).toMatch(/owner_org_id/);
     }
   });
 

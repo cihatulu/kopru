@@ -35,8 +35,9 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
   // 'yok' = gruplanmamışlar; ayrı bir değer çünkü null bir URL parametresinde
   // "filtre yok" ile karışırdı.
   const products = all.filter((p) => {
-    // 'yok' = kırılımı girilmemiş olanlar; null bir URL parametresinde
-    // "filtre yok" ile karışırdı, o yüzden ayrı bir değer.
+    if (highlightId !== null && p.id !== highlightId) {
+      return false;
+    }
     if (categoryFilter !== null) {
       if (categoryFilter === 'yok' ? p.category !== null : p.category !== categoryFilter) {
         return false;
@@ -47,17 +48,19 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
     return p.groupId === groupFilter;
   });
 
-  // Kategori seçiliyse rozette o yazar: kullanıcı en son ona tıklamıştır.
+  // Seçili ürün veya grup varsa rozette o yazar
   const activeFilterName =
-    categoryFilter !== null
-      ? categoryFilter === 'yok'
-        ? 'Kategorisiz'
-        : categoryFilter
-      : groupFilter === null
-        ? null
-        : groupFilter === 'yok'
-          ? 'Gruplanmamış'
-          : (groupName.get(groupFilter) ?? 'Seçili grup');
+    highlightId !== null
+      ? (all.find((p) => p.id === highlightId)?.name ?? 'Seçili ürün')
+      : categoryFilter !== null
+        ? categoryFilter === 'yok'
+          ? 'Kategorisiz'
+          : categoryFilter
+        : groupFilter === null
+          ? null
+          : groupFilter === 'yok'
+            ? 'Gruplanmamış'
+            : (groupName.get(groupFilter) ?? 'Seçili grup');
 
   return (
     <div className="space-y-5">

@@ -42,11 +42,12 @@ function useInvalidate() {
 export function useSaveProductGroup() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ id, name }: { id?: string; name: string }) => {
+    mutationFn: async ({ id, name, ownerOrgId }: { id?: string; name: string; ownerOrgId?: string }) => {
       const { error } = await supabase.rpc('save_product_group', rpcArgs({
         p_id: id ?? undefined,
         p_name: name,
         p_sort_order: 0,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (error) throw error;
     },
@@ -58,8 +59,11 @@ export function useSaveProductGroup() {
 export function useDeleteProductGroup() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('delete_product_group', rpcArgs({ p_id: id }));
+    mutationFn: async ({ id, ownerOrgId }: { id: string; ownerOrgId?: string }) => {
+      const { error } = await supabase.rpc('delete_product_group', rpcArgs({
+        p_id: id,
+        p_owner_org_id: ownerOrgId ?? undefined,
+      }));
       if (error) throw error;
     },
     onSuccess: invalidate,

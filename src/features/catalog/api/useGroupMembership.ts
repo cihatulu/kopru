@@ -21,13 +21,16 @@ export function useAssignProductsToGroup() {
     mutationFn: async ({
       productIds,
       groupId,
+      ownerOrgId,
     }: {
       productIds: string[];
       groupId: string | null;
+      ownerOrgId?: string;
     }): Promise<number> => {
       const { data, error } = await supabase.rpc('assign_products_to_group', rpcArgs({
         p_product_ids: productIds,
         p_group_id: groupId ?? undefined,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (error) throw error;
       return Number(data ?? 0);
@@ -50,20 +53,24 @@ export function useAssignToNewGroup() {
     mutationFn: async ({
       name,
       productIds,
+      ownerOrgId,
     }: {
       name: string;
       productIds: string[];
+      ownerOrgId?: string;
     }): Promise<number> => {
       const { data: groupId, error: groupError } = await supabase.rpc('save_product_group', rpcArgs({
         p_id: undefined,
         p_name: name,
         p_sort_order: 0,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (groupError) throw groupError;
 
       const { data, error } = await supabase.rpc('assign_products_to_group', rpcArgs({
         p_product_ids: productIds,
         p_group_id: groupId,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (error) throw error;
       return Number(data ?? 0);
@@ -79,13 +86,16 @@ export function useSetGroupProducts() {
     mutationFn: async ({
       groupId,
       productIds,
+      ownerOrgId,
     }: {
       groupId: string;
       productIds: string[];
+      ownerOrgId?: string;
     }): Promise<number> => {
       const { data, error } = await supabase.rpc('set_group_products', rpcArgs({
         p_group_id: groupId,
         p_product_ids: productIds,
+        p_owner_org_id: ownerOrgId ?? undefined,
       }));
       if (error) throw error;
       return Number(data ?? 0);

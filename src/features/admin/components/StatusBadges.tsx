@@ -8,19 +8,14 @@ const BASE = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-med
  */
 export function SubscriberBadge({
   isSubscriber,
-  plan,
 }: {
   isSubscriber: boolean;
-  plan: Plan | null;
+  plan?: Plan | null;
 }) {
   if (!isSubscriber) {
     return <span className={`${BASE} bg-slate-100 text-slate-600`}>Misafir</span>;
   }
-  return (
-    <span className={`${BASE} bg-emerald-50 text-emerald-700`}>
-      Abone{plan ? ` · ${plan}` : ''}
-    </span>
-  );
+  return <span className={`${BASE} bg-emerald-50 text-emerald-700`}>Üye</span>;
 }
 
 export function ActiveBadge({ isActive }: { isActive: boolean }) {

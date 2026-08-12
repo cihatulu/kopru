@@ -15,6 +15,7 @@ export {
   useSetOrgActive,
   useSetRelationshipStatus,
   useDecideSubscriptionRequest,
+  useDeleteOrg,
 } from './api/useOrgMutations';
 export type { UpgradeInput, UpgradeResult } from './api/useOrgMutations';
 

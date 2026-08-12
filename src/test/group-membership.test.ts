@@ -12,20 +12,19 @@ const sql = loadMigrationSql();
 describe('assign_products_to_group', () => {
   const body = functionBody('assign_products_to_group');
 
-  test('yalnız ÜRETİCİ ve owner/staff çağırabilir', () => {
-    expect(body).toMatch(/get_my_org_kind\(\) <> 'manufacturer'/i);
+  test('yalnız yetkili owner/staff çağırabilir', () => {
     expect(body).toMatch(/get_my_org_role\(\) not in \('owner', 'staff'\)/i);
     expect(body).toMatch(/FORBIDDEN/);
   });
 
   test('başkasının grubuna ürün taşınamaz', () => {
-    expect(body).toMatch(/g\.owner_org_id = v_me/i);
+    expect(body).toMatch(/g\.owner_org_id = v_owner/i);
     expect(body).toMatch(/GROUP_NOT_FOUND/);
   });
 
-  test('yalnız kendi ürünlerim güncellenir', () => {
+  test('yalnız ilgili grubun sahibine ait ürünler güncellenir', () => {
     // Listeye yabancı bir id yazmak başkasının ürününü gruba almaya yetmemeli.
-    expect(body).toMatch(/update public\.products[\s\S]*?owner_org_id = v_me/i);
+    expect(body).toMatch(/update public\.products[\s\S]*?owner_org_id = v_owner/i);
   });
 
   test('grup null verilebilir — gruptan çıkarma', () => {
@@ -54,15 +53,15 @@ describe('set_group_products', () => {
     expect(body).toMatch(/coalesce\(p_product_ids, '\{\}'::uuid\[\]\)/i);
   });
 
-  test('yalnız kendi grubum düzenlenebilir', () => {
-    expect(body).toMatch(/g\.owner_org_id = v_me/i);
+  test('yalnız ilgili gruba ait ürünler düzenlenebilir', () => {
+    expect(body).toMatch(/g\.owner_org_id = v_owner/i);
     expect(body).toMatch(/GROUP_NOT_FOUND/);
   });
 
-  test('yalnız kendi ürünlerim etkilenir', () => {
+  test('yalnız grubun ait olduğu firmanın ürünleri etkilenir', () => {
     const updates = body.match(/update public\.products[\s\S]*?;/gi) ?? [];
     expect(updates.length).toBe(2);
-    for (const u of updates) expect(u).toMatch(/owner_org_id = v_me/i);
+    for (const u of updates) expect(u).toMatch(/owner_org_id = v_owner/i);
   });
 });
 

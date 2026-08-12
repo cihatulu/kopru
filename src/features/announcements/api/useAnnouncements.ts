@@ -8,7 +8,7 @@ import { PAGE_SIZE, STALE_TIME } from '@/constants';
 // duyuru listesi hiç yüklenmiyordu.
 const OWNER_FK = 'announcements_owner_org_id_owner_kind_fkey';
 const COLUMNS =
-  'id, title, body, is_active, created_at, owner_org_id, target_retailer_org_id, ' +
+  'id, title, body, is_active, created_at, owner_org_id, target_retailer_org_id, image_url, ' +
   `owner:organizations!${OWNER_FK}(company_name)`;
 
 type Row = Record<string, unknown>;
@@ -24,6 +24,7 @@ export interface Announcement {
   ownerName: string;
   /** Doluysa duyuru tek bir perakendeciye özeldir. */
   targetRetailerOrgId: string | null;
+  imageUrl: string | null;
 }
 
 function toAnnouncement(raw: unknown): Announcement {
@@ -40,6 +41,7 @@ function toAnnouncement(raw: unknown): Announcement {
     targetRetailerOrgId: typeof r.target_retailer_org_id === 'string'
       ? r.target_retailer_org_id
       : null,
+    imageUrl: typeof r.image_url === 'string' ? r.image_url : null,
   };
 }
 
@@ -78,15 +80,54 @@ function useInvalidate() {
   return () => void queryClient.invalidateQueries({ queryKey: ['announcements'] });
 }
 
+export interface PublishAnnouncementInput {
+  ownerOrgId: string;
+  title: string;
+  body: string;
+  targetRetailerOrgId?: string | null;
+  imageUrl?: string | null;
+}
+
 export function usePublishAnnouncement() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (input: { ownerOrgId: string; title: string; body: string }) => {
-      const { error } = await supabase.from('announcements').insert({
+    mutationFn: async (input: PublishAnnouncementInput) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).from('announcements').insert({
         owner_org_id: input.ownerOrgId,
         title: input.title,
         body: input.body,
+        target_retailer_org_id: input.targetRetailerOrgId || null,
+        image_url: input.imageUrl || null,
       });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export interface UpdateAnnouncementInput {
+  id: string;
+  title: string;
+  body: string;
+  targetRetailerOrgId?: string | null;
+  imageUrl?: string | null;
+}
+
+export function useUpdateAnnouncement() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: UpdateAnnouncementInput) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from('announcements')
+        .update({
+          title: input.title,
+          body: input.body,
+          target_retailer_org_id: input.targetRetailerOrgId || null,
+          image_url: input.imageUrl || null,
+        })
+        .eq('id', input.id);
       if (error) throw error;
     },
     onSuccess: invalidate,

@@ -15,7 +15,7 @@ interface Props {
    */
   priceOverride?: number | undefined;
   /** Verilirse alt kısımda "Sepete ekle" çıkar — perakendeci görünümü. */
-  onAddToCart?: (() => void) | undefined;
+  onAddToCart?: ((customDescription?: string, priceDifference?: number) => void) | undefined;
   onClose: () => void;
 }
 
@@ -35,8 +35,15 @@ export function ProductPreview({
   onClose,
 }: Props) {
   const [imageIndex, setImageIndex] = useState(0);
+  const [customDescription, setCustomDescription] = useState('');
+  const [priceDifference, setPriceDifference] = useState<number | ''>('');
+
   const dimensions = formatDimensions(product.dimensions);
   const image = product.images[imageIndex];
+
+  const basePrice = priceOverride ?? product.supplierPrice;
+  const diffVal = Number(priceDifference) || 0;
+  const finalPrice = basePrice + diffVal;
 
   return (
     <Modal
@@ -72,7 +79,7 @@ export function ProductPreview({
         </div>
       )}
 
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-6 text-left">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
             {groupName ?? 'Gruplanmamış'}
@@ -83,7 +90,7 @@ export function ProductPreview({
 
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-2xl font-bold text-slate-900">
-            {formatMoney(priceOverride ?? product.supplierPrice)}
+            {formatMoney(finalPrice)}
           </span>
           <span className="text-sm text-slate-500">
             Stok: {stock === null ? 'kayıt yok' : stock}
@@ -128,11 +135,82 @@ export function ProductPreview({
           </div>
         )}
 
+        {/* Müşteri Değişiklik Talebi */}
+        {onAddToCart && (
+          <div className="mt-6 border-t border-slate-100 pt-4 space-y-3">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              MÜŞTERİ DEĞİŞİKLİK TALEBİ
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  AÇIKLAMA / DEĞİŞİKLİK TALEBİ
+                </label>
+                <input
+                  type="text"
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  placeholder="Örn: Kapılar cam olsun, 4 kapaklı olsun vb."
+                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  FİYAT FARKI (₺)
+                </label>
+                <input
+                  type="number"
+                  value={priceDifference}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPriceDifference(val === '' ? '' : Number(val));
+                  }}
+                  placeholder="0"
+                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all outline-none font-mono"
+                />
+              </div>
+            </div>
+
+            {(customDescription.trim() || diffVal !== 0) && (
+              <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+                <div>
+                  <p className="font-extrabold text-slate-400 uppercase text-[9px]">Nihai Birim Fiyat</p>
+                  {customDescription && (
+                    <p className="text-slate-600 font-semibold truncate max-w-[180px]">
+                      Talep: {customDescription}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="font-black text-indigo-600 text-base">{formatMoney(finalPrice)}</span>
+                  {diffVal !== 0 && (
+                    <span className="block text-[10px] text-slate-400">
+                      Fark: {diffVal > 0 ? '+' : ''}{formatMoney(diffVal)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <Button variant="secondary" onClick={onClose}>
             Kapat
           </Button>
-          {onAddToCart && stock !== 0 && <Button onClick={onAddToCart}>Sepete ekle</Button>}
+          {onAddToCart && stock !== 0 && (
+            <Button
+              onClick={() =>
+                onAddToCart(
+                  customDescription.trim() || undefined,
+                  diffVal || undefined
+                )
+              }
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Sepete ekle
+            </Button>
+          )}
         </div>
       </div>
     </Modal>

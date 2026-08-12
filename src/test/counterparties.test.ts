@@ -5,21 +5,12 @@
  * organizasyonlar oluşur (VKN yakınsaması kaybolur) ya da bir abone başka bir
  * aboneyi onayı olmadan kendi ekosistemine bağlayabilir.
  */
-import { describe, expect, test } from 'vitest';
-import { loadMigrationSql } from './sqlSchema';
+import { loadMigrationSql, functionBody } from './sqlSchema';
 
 const sql = loadMigrationSql();
 
-function fnBody(name: string): string {
-  const m = new RegExp(
-    `create or replace function public\\.${name}[\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$;`,
-    'i',
-  ).exec(sql);
-  return m?.[1] ?? '';
-}
-
 describe('add_counterparty — VKN yakınsaması', () => {
-  const body = fnBody('add_counterparty');
+  const body = functionBody('add_counterparty');
 
   test('fonksiyon mevcut', () => {
     expect(body.length).toBeGreaterThan(0);
@@ -53,17 +44,19 @@ describe('add_counterparty — VKN yakınsaması', () => {
 });
 
 describe('add_counterparty — yetki ve onay', () => {
-  const body = fnBody('add_counterparty');
+  const body = functionBody('add_counterparty');
 
   test('yalnız aboneler karşı taraf ekleyebilir', () => {
     expect(body).toMatch(/if not v_me\.is_subscriber then/i);
     expect(body).toMatch(/NOT_SUBSCRIBER/);
   });
 
-  test('karşı taraf ABONEYSE ilişki pending açılır', () => {
+  test('karşı taraf ABONEYSE ve ekleyen üreticiyse ilişki pending açılır', () => {
     // Bir abone başka bir aboneyi onayı olmadan kendi ekosistemine bağlayamaz.
-    expect(body).toMatch(
-      /v_status\s*:=\s*case when v_target\.is_subscriber then 'pending' else 'active' end/i,
+    // Ancak perakendeci üye üreticiyi eklerse otomatik active başlar.
+    const actualBody = functionBody('add_counterparty');
+    expect(actualBody).toMatch(
+      /v_status\s*:=\s*case\s+when\s+v_target\.is_subscriber\s+and\s+v_me\.kind\s*=\s*'manufacturer'\s+then\s+'pending'\s+else\s+'active'\s+end/i,
     );
   });
 
@@ -74,7 +67,7 @@ describe('add_counterparty — yetki ve onay', () => {
 });
 
 describe('respond_to_connection_request', () => {
-  const body = fnBody('respond_to_connection_request');
+  const body = functionBody('respond_to_connection_request');
 
   test('isteği başlatan kendi isteğini onaylayamaz', () => {
     expect(body).toMatch(/v_me = v_rel\.initiated_by_org_id/);
@@ -92,7 +85,7 @@ describe('respond_to_connection_request', () => {
 });
 
 describe('set_counterparty_discount — iskonto üreticinindir', () => {
-  const body = fnBody('set_counterparty_discount');
+  const body = functionBody('set_counterparty_discount');
 
   test('yalnız üretici tarafı iskonto belirleyebilir', () => {
     // İskonto üreticinin KENDİ satış fiyatına uyguladığı indirimdir (A5);
@@ -107,7 +100,7 @@ describe('set_counterparty_discount — iskonto üreticinindir', () => {
 });
 
 describe('request_subscription — misafirin self-servis talebi', () => {
-  const body = fnBody('request_subscription');
+  const body = functionBody('request_subscription');
 
   test('abone tekrar talep edemez', () => {
     expect(body).toMatch(/ALREADY_SUBSCRIBER/);
