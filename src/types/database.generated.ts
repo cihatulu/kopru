@@ -109,8 +109,10 @@ export type Database = {
           description: string
           id: string
           kind: Database["public"]["Enums"]["finance_kind"]
+          manufacturer_org_id: string | null
           method: Database["public"]["Enums"]["payment_method"]
           occurred_on: string
+          order_id: string | null
           retailer_kind: Database["public"]["Enums"]["org_kind"] | null
           retailer_org_id: string
         }
@@ -121,8 +123,10 @@ export type Database = {
           description: string
           id?: string
           kind: Database["public"]["Enums"]["finance_kind"]
+          manufacturer_org_id?: string | null
           method?: Database["public"]["Enums"]["payment_method"]
           occurred_on?: string
+          order_id?: string | null
           retailer_kind?: Database["public"]["Enums"]["org_kind"] | null
           retailer_org_id: string
         }
@@ -133,12 +137,28 @@ export type Database = {
           description?: string
           id?: string
           kind?: Database["public"]["Enums"]["finance_kind"]
+          manufacturer_org_id?: string | null
           method?: Database["public"]["Enums"]["payment_method"]
           occurred_on?: string
+          order_id?: string | null
           retailer_kind?: Database["public"]["Enums"]["org_kind"] | null
           retailer_org_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "finance_entries_manufacturer_org_id_fkey"
+            columns: ["manufacturer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "finance_entries_retailer_org_id_retailer_kind_fkey"
             columns: ["retailer_org_id", "retailer_kind"]
@@ -1635,6 +1655,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      add_finance_transaction: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_manufacturer_id?: string
+          p_method: string
+          p_order_id?: string
+          p_type: string
+        }
+        Returns: string
       }
       add_manual_transaction: {
         Args: {

@@ -1,11 +1,11 @@
 import { formatDate, formatMoney } from '@/lib/format';
 import { FINANCE_KIND_LABELS, PAYMENT_METHOD_LABELS, affectsOwnCash } from '../domain/finance';
-import type { FinanceEntry } from '../api/useFinance';
+import type { FinanceTransaction } from '../domain/finance';
 
 const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
 const TD = 'px-4 py-3 align-middle';
 
-export function FinanceTable({ entries }: { entries: FinanceEntry[] }) {
+export function FinanceTable({ entries }: { entries: FinanceTransaction[] }) {
   if (entries.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -30,12 +30,9 @@ export function FinanceTable({ entries }: { entries: FinanceEntry[] }) {
           {entries.map((e) => (
             <tr key={e.id} className="hover:bg-slate-50/60">
               <td className={`${TD} whitespace-nowrap text-xs text-slate-500`}>
-                {formatDate(e.occurredOn)}
+                {formatDate(e.created_at)}
               </td>
-              <td className={`${TD} text-slate-700`}>
-                {e.description}
-                {e.category && <span className="ml-2 text-xs text-slate-400">{e.category}</span>}
-              </td>
+              <td className={`${TD} text-slate-700`}>{e.description}</td>
               <td className={`${TD} text-xs text-slate-500`}>
                 {PAYMENT_METHOD_LABELS[e.method]}
                 {!affectsOwnCash(e.method) && (
@@ -48,10 +45,10 @@ export function FinanceTable({ entries }: { entries: FinanceEntry[] }) {
                 )}
               </td>
               <td className={`${TD} text-right text-emerald-700`}>
-                {e.kind === 'income' ? formatMoney(e.amount) : '—'}
+                {e.type === 'income' ? formatMoney(e.amount) : '—'}
               </td>
               <td className={`${TD} text-right text-slate-900`}>
-                {e.kind === 'expense' ? formatMoney(e.amount) : '—'}
+                {e.type === 'expense' ? formatMoney(e.amount) : '—'}
               </td>
             </tr>
           ))}

@@ -6,14 +6,11 @@ export {
   useManufacturers,
   useFinanceStats,
   useCustomerLedgers,
-  useAddFinanceTransaction,
 } from './api/useFinance';
-export type {
-  FinanceTransaction,
-  FinanceStats,
-  CustomerLedger,
-  MinimalOrder,
-} from './api/useFinance';
+export { useAddFinanceTransaction } from './api/useFinanceMutations';
+export type { FinanceTransaction, MinimalOrder } from './domain/finance';
+export type { FinanceStats } from './domain/financeStats';
+export type { CustomerLedger } from './domain/customerLedger';
 export {
   financeTotals,
   affectsOwnCash,

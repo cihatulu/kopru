@@ -21,6 +21,41 @@ export interface FinanceTotals {
   net: number;
 }
 
+/** Üretici adının okunabileceği iki yol: kaydın kendisi ya da bağlı sipariş. */
+export interface ManufacturerNamed {
+  manufacturer?: { company_name: string | null } | null;
+  order?: { manufacturer?: { company_name: string | null } | null } | null;
+}
+
+/** Perakendecinin kasa/POS defteri satırı (`finance_entries`). */
+export interface FinanceTransaction extends ManufacturerNamed {
+  id: string;
+  retailer_id: string;
+  type: FinanceKind;
+  method: PaymentMethod;
+  amount: number;
+  description: string | null;
+  order_id: string | null;
+  manufacturer_id: string | null;
+  created_at: string;
+  order?:
+    | { customer_name: string | null; manufacturer?: { company_name: string | null } | null }
+    | null;
+}
+
+/** Cari hesap hesaplamaları için gereken en küçük sipariş gösterimi. */
+export interface MinimalOrder {
+  id: string;
+  orderNo: string;
+  createdAt: string;
+  parentOrderId: string | null;
+  totalAmount: number;
+  customerName: string | null;
+  customerPhone: string | null;
+  customerAddress: string | null;
+  manufacturerName: string | null;
+}
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function financeTotals(
@@ -39,9 +74,9 @@ export function affectsOwnCash(method: PaymentMethod): boolean {
   return method !== 'pos_manufacturer';
 }
 
-export function getManufacturerName(t: any): string {
-  if (t.manufacturer?.company_name) return t.manufacturer.company_name;
-  return t.order?.manufacturer?.company_name ?? '-';
+export function getManufacturerName(t: ManufacturerNamed): string {
+  // `||` bilinçli: boş şirket adı da "yok" sayılır ve sipariş üzerinden aranır.
+  return t.manufacturer?.company_name || t.order?.manufacturer?.company_name || '-';
 }
 
 // Sipariş iadelerini zaman tünelinde ve cari borç hesabında ayrıştırmak için yardımcılar
