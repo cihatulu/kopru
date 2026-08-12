@@ -149,6 +149,7 @@ export function ReturnPanel({ myOrgId, myKind, partyOptions }: Props) {
       {/* Modal */}
       {showCreateModal && (
         <ReturnCreationModal
+          myOrgId={myOrgId}
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => void list.refetch()}
         />

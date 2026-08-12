@@ -3,8 +3,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useCounterparties, type Edge } from '@/features/counterparties';
 import { useSshCreation } from '../api/useSshCreation';
-import { useSshEligibleOrders } from '../api/useSshEligibleOrders';
-import { SshOrderPicker } from './SshOrderPicker';
+import { useServiceOrders } from '../api/useServiceOrders';
+import { ServiceOrderPicker } from './ServiceOrderPicker';
 import { SshDetailStep } from './SshDetailStep';
 
 interface Props {
@@ -21,7 +21,7 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
     [counterparties.data],
   );
 
-  const orders = useSshEligibleOrders(myOrgId);
+  const orders = useServiceOrders(myOrgId);
   const form = useSshCreation(edges[0]?.id ?? '', () => {
     onClose();
     onSuccess();
@@ -65,11 +65,15 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
         )}
 
         {form.step === 1 ? (
-          <SshOrderPicker
+          <ServiceOrderPicker
             orders={orders.data ?? []}
             loading={orders.isPending}
+            accent="blue"
+            showQuota
+            listLabel="Siparişleriniz"
+            emptyText="Sipariş bulunamadı."
             onSelect={form.selectOrder}
-            onManual={form.selectManual}
+            manual={{ label: '+ Siparişsiz Manuel Talep Oluştur', onSelect: form.selectManual }}
           />
         ) : (
           <SshDetailStep form={form} edges={edges} myOrgId={myOrgId} />
@@ -84,7 +88,7 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
           <Button
             loading={form.submitting}
             onClick={() => void form.submit()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
           >
             Talebi Gönder
           </Button>

@@ -9,7 +9,7 @@ import {
   type SshItemSelection,
 } from '../domain/sshDraft';
 import { useCreateSsh, useSetSshImages } from './useServiceMutations';
-import type { SshEligibleOrder } from './useSshEligibleOrders';
+import type { ServiceOrder } from './useServiceOrders';
 
 export interface SshFormFields {
   customProductName: string;
@@ -34,7 +34,7 @@ const EMPTY_FIELDS: SshFormFields = {
  */
 export function useSshCreation(defaultRelId: string, onDone: () => void) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [order, setOrder] = useState<SshEligibleOrder | null>(null);
+  const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [relId, setRelId] = useState(defaultRelId);
   const [items, setItems] = useState<SshItemSelection[]>([]);
   const [fields, setFields] = useState<SshFormFields>(EMPTY_FIELDS);
@@ -45,7 +45,7 @@ export function useSshCreation(defaultRelId: string, onDone: () => void) {
   const createSsh = useCreateSsh();
   const setSshImages = useSetSshImages();
 
-  const selectOrder = (o: SshEligibleOrder) => {
+  const selectOrder = (o: ServiceOrder) => {
     const blocked = sshBlockReason(o);
     if (blocked) {
       setError(blocked);
