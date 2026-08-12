@@ -1,13 +1,17 @@
 // features/announcements PUBLIC YÜZEYİ (A20).
 
+export { useAnnouncements } from './api/useAnnouncements';
 export {
-  useAnnouncements,
   usePublishAnnouncement,
   useUpdateAnnouncement,
   useSetAnnouncementActive,
   useMarkRead,
-} from './api/useAnnouncements';
+} from './api/useAnnouncementMutations';
 export { useUnreadAnnouncements } from './api/useUnreadAnnouncements';
-export type { Announcement, PublishAnnouncementInput, UpdateAnnouncementInput } from './api/useAnnouncements';
+export type { Announcement } from './api/useAnnouncements';
+export type {
+  PublishAnnouncementInput,
+  UpdateAnnouncementInput,
+} from './api/useAnnouncementMutations';
 export { AnnouncementList } from './components/AnnouncementList';
 export { AnnouncementDialog } from './components/AnnouncementDialog';

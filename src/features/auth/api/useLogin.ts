@@ -7,11 +7,13 @@ import { AUTH_SESSION_KEY } from './useAuthSession';
 export interface LoginRequest {
   portal: Portal;
   mode: LoginMode;
-  userCode?: string;
-  sponsorVkn?: string;
-  email?: string;
+  // `| undefined`: form seçilen moda göre alanları boş bırakır ve undefined
+  // gönderir; Edge Function bunları zaten yok sayar.
+  userCode?: string | undefined;
+  sponsorVkn?: string | undefined;
+  email?: string | undefined;
   password: string;
-  userType?: 'owner' | 'staff';
+  userType?: 'owner' | 'staff' | undefined;
 }
 
 interface LoginResponse {

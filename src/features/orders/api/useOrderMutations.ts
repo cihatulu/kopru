@@ -50,7 +50,16 @@ export function usePlaceOrder() {
 export function useAdvanceOrderStatus() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ orderId, status, note }: { orderId: string; status: OrderStatus; note?: string }) => {
+    // `| undefined`: boş not alanı undefined olarak gelir; rpcArgs eler.
+    mutationFn: async ({
+      orderId,
+      status,
+      note,
+    }: {
+      orderId: string;
+      status: OrderStatus;
+      note?: string | undefined;
+    }) => {
       const { error } = await supabase.rpc('advance_order_status', rpcArgs({
         p_order_id: orderId,
         p_status: status,
@@ -76,7 +85,7 @@ export function useShipOrder() {
     }: {
       orderId: string;
       items: { orderItemId: string; quantity: number }[] | null;
-      note?: string;
+      note?: string | undefined;
     }) => {
       const { error } = await supabase.rpc('ship_order_atomic', rpcArgs({
         p_order_id: orderId,
@@ -94,7 +103,7 @@ export function useShipOrder() {
 export function useCancelOrder() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ orderId, reason }: { orderId: string; reason?: string }) => {
+    mutationFn: async ({ orderId, reason }: { orderId: string; reason?: string | undefined }) => {
       // İptal, ilk debit kaydını DEĞİŞTİRMEZ; dengeleyici credit ekler (A8).
       const { error } = await supabase.rpc('cancel_order_atomic', rpcArgs({
         p_order_id: orderId,
