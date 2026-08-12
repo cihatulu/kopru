@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
+import { useLedger } from '../api/useAccounts';
 import {
   useRequestManualTransaction,
   usePendingRequests,
-  useLedger,
-} from '../api/useAccounts';
+} from '../api/useManualTransactionRequests';
 import { formatMoney } from '@/lib/format';
 import { balanceSide, BALANCE_LABEL, type AccountRow } from '../domain/accountView';
 import { LedgerSection } from './LedgerSection';

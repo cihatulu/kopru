@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatDate, formatMoney } from '@/lib/format';
 import { columnLabels } from '../domain/accountView';
-import type { LedgerEntry } from '../api/useAccounts';
+import type { LedgerEntry } from '../domain/ledgerEntry';
 import { EditManualTransactionDialog } from './EditManualTransactionDialog';
 
 const TH = 'px-4 py-3 text-xs font-semibold whitespace-nowrap';

@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toBounds, type Period } from '../domain/period';
-import { toEntry, TX_COLUMNS, type LedgerEntry } from './useAccounts';
+import { toEntry, type LedgerEntry } from '../domain/ledgerEntry';
+import { TX_COLUMNS } from './useAccounts';
 
 /**
  * Dışa aktarımda tek seferde çekilecek en fazla satır.

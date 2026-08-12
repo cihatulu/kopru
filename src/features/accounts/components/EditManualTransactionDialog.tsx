@@ -6,8 +6,9 @@ import { manualEntryOptions } from '../domain/accountView';
 import {
   useUpdateManualTransaction,
   useDeleteManualTransaction,
-  type LedgerEntry,
-} from '../api/useAccounts';
+} from '../api/useManualTransactionEdits';
+import type { LedgerEntry } from '../domain/ledgerEntry';
+import { ManualEntryFields } from './ManualEntryFields';
 
 interface Props {
   entry: LedgerEntry;
@@ -104,46 +105,16 @@ export function EditManualTransactionDialog({
           </p>
         )}
 
-        <div className="space-y-4">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Tür</span>
-            <select
-              className="input w-full font-medium"
-              value={type}
-              onChange={(e) => setType(e.target.value as 'debit' | 'credit')}
-              disabled={isPending}
-            >
-              {options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Tutar (₺)</span>
-            <input
-              className="input w-full font-medium"
-              inputMode="decimal"
-              value={amountText}
-              onChange={(e) => setAmountText(e.target.value)}
-              disabled={isPending}
-              placeholder="50000"
-            />
-          </label>
-
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Açıklama</span>
-            <input
-              className="input w-full font-medium"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isPending}
-              placeholder="Açıklama giriniz..."
-            />
-          </label>
-        </div>
+        <ManualEntryFields
+          options={options}
+          type={type}
+          amountText={amountText}
+          description={description}
+          disabled={isPending}
+          onTypeChange={setType}
+          onAmountChange={setAmountText}
+          onDescriptionChange={setDescription}
+        />
 
         {confirmDelete ? (
           <div className="rounded-xl bg-red-50 p-3 border border-red-200 text-xs text-red-800 space-y-2">

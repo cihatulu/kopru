@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Spinner } from './Spinner';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const VARIANTS: Record<Variant, string> = {
   primary: 'bg-brand-600 text-white hover:bg-brand-700 disabled:bg-brand-600/50',
   secondary:
     'bg-white text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 disabled:opacity-50',
   ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-50',
+  /** Yıkıcı eylem (sil, iptal et). İki çağrı yeri bunu zaten istiyordu. */
+  danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-600/50',
 };
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {

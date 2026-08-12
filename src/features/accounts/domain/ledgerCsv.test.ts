@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { LEDGER_HEADERS, ledgerFileName, ledgerToCsv } from './ledgerCsv';
 import type { LedgerSummary } from './period';
-import type { LedgerEntry } from '../api/useAccounts';
+import type { LedgerEntry } from './ledgerEntry';
 
 const BOM = '﻿';
 

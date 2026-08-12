@@ -5,7 +5,7 @@
  * BOM. Buradaki fark, dosyanın muhasebeye gitmesi — sayıların Excel'de METİN
  * değil SAYI olarak açılması şart, yoksa kimse toplam alamaz.
  */
-import type { LedgerEntry } from '../api/useAccounts';
+import type { LedgerEntry } from './ledgerEntry';
 import type { LedgerSummary } from './period';
 
 const SEPARATOR = ';';

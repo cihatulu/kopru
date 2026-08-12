@@ -1,15 +1,19 @@
 // features/accounts PUBLIC YÜZEYİ (A20).
 
+export { useLedger, useBalance } from './api/useAccounts';
 export {
-  useLedger,
-  useBalance,
   useRequestManualTransaction,
   usePendingRequests,
   useDecideRequest,
   type RequestMode,
   type PendingRequest,
-} from './api/useAccounts';
-export type { LedgerEntry } from './api/useAccounts';
+} from './api/useManualTransactionRequests';
+export {
+  useUpdateManualTransaction,
+  useDeleteManualTransaction,
+} from './api/useManualTransactionEdits';
+export { toEntry } from './domain/ledgerEntry';
+export type { LedgerEntry, LedgerItemSnapshot } from './domain/ledgerEntry';
 
 export { useLedgerSummary } from './api/useLedgerSummary';
 export { useLedgerExport, EXPORT_LIMIT } from './api/useLedgerExport';

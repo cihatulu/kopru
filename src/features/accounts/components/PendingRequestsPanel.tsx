@@ -1,6 +1,6 @@
 import { formatDate, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
-import { useDecideRequest, type PendingRequest } from '../api/useAccounts';
+import { useDecideRequest, type PendingRequest } from '../api/useManualTransactionRequests';
 
 interface Props {
   requests: PendingRequest[];
