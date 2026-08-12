@@ -6,7 +6,7 @@ export interface SupplierRowActions {
   onToggleCatalog: (relationshipId: string, current: boolean) => void;
   onToggleStatus: (relationshipId: string, current: string) => void;
   onEdit: (edge: Edge, party: Party) => void;
-  onResetPassword: (party: Party) => void;
+  onResetPassword: (edge: Edge, party: Party) => void;
   onDelete: (relationshipId: string) => void;
 }
 
@@ -106,7 +106,7 @@ export function SupplierRow({ edge, party, catalogPending, ...on }: Props) {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => on.onResetPassword(party)}
+                onClick={() => on.onResetPassword(edge, party)}
                 className="border-yellow-200 bg-yellow-50/50 text-amber-700 hover:bg-yellow-50"
               >
                 Şifre Sıfırla

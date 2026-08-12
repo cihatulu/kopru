@@ -6,6 +6,9 @@ import type { Party } from '../domain/counterparty';
 interface Props {
   party: Party;
   discountRate: number;
+  /** A5: iskontoyu üretici belirler. Perakendeci tarafında salt-okunur açılır. */
+  discountEditable?: boolean;
+  title?: string;
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;
@@ -29,6 +32,8 @@ interface Props {
 export function EditCustomerDialog({
   party,
   discountRate,
+  discountEditable = true,
+  title = 'Müşteriyi Düzenle',
   pending,
   errorMessage,
   onClose,
@@ -48,7 +53,7 @@ export function EditCustomerDialog({
       onClose={onClose}
       closeDisabled={pending}
     >
-      <h2 className="text-lg font-extrabold text-slate-800">Müşteriyi Düzenle</h2>
+      <h2 className="text-lg font-extrabold text-slate-800">{title}</h2>
       <p className="mt-1 font-mono text-xs text-slate-400">VKN / T.C. No: {party.vknTc}</p>
 
       <div className="mt-5 space-y-4">
@@ -79,11 +84,13 @@ export function EditCustomerDialog({
             className="input"
             inputMode="decimal"
             value={discount}
+            disabled={!discountEditable}
             onChange={(e) => setDiscount(e.target.value)}
           />
           <p className="mt-1 text-xs text-slate-500">
-            İskonto ilişkiye aittir; sonraki siparişlerin fiyatını etkiler, geçmiş siparişler
-            olduğu gibi kalır.
+            {discountEditable
+              ? 'İskonto ilişkiye aittir; sonraki siparişlerin fiyatını etkiler, geçmiş siparişler olduğu gibi kalır.'
+              : 'İskontoyu karşı taraf belirler; buradan değiştirilemez.'}
           </p>
         </Field>
 

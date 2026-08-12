@@ -16,6 +16,9 @@ export {
   useSetCounterpartyDiscount,
   useDeleteCounterparty,
 } from './api/useCounterpartyMutations';
+export { useCounterpartyActions } from './api/useCounterpartyActions';
+export type { SupplierDialog } from './api/useCounterpartyActions';
+export { useSupplierInvites } from './api/useSupplierInvites';
 export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
 export { useToggleCatalogPermission } from './api/useCatalogPermission';
 export type {
