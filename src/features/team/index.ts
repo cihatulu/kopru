@@ -11,6 +11,8 @@ export {
   StaffError,
 } from './api/useStaffMutations';
 export type { CreateStaffInput, CreateStaffResult, UpdateStaffInput } from './api/useStaffMutations';
+export { useStaffActions } from './api/useStaffActions';
+export type { StaffFormValues, CreatedStaffInfo } from './api/useStaffActions';
 
 export {
   ROLE_LABEL,
@@ -26,3 +28,5 @@ export { StaffTable } from './components/StaffTable';
 export { StaffDialog } from './components/StaffDialog';
 export { ScopeDialog } from './components/ScopeDialog';
 export { ResetPasswordForm } from './components/ResetPasswordForm';
+export { StaffCreatedDialog } from './components/StaffCreatedDialog';
+export { DeleteStaffConfirm } from './components/DeleteStaffConfirm';
