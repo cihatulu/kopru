@@ -31,7 +31,8 @@ export {
 } from './domain/cart';
 export type { CartLine, CartTotals } from './domain/cart';
 
-export { OrderTable, OrderStatusBadge } from './components/OrderTable';
+export { OrderTable } from './components/OrderTable';
+export { OrderStatusBadge } from './components/OrderStatusBadge';
 export { CartPanel } from './components/CartPanel';
 export { ShipmentDialog } from './components/ShipmentDialog';
 export { OrderDetailPanel } from './components/OrderDetailPanel';
