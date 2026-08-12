@@ -23,7 +23,3 @@ export function isRetailerTeamRole(v: unknown): v is RetailerTeamRole {
     (RETAILER_TEAM_ROLES as readonly string[]).includes(v)
   );
 }
-
-export function isInvitationExpired(expiresAt: string): boolean {
-  return new Date(expiresAt).getTime() < Date.now();
-}

@@ -1,4 +1,4 @@
-import { isRetailerTeamRole, type RetailerTeamRole } from '../domain/retailerTeam';
+import type { RetailerTeamRole } from '../domain/retailerTeam';
 
 export interface RetailerTeamMember {
   id: string;
@@ -7,17 +7,6 @@ export interface RetailerTeamMember {
   role: RetailerTeamRole;
   isActive: boolean;
   email: string | null;
-  createdAt: string;
-}
-
-export interface RetailerInvitation {
-  id: string;
-  orgId: string;
-  email: string;
-  role: RetailerTeamRole;
-  token: string;
-  expiresAt: string;
-  usedAt: string | null;
   createdAt: string;
 }
 
@@ -34,19 +23,6 @@ export function mapRetailerTeamMember(row: Record<string, unknown>): RetailerTea
     role: mappedRole,
     isActive: Boolean(row.is_active),
     email: strNull(row.email),
-    createdAt: str(row.created_at),
-  };
-}
-
-export function mapRetailerInvitation(row: Record<string, unknown>): RetailerInvitation {
-  return {
-    id: str(row.id),
-    orgId: str(row.org_id),
-    email: str(row.email),
-    role: isRetailerTeamRole(row.role) ? row.role : 'retailer_staff',
-    token: str(row.token),
-    expiresAt: str(row.expires_at),
-    usedAt: strNull(row.used_at),
     createdAt: str(row.created_at),
   };
 }
