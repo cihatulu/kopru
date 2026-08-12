@@ -11,11 +11,6 @@ interface Props {
   orders: OrderRow[];
   myKind: OrgKind;
   myOrgId: string;
-  /**
-   * @deprecated Detay artık satır içinde açılıyor, seçim geri çağrısına gerek
-   * kalmadı. `OrdersPage` bölündüğünde çağrı yerinden de kaldırılacak.
-   */
-  onSelect?: ((order: OrderRow) => void) | undefined;
   onUpdateStatus: (orderId: string, status: OrderStatus) => void;
   updatingOrderId: string | null;
 }

@@ -31,7 +31,12 @@ export {
 } from './domain/cart';
 export type { CartLine, CartTotals } from './domain/cart';
 
+export { useOrderStatusFlow } from './api/useOrderStatusFlow';
+
 export { OrderTable } from './components/OrderTable';
+export { OrderStatCards } from './components/OrderStatCards';
+export type { OrderFilter } from './components/OrderStatCards';
+export { StatusUpdateDialog } from './components/StatusUpdateDialog';
 export { OrderStatusBadge } from './components/OrderStatusBadge';
 export { CartPanel } from './components/CartPanel';
 export { ShipmentDialog } from './components/ShipmentDialog';
