@@ -2,6 +2,23 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 
+export interface StockVariant {
+  name: string;
+  options: string[];
+}
+
+/** `variants` JSONB'dir; şekli DB tarafından garanti edilmez, okurken daraltılır. */
+function toVariants(raw: unknown): StockVariant[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((v) => {
+    const o = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+    return {
+      name: typeof o.name === 'string' ? o.name : '',
+      options: Array.isArray(o.options) ? o.options.map((x) => String(x)) : [],
+    };
+  });
+}
+
 export interface StockRow {
   productId: string;
   name: string;
@@ -16,7 +33,7 @@ export interface StockRow {
   widthCm: number | null;
   depthCm: number | null;
   heightCm: number | null;
-  variants: any[];
+  variants: StockVariant[];
 }
 
 // Açık kolon listeleri (kilitli kural 19). Gizli fiyat katmanları burada yok (A4).
@@ -81,13 +98,13 @@ export function useStockList(search: string) {
           quantity: s ? s.quantity : null,
           unit: s?.unit ?? 'adet',
           updatedAt: s?.updatedAt ?? null,
-          category: (p.category as string | null) ?? null,
-          groupId: (p.group_id as string | null) ?? null,
-          images: Array.isArray(p.images) ? (p.images as string[]) : [],
+          category: p.category ?? null,
+          groupId: p.group_id ?? null,
+          images: Array.isArray(p.images) ? p.images : [],
           widthCm: p.width_cm != null ? Number(p.width_cm) : null,
           depthCm: p.depth_cm != null ? Number(p.depth_cm) : null,
           heightCm: p.height_cm != null ? Number(p.height_cm) : null,
-          variants: Array.isArray(p.variants) ? p.variants : [],
+          variants: toVariants(p.variants),
         };
       });
     },

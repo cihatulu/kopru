@@ -30,7 +30,7 @@ interface Props {
   allProducts: CatalogProduct[];
   /** Daha önce kullanılmış kategoriler — öneri listesi. */
   categories: string[];
-  isRetailer?: boolean;
+  isRetailer?: boolean | undefined;
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;

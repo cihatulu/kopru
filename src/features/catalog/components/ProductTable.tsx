@@ -71,8 +71,8 @@ export function ProductTable(props: Props) {
               groupName={p.groupId ? (groupNames.get(p.groupId) ?? null) : null}
               canDelete={props.canDelete}
               selected={selectedIds.has(p.id)}
-              isGuest={isGuest}
-              onSaveCost={onSaveCost}
+              isGuest={isGuest ?? false}
+              {...(onSaveCost ? { onSaveCost } : {})}
               onToggle={props.onToggleOne}
               onEdit={props.onEdit}
               onToggleActive={props.onToggleActive}

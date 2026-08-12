@@ -95,7 +95,7 @@ export default function CatalogPage() {
 
           <Button
             variant="primary"
-            onClick={() => navigate(`${ROUTES.retailer}/sepetim`)}
+            onClick={() => void navigate(`${ROUTES.retailer}/sepetim`)}
             className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 rounded-xl shadow-sm text-xs"
           >
             Sepetim ({totals.lineCount})
@@ -113,6 +113,9 @@ export default function CatalogPage() {
         onAdd={(p, unitPrice, customDescription, priceDifference) =>
           addCartLine({
             productId: p.id,
+            // Sepet satırı hangi üreticiye ait olduğunu KENDİ taşır: "Tüm
+            // Üreticiler" görünümünde seçili bir üretici yoktur.
+            manufacturerOrgId: p.ownerOrgId,
             name: p.name,
             code: p.code,
             imageUrl: p.images[0],

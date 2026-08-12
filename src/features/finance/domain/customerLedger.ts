@@ -24,6 +24,11 @@ export interface CustomerLedger {
 /** Müşteriyi ad+telefon ikilisiyle tekilleştirir. */
 const ledgerKey = (name: string, phone: string) => `${name}-${phone}`;
 
+/** Aynı ikili UI'da da kullanılır — seçim anahtarı hesapla birebir aynı olmalı. */
+export const customerLedgerKey = (
+  l: Pick<CustomerLedger, 'customer_name' | 'customer_phone'>,
+): string => ledgerKey(l.customer_name, l.customer_phone);
+
 const cleanName = (v: string | null) => (v || 'İsimsiz').trim();
 const cleanPhone = (v: string | null) => (v || '').trim();
 

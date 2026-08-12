@@ -62,7 +62,7 @@ export default function ProductManagementPage() {
           <RetailerProductManager
             manufacturerId={selected.manufacturerOrgId}
             isGuest={!selected.manufacturer.isSubscriber}
-            canEditCatalog={selected.canEditCatalog}
+            canEditCatalog={selected.canEditCatalog ?? true}
           />
         )
       )}

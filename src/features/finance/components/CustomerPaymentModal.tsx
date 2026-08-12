@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { CustomerLedgerSelect } from './CustomerLedgerSelect';
+import { customerLedgerKey } from '../domain/customerLedger';
 import type { CustomerLedger } from '../api/useFinance';
 
 interface FormVals {
@@ -14,11 +16,16 @@ interface CustomerPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   method: 'cash' | 'pos_own' | 'pos_manufacturer';
-  mode?: 'payment' | 'refund';
+  mode?: 'payment' | 'refund' | undefined;
   ledgers: CustomerLedger[];
   manufacturers: { id: string; name: string }[];
-  onSubmit: (data: { orderId: string; amount: number; manufacturerId?: string; description?: string }) => void;
-  isLoading?: boolean;
+  onSubmit: (data: {
+    orderId: string;
+    amount: number;
+    manufacturerId?: string | undefined;
+    description?: string | undefined;
+  }) => void;
+  isLoading?: boolean | undefined;
 }
 
 const METHOD_LABELS: Record<string, string> = {
@@ -61,12 +68,10 @@ export function CustomerPaymentModal({
     if (!vals.amount || Number(vals.amount) <= 0) { setError('Tutar 0\'dan büyük olmalı.'); return; }
     if (method === 'pos_manufacturer' && !vals.manufacturerId) { setError('Lütfen üretici seçin.'); return; }
 
-    const ledger = ledgers.find(
-      (l) => `${l.customer_name}-${l.customer_phone}` === vals.ledgerKey
-    );
-    if (!ledger || ledger.order_ids.length === 0) { setError('Müşteri bulunamadı.'); return; }
+    // Tahsilat siparişe bağlanır; siparişsiz müşteri satırına yazılamaz.
+    const orderId = ledgers.find((l) => customerLedgerKey(l) === vals.ledgerKey)?.order_ids[0];
+    if (!orderId) { setError('Müşteri bulunamadı.'); return; }
 
-    const orderId = ledger.order_ids[0];
     onSubmit({
       orderId,
       amount: Number(vals.amount),
@@ -81,12 +86,10 @@ export function CustomerPaymentModal({
   const accentBg = isRefund ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-indigo-50 text-indigo-700 border-indigo-100';
 
   const availableCustomers = isRefund
-    ? ledgers.filter(l => l.total_paid_amount > 0)
-    : ledgers.filter(l => l.remaining_balance > 0);
+    ? ledgers.filter((l) => l.total_paid_amount > 0)
+    : ledgers.filter((l) => l.remaining_balance > 0);
 
-  const selectedLedger = ledgers.find(
-    (l) => `${l.customer_name}-${l.customer_phone}` === vals.ledgerKey
-  );
+  const selectedLedger = ledgers.find((l) => customerLedgerKey(l) === vals.ledgerKey);
 
   return (
     <Modal label={title} onClose={onClose} panelClassName="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
@@ -109,34 +112,14 @@ export function CustomerPaymentModal({
             </p>
           )}
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Müşteri <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={vals.ledgerKey}
-              onChange={(e) => setVals({ ...vals, ledgerKey: e.target.value })}
-              required
-              className={`input w-full ${accentColor}`}
-            >
-              <option value="">— Müşteri seçin —</option>
-              {availableCustomers.map((l) => {
-                const key = `${l.customer_name}-${l.customer_phone}`;
-                return (
-                  <option key={key} value={key}>
-                    {l.customer_name} {l.customer_phone ? `(${l.customer_phone})` : ''} — Bakiye: ₺{l.remaining_balance.toLocaleString('tr-TR')}
-                  </option>
-                );
-              })}
-            </select>
-
-            {selectedLedger && (
-              <div className={`mt-2 flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border ${accentBg}`}>
-                <span>Güncel Bakiye</span>
-                <span className="font-bold text-sm">₺{selectedLedger.remaining_balance.toLocaleString('tr-TR')}</span>
-              </div>
-            )}
-          </div>
+          <CustomerLedgerSelect
+            ledgers={availableCustomers}
+            value={vals.ledgerKey}
+            accentColor={accentColor}
+            accentBg={accentBg}
+            selected={selectedLedger}
+            onChange={(key) => setVals({ ...vals, ledgerKey: key })}
+          />
 
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">

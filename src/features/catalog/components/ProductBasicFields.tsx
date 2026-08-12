@@ -8,7 +8,7 @@ interface Props {
   groupId: string | null;
   /** Daha önce kullanılmış kategoriler — yazım tutarlılığı için öneri listesi. */
   categories: string[];
-  isRetailer?: boolean;
+  isRetailer?: boolean | undefined;
   onGroupChange: (id: string | null) => void;
 }
 

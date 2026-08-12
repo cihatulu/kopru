@@ -7,14 +7,16 @@ import type { OrderStatus } from '../domain/status';
 export interface PlaceOrderInput {
   relationshipId: string;
   lines: CartLine[];
+  // Tüm alanlar `| undefined`: form boş bıraktığında undefined gelir
+  // (exactOptionalPropertyTypes açıkken "yok" ile "undefined" ayrı tiplerdir).
   customer?: {
-    name?: string;
-    phone?: string;
-    email?: string;
-    province?: string;
-    district?: string;
-    address?: string;
-    note?: string;
+    name?: string | undefined;
+    phone?: string | undefined;
+    email?: string | undefined;
+    province?: string | undefined;
+    district?: string | undefined;
+    address?: string | undefined;
+    note?: string | undefined;
   };
 }
 

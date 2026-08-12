@@ -11,6 +11,7 @@ import {
 
 const line = (over: Partial<CartLine> = {}): CartLine => ({
   productId: 'p1',
+  manufacturerOrgId: 'm1',
   name: 'Koltuk',
   code: 'K-1',
   unitPrice: 9000,

@@ -19,6 +19,7 @@ function row(over: Partial<AccountRow> = {}): AccountRow {
     totalDebit: 180000,
     totalCredit: 0,
     balance: 180000,
+    counterpartyIsSubscriber: true,
     ...over,
   };
 }
