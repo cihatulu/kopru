@@ -14,10 +14,10 @@ export {
   useRespondToConnection,
   useSetCounterpartyStatus,
   useSetCounterpartyDiscount,
-  useRequestSubscription,
-  useToggleCatalogPermission,
   useDeleteCounterparty,
 } from './api/useCounterpartyMutations';
+export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
+export { useToggleCatalogPermission } from './api/useCatalogPermission';
 export type {
   AddCounterpartyInput,
   AddCounterpartyResult,

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
-import type { Plan, RelationshipStatus } from '@/constants';
+import type { RelationshipStatus } from '@/constants';
 
 export interface AddCounterpartyInput {
   vknTc: string;
@@ -124,42 +124,11 @@ export function useSetCounterpartyDiscount() {
   });
 }
 
-/** Misafirin "kendi panelimi açmak istiyorum" talebi (PLAN §5). */
-export function useRequestSubscription() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: async ({ plan, note }: { plan?: Plan; note?: string }) => {
-      const { error } = await supabase.rpc('request_subscription', rpcArgs({
-        p_plan: plan ?? undefined,
-        p_note: note ?? undefined,
-      }));
-      if (error) throw error;
-    },
-    onSuccess: invalidate,
-  });
-}
-
-export function useToggleCatalogPermission() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: async ({ relationshipId, nextVal }: { relationshipId: string; nextVal: boolean }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from('relationships')
-        .update({ can_edit_catalog: nextVal })
-        .eq('id', relationshipId);
-      if (error) throw error;
-    },
-    onSuccess: invalidate,
-  });
-}
-
 export function useDeleteCounterparty() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (relationshipId: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any).rpc('delete_counterparty', rpcArgs({
+      const { error } = await supabase.rpc('delete_counterparty', rpcArgs({
         p_relationship_id: relationshipId,
       }));
       if (error) {

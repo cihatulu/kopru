@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { useSubscriptionStatus, useRequestSubscription } from '@/features/counterparties/api/useSubscriptionRequest';
+import { useSubscriptionStatus, useRequestSubscription } from '@/features/counterparties';
 
 interface Props {
   panelLabel: string;
@@ -49,11 +49,12 @@ export function TopBar({
   const handleConfirmRequest = async () => {
     try {
       setErrorMsg(null);
-      await requestSub.mutateAsync();
+      await requestSub.mutateAsync({});
       setShowConfirmModal(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('[handleConfirmRequest] error:', err);
-      setErrorMsg(err.message || 'Abonelik talebi iletilirken bir hata oluştu.');
+      const message = err instanceof Error ? err.message : '';
+      setErrorMsg(message || 'Abonelik talebi iletilirken bir hata oluştu.');
     }
   };
 
@@ -215,7 +216,9 @@ export function TopBar({
               </Button>
               <Button
                 loading={requestSub.isPending}
-                onClick={handleConfirmRequest}
+                onClick={() => {
+                  void handleConfirmRequest();
+                }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5"
               >
                 Evet, Talebi Gönder
