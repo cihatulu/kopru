@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { OrderStatus } from '../domain/status';
-import type { OrderRow } from '../api/useOrders';
+import type { OrderRow } from '../domain/orderMapping';
 import type { OrgKind } from '@/constants';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { OrderStatusCell } from './OrderStatusCell';

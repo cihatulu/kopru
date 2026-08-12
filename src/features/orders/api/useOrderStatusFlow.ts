@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { isShipmentStep, type OrderStatus } from '../domain/status';
 import { useAdvanceOrderStatus, useCancelOrder, useShipOrder } from './useOrderMutations';
-import type { OrderRow } from './useOrders';
+import type { OrderRow } from '../domain/orderMapping';
 
 interface StatusTarget {
   orderId: string;

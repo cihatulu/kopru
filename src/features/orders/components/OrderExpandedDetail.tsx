@@ -1,7 +1,7 @@
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Spinner } from '@/components/ui/Spinner';
 import { OrderStatusBadge } from './OrderStatusBadge';
-import { useOrderDetail } from '../api/useOrders';
+import { useOrderDetail } from '../api/useOrderDetail';
 
 const CARD = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
 const CAPTION = 'text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5';

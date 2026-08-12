@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { formatMoney, formatQuantity } from '@/lib/format';
-import type { OrderDetail } from '../api/useOrders';
+import type { OrderDetail } from '../domain/orderMapping';
 
 interface Props {
   order: OrderDetail;

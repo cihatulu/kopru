@@ -1,7 +1,10 @@
 // features/orders PUBLIC YÜZEYİ (A20).
 
-export { useOrders, useOrderDetail, useOrderStats } from './api/useOrders';
-export type { OrderRow, OrderDetail, OrderItemRow, OrderStats } from './api/useOrders';
+export { useOrders } from './api/useOrders';
+export { useOrderDetail } from './api/useOrderDetail';
+export { useOrderStats } from './api/useOrderStats';
+export type { OrderStats } from './api/useOrderStats';
+export type { OrderRow, OrderDetail, OrderItemRow } from './domain/orderMapping';
 
 export {
   usePlaceOrder,

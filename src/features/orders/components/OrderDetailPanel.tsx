@@ -4,7 +4,7 @@ import { formatDateTime, formatMoney, formatQuantity } from '@/lib/format';
 import type { OrgKind } from '@/constants';
 import { canCancel, nextAction } from '../domain/status';
 import { OrderStatusBadge } from './OrderStatusBadge';
-import type { OrderDetail } from '../api/useOrders';
+import type { OrderDetail } from '../domain/orderMapping';
 
 interface Props {
   order: OrderDetail;

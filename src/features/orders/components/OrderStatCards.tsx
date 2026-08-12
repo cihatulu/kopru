@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { OrderStats } from '../api/useOrders';
+import type { OrderStats } from '../api/useOrderStats';
 import type { OrderStatus } from '../domain/status';
 
 export type OrderFilter = OrderStatus | 'all';
