@@ -78,6 +78,47 @@ export const createStaffSchema = z
 
 export type CreateStaffForm = z.input<typeof createStaffSchema>;
 
+export interface StaffFormValues {
+  fullName: string;
+  userCode: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+/**
+ * Personel formunun doğrulaması — ilk hatayı döndürür, hata yoksa null.
+ *
+ * Şifre kuralı `PASSWORD_MIN_LENGTH`/`PASSWORD_REGEX` sabitlerinden gelir.
+ * Diyalog eskiden kendi 6 karakterlik kuralını yazıyordu; personel hesabı
+ * platformun geri kalanından ZAYIF bir şifreyle açılabiliyordu.
+ */
+export function validateStaffForm(v: StaffFormValues, isEdit: boolean): string | null {
+  if (!v.fullName.trim()) return 'Ad Soyad alanı zorunludur.';
+
+  if (isEdit) {
+    const code = v.userCode.trim();
+    if (!code) return 'Kullanıcı Kodu alanı zorunludur.';
+    if (code.length < 3 || code.length > 20) {
+      return 'Kullanıcı kodu en az 3 ve en fazla 20 karakter olmalıdır.';
+    }
+    if (/^\d+$/.test(code)) {
+      return 'Kullanıcı kodu sadece rakamlardan oluşamaz, en az bir harf içermelidir.';
+    }
+    if (/[^a-z0-9]/.test(code)) {
+      return 'Kullanıcı kodu sadece İngilizce küçük harf ve rakam içerebilir.';
+    }
+    return null;
+  }
+
+  if (!v.password || v.password !== v.passwordConfirm) {
+    return 'Şifreler uyuşmuyor veya boş bırakılamaz.';
+  }
+  if (v.password.length < PASSWORD_MIN_LENGTH || !PASSWORD_REGEX.test(v.password)) {
+    return `Şifre en az ${PASSWORD_MIN_LENGTH} karakter, en az bir harf ve bir rakam içermelidir.`;
+  }
+  return null;
+}
+
 export const STAFF_ERROR_MESSAGES: Record<string, string> = {
   WEAK_PASSWORD: 'Şifre en az 8 karakter olmalı ve bir harf ile bir rakam içermeli.',
   INVALID_NAME: 'Ad soyad en az 2 karakter olmalı.',

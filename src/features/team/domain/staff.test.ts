@@ -5,8 +5,56 @@ import {
   createStaffSchema,
   isEditable,
   needsScopeWarning,
+  validateStaffForm,
+  type StaffFormValues,
   type StaffMember,
 } from './staff';
+
+function form(over: Partial<StaffFormValues> = {}): StaffFormValues {
+  return {
+    fullName: 'Ayşe Yılmaz',
+    userCode: 'ayse01',
+    password: 'gizli123',
+    passwordConfirm: 'gizli123',
+    ...over,
+  };
+}
+
+describe('validateStaffForm', () => {
+  test('ad soyad her iki kipte de zorunludur', () => {
+    expect(validateStaffForm(form({ fullName: '  ' }), false)).toMatch(/Ad Soyad/);
+    expect(validateStaffForm(form({ fullName: '' }), true)).toMatch(/Ad Soyad/);
+  });
+
+  test('geçerli form null döner', () => {
+    expect(validateStaffForm(form(), false)).toBeNull();
+    expect(validateStaffForm(form(), true)).toBeNull();
+  });
+
+  test('şifre platform kuralına uyar — 6 karakter YETMEZ', () => {
+    // Diyalog eskiden 6 karaktere izin veriyordu; sabit 8.
+    expect(validateStaffForm(form({ password: 'giz12', passwordConfirm: 'giz12' }), false))
+      .toMatch(/8 karakter/);
+    expect(validateStaffForm(form({ password: 'gizli1', passwordConfirm: 'gizli1' }), false))
+      .toMatch(/8 karakter/);
+  });
+
+  test('rakamsız şifre reddedilir', () => {
+    expect(validateStaffForm(form({ password: 'gizlisifre', passwordConfirm: 'gizlisifre' }), false))
+      .toMatch(/rakam/);
+  });
+
+  test('şifreler uyuşmazsa reddedilir', () => {
+    expect(validateStaffForm(form({ passwordConfirm: 'baska123' }), false)).toMatch(/uyuşmuyor/);
+  });
+
+  test('düzenlemede şifre sorulmaz, kullanıcı kodu doğrulanır', () => {
+    expect(validateStaffForm(form({ password: '', passwordConfirm: '' }), true)).toBeNull();
+    expect(validateStaffForm(form({ userCode: 'ab' }), true)).toMatch(/3/);
+    expect(validateStaffForm(form({ userCode: '12345' }), true)).toMatch(/rakamlardan/);
+    expect(validateStaffForm(form({ userCode: 'Ayse01' }), true)).toMatch(/küçük harf/);
+  });
+});
 
 function member(over: Partial<StaffMember> = {}): StaffMember {
   return {
