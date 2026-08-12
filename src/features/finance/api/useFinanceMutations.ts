@@ -8,8 +8,9 @@ interface AddTransactionArgs {
   method: PaymentMethod;
   amount: number;
   description: string;
-  order_id?: string;
-  manufacturer_id?: string;
+  // `| undefined`: form alanı boş bırakıldığında undefined gelir, rpcArgs eler.
+  order_id?: string | undefined;
+  manufacturer_id?: string | undefined;
 }
 
 /**
