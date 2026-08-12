@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { useCreateStaff } from './useCreateStaff';
 import {
-  useCreateStaff,
   useUpdateStaff,
   useResetStaffPassword,
   useSetStaffActive,

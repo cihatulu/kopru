@@ -6,11 +6,11 @@ import {
   isEditable,
   needsScopeWarning,
   validateStaffForm,
-  type StaffFormValues,
+  type StaffFormInput,
   type StaffMember,
 } from './staff';
 
-function form(over: Partial<StaffFormValues> = {}): StaffFormValues {
+function form(over: Partial<StaffFormInput> = {}): StaffFormInput {
   return {
     fullName: 'Ayşe Yılmaz',
     userCode: 'ayse01',

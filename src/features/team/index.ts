@@ -1,16 +1,16 @@
 // features/team PUBLIC YÜZEYİ (A20) — ekip yönetimi.
 
 export { useStaff, useStaffScope } from './api/useStaff';
+export { useCreateStaff, StaffError } from './api/useCreateStaff';
+export type { CreateStaffInput, CreateStaffResult } from './api/useCreateStaff';
 export {
-  useCreateStaff,
   useSetStaffRole,
   useSetStaffActive,
   useSetStaffScope,
   useUpdateStaff,
   useResetStaffPassword,
-  StaffError,
 } from './api/useStaffMutations';
-export type { CreateStaffInput, CreateStaffResult, UpdateStaffInput } from './api/useStaffMutations';
+export type { UpdateStaffInput } from './api/useStaffMutations';
 export { useStaffActions } from './api/useStaffActions';
 export type { StaffFormValues, CreatedStaffInfo } from './api/useStaffActions';
 
@@ -21,6 +21,7 @@ export {
   createStaffSchema,
   isEditable,
   needsScopeWarning,
+  validateStaffForm,
 } from './domain/staff';
 export type { StaffMember, StaffRole, CreateStaffForm } from './domain/staff';
 

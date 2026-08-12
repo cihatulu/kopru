@@ -1,72 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
-import { STAFF_ERROR_MESSAGES, type StaffRole } from '../domain/staff';
-
-export class StaffError extends Error {
-  constructor(public readonly code: string) {
-    super(STAFF_ERROR_MESSAGES[code] ?? STAFF_ERROR_MESSAGES.DEFAULT!);
-    this.name = 'StaffError';
-  }
-}
-
-function useInvalidate() {
-  const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: ['team'] });
-  };
-}
-
-export interface CreateStaffInput {
-  fullName: string;
-  role: 'staff' | 'accountant';
-  password: string;
-  email?: string;
-  phone?: string;
-  userCode?: string;
-}
-
-export interface CreateStaffResult {
-  userId: string;
-  /** Personelin giriş ekranında kullanacağı kod — sahibin iletmesi gerekir. */
-  userCode: string;
-  role: StaffRole;
-}
-
-/**
- * Personel hesabı açar.
- *
- * Şifre buradan DEĞİL, `create-staff` Edge Function içinde `auth.admin` ile
- * yazılır (kilitli kural 2). İstemci Auth'a doğrudan dokunmaz.
- */
-export function useCreateStaff() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: async (input: CreateStaffInput): Promise<CreateStaffResult> => {
-      const { data, error } = (await supabase.functions.invoke<CreateStaffResult>('create-staff', {
-        body: input,
-      })) as { data: CreateStaffResult | null; error: { context?: Response } | null };
-
-      if (error) {
-        let code = 'DEFAULT';
-        try {
-          const body = (await error.context?.json()) as { error?: string } | undefined;
-          if (body?.error) code = body.error;
-        } catch {
-          // Gövde okunamadıysa genel mesaj yeterli.
-        }
-        throw new StaffError(code);
-      }
-      if (!data?.userCode) throw new StaffError('DEFAULT');
-      return data;
-    },
-    onSuccess: invalidate,
-  });
-}
+import { edgeErrorCode, type EdgeError } from '@/lib/edgeError';
+import { StaffError, useTeamInvalidate } from './useCreateStaff';
 
 export function useSetStaffRole() {
-  const invalidate = useInvalidate();
+  const invalidate = useTeamInvalidate();
   return useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: 'staff' | 'accountant' }) => {
       const { error } = await supabase.rpc('set_staff_role', rpcArgs({
@@ -80,7 +19,7 @@ export function useSetStaffRole() {
 }
 
 export function useSetStaffActive() {
-  const invalidate = useInvalidate();
+  const invalidate = useTeamInvalidate();
   return useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       const { error } = await supabase.rpc('set_staff_active', rpcArgs({
@@ -100,7 +39,7 @@ export function useSetStaffActive() {
  * çıkarma iki istemci arasında yarışsaydı kapsam sessizce birleşirdi.
  */
 export function useSetStaffScope() {
-  const invalidate = useInvalidate();
+  const invalidate = useTeamInvalidate();
   return useMutation({
     mutationFn: async ({
       staffUserId,
@@ -128,28 +67,16 @@ export interface UpdateStaffInput {
   role?: 'staff' | 'accountant';
 }
 
+/** Personel bilgileri Edge Function'dan, rol RPC'den — ikisi ayrı yetki kapısı. */
 export function useUpdateStaff() {
-  const invalidate = useInvalidate();
+  const invalidate = useTeamInvalidate();
   return useMutation({
     mutationFn: async ({ userId, role, ...updates }: UpdateStaffInput) => {
-      const { error: edgeError } = await supabase.functions.invoke('update-user-password', {
-        body: {
-          mode: 'staff_update',
-          userId,
-          updates,
-        },
-      });
+      const { error: edgeError } = (await supabase.functions.invoke('update-user-password', {
+        body: { mode: 'staff_update', userId, updates },
+      })) as { error: EdgeError | null };
 
-      if (edgeError) {
-        let code = 'DEFAULT';
-        try {
-          const body = (await edgeError.context?.json()) as { error?: string } | undefined;
-          if (body?.error) code = body.error;
-        } catch {
-          // Gövde okunamadıysa
-        }
-        throw new StaffError(code);
-      }
+      if (edgeError) throw new StaffError(await edgeErrorCode(edgeError));
 
       if (role) {
         const { error } = await supabase.rpc('set_staff_role', rpcArgs({
@@ -163,27 +90,15 @@ export function useUpdateStaff() {
   });
 }
 
+/** Şifre TEK YOL: `update-user-password` Edge Function (kilitli kural 2). */
 export function useResetStaffPassword() {
   return useMutation({
     mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
-      const { error } = await supabase.functions.invoke('update-user-password', {
-        body: {
-          mode: 'staff_update',
-          userId,
-          updates: { password: newPassword },
-        },
-      });
+      const { error } = (await supabase.functions.invoke('update-user-password', {
+        body: { mode: 'staff_update', userId, updates: { password: newPassword } },
+      })) as { error: EdgeError | null };
 
-      if (error) {
-        let code = 'DEFAULT';
-        try {
-          const body = (await error.context?.json()) as { error?: string } | undefined;
-          if (body?.error) code = body.error;
-        } catch {
-          // Gövde okunamadıysa
-        }
-        throw new StaffError(code);
-      }
+      if (error) throw new StaffError(await edgeErrorCode(error));
     },
   });
 }

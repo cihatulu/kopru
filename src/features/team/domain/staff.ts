@@ -78,7 +78,7 @@ export const createStaffSchema = z
 
 export type CreateStaffForm = z.input<typeof createStaffSchema>;
 
-export interface StaffFormValues {
+export interface StaffFormInput {
   fullName: string;
   userCode: string;
   password: string;
@@ -92,7 +92,7 @@ export interface StaffFormValues {
  * Diyalog eskiden kendi 6 karakterlik kuralını yazıyordu; personel hesabı
  * platformun geri kalanından ZAYIF bir şifreyle açılabiliyordu.
  */
-export function validateStaffForm(v: StaffFormValues, isEdit: boolean): string | null {
+export function validateStaffForm(v: StaffFormInput, isEdit: boolean): string | null {
   if (!v.fullName.trim()) return 'Ad Soyad alanı zorunludur.';
 
   if (isEdit) {

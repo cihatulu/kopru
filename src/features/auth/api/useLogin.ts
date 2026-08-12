@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { edgeErrorCode, type EdgeResult } from '@/lib/edgeError';
 import { LOGIN_ERROR } from '@/constants';
 import type { LoginMode, Portal } from '../domain/portals';
 import { AUTH_SESSION_KEY } from './useAuthSession';
@@ -19,11 +20,6 @@ export interface LoginRequest {
 interface LoginResponse {
   access_token: string;
   refresh_token: string;
-}
-
-interface InvokeResult {
-  data: LoginResponse | null;
-  error: { context?: Response } | null;
 }
 
 /** Sunucudan gelen hata kodunu kullanıcıya gösterilecek Türkçe metne çevirir. */
@@ -58,18 +54,10 @@ export function useLogin() {
       // supabase-js `error` alanını `any` olarak tiplediği için sonucu açıkça daraltıyoruz.
       const { data, error } = (await supabase.functions.invoke<LoginResponse>('login', {
         body: req,
-      })) as InvokeResult;
+      })) as EdgeResult<LoginResponse>;
 
       if (error) {
-        // Edge Function 4xx döndüğünde gövdedeki hata kodunu okumaya çalış.
-        let code: string = LOGIN_ERROR.invalidCredentials;
-        try {
-          const body = (await error.context?.json()) as { error?: string } | undefined;
-          if (body?.error) code = body.error;
-        } catch {
-          // Gövde okunamadıysa genel mesaj yeterli.
-        }
-        throw new LoginError(code);
+        throw new LoginError(await edgeErrorCode(error, LOGIN_ERROR.invalidCredentials));
       }
 
       if (!data?.access_token) throw new LoginError(LOGIN_ERROR.invalidCredentials);
