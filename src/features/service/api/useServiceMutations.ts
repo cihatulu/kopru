@@ -18,11 +18,13 @@ export function useCreateSsh() {
     mutationFn: async (input: {
       relationshipId: string;
       title: string;
-      description?: string;
-      orderId?: string;
-      productId?: string;
-      customerName?: string;
-      customerPhone?: string;
+      // `| undefined`: form boş alanı undefined olarak GÖNDERİR; bu tiplerde
+      // "hiç verilmedi" ile aynı anlama gelir (rpcArgs zaten eliyor).
+      description?: string | undefined;
+      orderId?: string | undefined;
+      productId?: string | undefined;
+      customerName?: string | undefined;
+      customerPhone?: string | undefined;
     }): Promise<string> => {
       const isUuid = (val?: string) =>
         !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
@@ -62,7 +64,7 @@ export function useAdvanceSsh() {
     }: {
       id: string;
       status: SshStatus;
-      note?: string;
+      note?: string | undefined;
     }) => {
       const { error } = await supabase.rpc('advance_ssh_status', rpcArgs({
         p_id: id,
@@ -119,7 +121,7 @@ export function useCreateReturn() {
 export function useDecideReturn() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ id, approve, note }: { id: string; approve: boolean; note?: string }) => {
+    mutationFn: async ({ id, approve, note }: { id: string; approve: boolean; note?: string | undefined }) => {
       const { error } = await supabase.rpc('confirm_return_atomic', rpcArgs({
         p_return_id: id,
         p_approve: approve,

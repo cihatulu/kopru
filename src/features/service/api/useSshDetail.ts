@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 import { signServicePhotos } from '@/lib/servicePhotos';
 import { nested, nullableStr, str, type Row, type SshStatus } from './shared';
+import { sshCode as makeSshCode } from '../domain/sshCode';
 
 const LOG_COLUMNS =
   'id, from_status, to_status, note, created_at, actor_org_id, actor_user_id';
@@ -74,8 +75,7 @@ export function useSshDetail(sshId: string | null) {
       const r = data as unknown as Row;
       const id = str(r.id);
       const createdAt = str(r.created_at);
-      const datePart = createdAt ? createdAt.split('T')[0].replace(/-/g, '') : '20260812';
-      const sshCode = `SSH-${datePart}-${id.slice(0, 4).toUpperCase()}`;
+      const code = makeSshCode(id, createdAt);
 
       const orderObj = nested(r.orders);
       const orderNo = str(orderObj.order_no) || '—';
@@ -108,7 +108,7 @@ export function useSshDetail(sshId: string | null) {
 
       return {
         id,
-        sshCode,
+        sshCode: code,
         orderNo,
         title: str(r.title),
         description: nullableStr(r.description),

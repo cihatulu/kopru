@@ -2,10 +2,12 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
 import { filterOps, type ServiceFilters } from '../domain/filters';
+import { sshCode } from '../domain/sshCode';
 import {
   SSH_COLUMNS,
   counterpartyName,
   keyset,
+  nested,
   next,
   nullableStr,
   str,
@@ -41,11 +43,10 @@ function toSsh(raw: unknown, myOrgId: string): SshRequest {
     const r = (raw && typeof raw === 'object' ? raw : {}) as Row;
     const id = str(r.id);
     const createdAt = str(r.created_at);
-    const datePart = createdAt ? createdAt.split('T')[0].replace(/-/g, '') : '20260812';
-    const sshCode = id ? `SSH-${datePart}-${id.slice(0, 4).toUpperCase()}` : 'SSH-0000';
+    const code = sshCode(id, createdAt);
 
-    const rawOrders = r.orders;
-    const orderObj = Array.isArray(rawOrders) ? (rawOrders[0] || {}) : (rawOrders || {});
+    // Gömülü ilişki PostgREST'ten tek nesne ya da dizi olarak gelebilir.
+    const orderObj = Array.isArray(r.orders) ? nested(r.orders[0]) : nested(r.orders);
     const orderNo = str(orderObj.order_no) || '—';
 
     const items: SshProductItem[] = [];
@@ -55,7 +56,7 @@ function toSsh(raw: unknown, myOrgId: string): SshRequest {
 
     return {
       id,
-      sshCode,
+      sshCode: code,
       title: str(r.title),
       description: nullableStr(r.description),
       status: (r.status as SshStatus) || 'bekliyor',
@@ -72,7 +73,7 @@ function toSsh(raw: unknown, myOrgId: string): SshRequest {
   } catch (err) {
     console.error('[toSsh] parse error:', err, raw);
     return {
-      id: str((raw as any)?.id),
+      id: str(nested(raw).id),
       sshCode: 'SSH-ERR',
       title: 'Talep',
       description: null,

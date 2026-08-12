@@ -20,11 +20,14 @@ const SIZES: Record<Size, string> = {
   md: 'px-4 py-2.5 text-sm',
 };
 
+// `| undefined` açıkça yazılır: exactOptionalPropertyTypes açıkken "hiç
+// verilmedi" ile "undefined verildi" ayrı tiplerdir. Görsel prop'larda ikisi
+// de aynı anlama gelir — `loading={x.isPending}` yazan her çağrı yeri geçerli.
 interface Props extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {
-  variant?: Variant;
+  variant?: Variant | undefined;
   /** `sm` çağrı yerlerinde zaten yazılıyordu ama prop tanımlı değildi. */
-  size?: Size;
-  loading?: boolean;
+  size?: Size | undefined;
+  loading?: boolean | undefined;
   children: ReactNode;
 }
 
