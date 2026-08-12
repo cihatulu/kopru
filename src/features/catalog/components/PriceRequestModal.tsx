@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { formatMoney } from '@/lib/format';
 import { usePublishAnnouncement } from '@/features/announcements';
 import { useAuthSession } from '@/features/auth';
-import { supabase } from '@/lib/supabase';
+import { useSponsorRetailerId } from '../api/useSponsorRetailer';
 import type { CatalogProduct } from '../api/useProducts';
 
 interface Props {
@@ -18,10 +18,14 @@ export function PriceRequestModal({ product, onClose }: Props) {
   const [newPrice, setNewPrice] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [sent, setSent] = useState<boolean>(false);
-  const [isResolving, setIsResolving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const knownSponsor = org?.createdByOrgId || user?.sponsorOrgId || null;
+  // Sponsor bilinmiyorsa ilişkiden okunur; biliniyorsa sorgu hiç açılmaz.
+  const sponsor = useSponsorRetailerId(org?.id, !knownSponsor);
+  const isResolving = sponsor.isFetching;
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!org) return;
     setError(null);
@@ -32,26 +36,7 @@ export function PriceRequestModal({ product, onClose }: Props) {
       return;
     }
 
-    let targetRetailerId = org.createdByOrgId || user.sponsorOrgId || null;
-
-    if (!targetRetailerId) {
-      setIsResolving(true);
-      try {
-        const { data: rel } = await supabase
-          .from('relationships')
-          .select('initiated_by_org_id, target_org_id')
-          .or(`target_org_id.eq.${org.id},initiated_by_org_id.eq.${org.id}`)
-          .maybeSingle();
-
-        if (rel) {
-          targetRetailerId = rel.initiated_by_org_id === org.id ? rel.target_org_id : rel.initiated_by_org_id;
-        }
-      } catch (err) {
-        console.error('Failed to resolve relationship sponsor:', err);
-      } finally {
-        setIsResolving(false);
-      }
-    }
+    const targetRetailerId = knownSponsor ?? sponsor.data ?? null;
 
     if (!targetRetailerId) {
       setError('Sizi ekleyen perakendeci bilgisine ulaşılamadı.');

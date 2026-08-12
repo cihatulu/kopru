@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { ListFooter } from '@/components/ui/ListFooter';
 import { useProducts, useProductCosts, type CatalogProduct } from '../api/useProducts';
 import { useProductStock } from '../api/useProductStock';
 import { useProductGroups } from '../api/useProductGroups';
 import { useAuthSession } from '@/features/auth';
 import { useCatalogAdmin } from '../api/useCatalogAdmin';
-import { ProductError } from '../api/useProductMutations';
+import { ProductError } from '../domain/productErrors';
 import {
   collectCategories,
   computeStats,
@@ -68,32 +68,23 @@ export function ProductManager({ orgId }: { orgId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-start justify-between gap-5 xl:flex-row xl:items-center">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">Ürün Yönetimi</h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin.
-          </p>
-        </div>
-
-        <ProductHeaderActions
-          activity={activity}
-          onActivityChange={setActivity}
-          selectedCount={selectedIds.size}
-          selectedSingleCount={selected.filter((p) => p.type === 'single').length}
-          productCount={all.length}
-          setCount={all.filter((p) => p.type === 'set').length}
-          groups={groups.data ?? []}
-          isGuest={isGuestManufacturer}
-          onAssignGroup={() => setDialog('group-assign')}
-          onManageGroups={() => setDialog('group-manage')}
-          onCreateSet={() => setDialog('set')}
-          onAddProduct={() => {
-            setEditing(undefined);
-            setDialog('product');
-          }}
-        />
-      </div>
+      <ProductHeaderActions
+        activity={activity}
+        onActivityChange={setActivity}
+        selectedCount={selectedIds.size}
+        selectedSingleCount={selected.filter((p) => p.type === 'single').length}
+        productCount={all.length}
+        setCount={all.filter((p) => p.type === 'set').length}
+        groups={groups.data ?? []}
+        isGuest={isGuestManufacturer}
+        onAssignGroup={() => setDialog('group-assign')}
+        onManageGroups={() => setDialog('group-manage')}
+        onCreateSet={() => setDialog('set')}
+        onAddProduct={() => {
+          setEditing(undefined);
+          setDialog('product');
+        }}
+      />
 
       <ProductStatCards stats={stats} />
 
@@ -123,7 +114,9 @@ export function ProductManager({ orgId }: { orgId: string }) {
           canDelete={canDelete}
           selectedIds={selectedIds}
           isGuest={isGuestManufacturer}
-          onSaveCost={(productId, costPrice) => admin.saveCost.mutate({ productId, costPrice })}
+          onSaveCost={(productId, costPrice) =>
+            admin.saveCost.mutate({ productId, ownerOrgId: orgId, costPrice })
+          }
           onToggleOne={(id) => setSelectedIds((prev) => toggleInSet(prev, id))}
           onToggleAll={(rowIds, selectAll) =>
             setSelectedIds(selectAll ? new Set(rowIds) : new Set())
@@ -137,20 +130,12 @@ export function ProductManager({ orgId }: { orgId: string }) {
         />
       )}
 
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          Toplam {visible.length} ürün listeleniyor
-        </span>
-        {list.hasNextPage && (
-          <Button
-            variant="secondary"
-            loading={list.isFetchingNextPage}
-            onClick={() => void list.fetchNextPage()}
-          >
-            Daha fazla yükle
-          </Button>
-        )}
-      </div>
+      <ListFooter
+        label={`Toplam ${visible.length} ürün listeleniyor`}
+        hasMore={list.hasNextPage}
+        loading={list.isFetchingNextPage}
+        onLoadMore={() => void list.fetchNextPage()}
+      />
 
       <ProductDialogs
         kind={dialog}

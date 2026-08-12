@@ -42,7 +42,15 @@ export function ProductHeaderActions({
   const canCreateSet = selectedSingleCount >= 2;
 
   return (
-    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:w-auto">
+    <div className="flex flex-col items-start justify-between gap-5 xl:flex-row xl:items-center">
+      <div>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">Ürün Yönetimi</h1>
+        <p className="mt-1 text-xs text-slate-500">
+          Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin.
+        </p>
+      </div>
+
+      <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:w-auto">
       {/* Aktif / Pasif — liste bu ikisini karıştırmaz. */}
       <div className="inline-flex rounded-xl bg-slate-100 p-1">
         {(['active', 'passive'] as const).map((v) => (
@@ -126,6 +134,7 @@ export function ProductHeaderActions({
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

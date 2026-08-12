@@ -3,42 +3,7 @@ import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database.generated';
 import type { SetLine, Variant } from '../domain/variants';
-
-/**
- * Sunucu hatalarının Türkçe karşılığı.
- *
- * Tek bir "Kaydedilemedi" mesajı kullanıcıyı kör bırakıyordu: ürün kodu
- * çakıştığında 409 dönüyor ama ekranda sebebi yazmıyordu, kullanıcı da
- * "kaydetmiyor" demekten başka bir şey söyleyemiyordu.
- */
-const SAVE_MESSAGES: Record<string, string> = {
-  // unique (owner_org_id, code) ihlali
-  '23505': 'Bu ürün kodu (model) zaten kullanılıyor. Farklı bir kod girin.',
-  NAME_AND_CODE_REQUIRED: 'Ürün adı ve ürün kodu zorunludur.',
-  INVALID_PRICE: 'Satış fiyatı geçersiz; negatif olamaz.',
-  GROUP_NOT_FOUND: 'Seçilen grup bulunamadı.',
-  SET_ITEM_NOT_FOUND: 'Takım içeriğindeki ürünlerden biri size ait değil.',
-  PRODUCT_NOT_FOUND: 'Ürün bulunamadı; başka biri silmiş olabilir.',
-  PRODUCT_IS_ACTIVE: 'Aktif ürün kalıcı olarak silinemez; önce pasife alın.',
-  PRODUCT_IN_SET: 'Bu ürün bir takımın içinde; önce takımdan çıkarın.',
-  FORBIDDEN: 'Bu işlem için yetkiniz yok.',
-  DEFAULT: 'Kaydedilemedi. Bilgileri kontrol edin.',
-};
-
-export class ProductError extends Error {
-  constructor(public readonly code: string) {
-    super(SAVE_MESSAGES[code] ?? SAVE_MESSAGES.DEFAULT!);
-    this.name = 'ProductError';
-  }
-}
-
-/** PostgREST hatasını okunur bir mesaja çevirir. */
-function toProductError(error: { code?: string; message?: string }): ProductError {
-  // Kısıt ihlallerinde kod (23505), RAISE EXCEPTION'larda mesaj anlamlıdır.
-  if (error.code && SAVE_MESSAGES[error.code]) return new ProductError(error.code);
-  if (error.message && SAVE_MESSAGES[error.message]) return new ProductError(error.message);
-  return new ProductError('DEFAULT');
-}
+import { toProductError } from '../domain/productErrors';
 
 export interface SaveProductInput {
   id?: string | undefined;
@@ -148,18 +113,33 @@ export function useDeleteProductPermanently() {
   });
 }
 
-/** Üretici maliyet fiyatını (KATMAN 1) kaydeder/günceller. */
+/**
+ * Üretici maliyet fiyatını (KATMAN 1) kaydeder/günceller.
+ *
+ * `owner_org_id` zorunludur: hem NOT NULL hem de RLS'in eşitlik anahtarı.
+ * Birincil anahtar (product_id, owner_org_id) olduğu için çakışma da iki
+ * kolondan çözülür — yalnız `product_id` verilirse upsert tutmaz.
+ */
 export function useSaveProductCost() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async ({ productId, costPrice }: { productId: string; costPrice: number }) => {
+    mutationFn: async ({
+      productId,
+      ownerOrgId,
+      costPrice,
+    }: {
+      productId: string;
+      ownerOrgId: string;
+      costPrice: number;
+    }) => {
       const { error } = await supabase.from('product_costs').upsert(
         {
           product_id: productId,
+          owner_org_id: ownerOrgId,
           cost_price: costPrice,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'product_id' },
+        { onConflict: 'product_id,owner_org_id' },
       );
       if (error) throw error;
     },
