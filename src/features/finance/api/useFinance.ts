@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 import { useAuthSession } from '@/features/auth';
+import { orderRetailTotal } from '../domain/finance';
 import type { FinanceTransaction, MinimalOrder } from '../domain/finance';
 import { computeFinanceStats, type FinanceStats } from '../domain/financeStats';
 import { buildCustomerLedgers, type CustomerLedger } from '../domain/customerLedger';
@@ -76,8 +77,11 @@ export function useAllOrders() {
       const { data, error } = await supabase
         .from('orders')
         .select(
+          // Müşteri carisi KATMAN 3'ten kurulur; kalem satış fiyatları da çekilir.
           `id, order_no, created_at, parent_order_id, total_amount,
            customer_name, customer_phone, customer_address,
+           order_items(quantity, supplier_unit_price,
+                       order_item_retail_prices(retail_unit_price)),
            manufacturer:organizations!orders_manufacturer_org_id_fkey(company_name)`,
         )
         .eq('retailer_org_id', orgId)
@@ -89,7 +93,7 @@ export function useAllOrders() {
         orderNo: o.order_no,
         createdAt: o.created_at,
         parentOrderId: o.parent_order_id,
-        totalAmount: Number(o.total_amount),
+        totalAmount: orderRetailTotal(o.order_items, Number(o.total_amount)),
         customerName: o.customer_name,
         customerPhone: o.customer_phone,
         customerAddress: o.customer_address,

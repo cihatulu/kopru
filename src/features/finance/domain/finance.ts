@@ -49,6 +49,10 @@ export interface MinimalOrder {
   orderNo: string;
   createdAt: string;
   parentOrderId: string | null;
+  /**
+   * PERAKENDE tutar (KATMAN 3) — müşteri carisinin tek bazı.
+   * `orders.total_amount` DEĞİLDİR; o üreticiye olan borçtur (KATMAN 2).
+   */
   totalAmount: number;
   customerName: string | null;
   customerPhone: string | null;
@@ -57,6 +61,40 @@ export interface MinimalOrder {
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+const isRow = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
+
+const asRows = (v: unknown): Record<string, unknown>[] => {
+  if (Array.isArray(v)) return (v as unknown[]).filter(isRow);
+  return isRow(v) ? [v] : [];
+};
+
+/**
+ * Siparişin PERAKENDE tutarı (KATMAN 3).
+ *
+ * Müşteri carisine yazılan borç budur: perakendecinin KENDİ satış fiyatı.
+ * `orders.total_amount` üreticinin satış fiyatı toplamıdır (KATMAN 2) ve
+ * perakendecinin MALİYETİdir — müşteriye o tutarı borç yazmak yanlıştı.
+ *
+ * Kalemde kayıtlı satış fiyatı yoksa üretici fiyatına düşülür; aksi hâlde o
+ * satır cariye hiç girmez ve borç sessizce eksik çıkardı.
+ * `order_item_retail_prices` bire-bir bağ olduğu için PostgREST kimi yerde
+ * nesne, kimi yerde tek elemanlı dizi döndürür — ikisi de karşılanır.
+ */
+export function orderRetailTotal(orderItems: unknown, supplierTotal: number): number {
+  const items = asRows(orderItems);
+  if (items.length === 0) return round2(supplierTotal);
+
+  const total = items.reduce((sum, item) => {
+    const qty = Number(item.quantity ?? 0);
+    const priced = asRows(item.order_item_retail_prices)[0];
+    const retail = priced ? Number(priced.retail_unit_price ?? 0) : 0;
+    const unit = retail > 0 ? retail : Number(item.supplier_unit_price ?? 0);
+    return sum + unit * qty;
+  }, 0);
+
+  return round2(total);
+}
 
 export function financeTotals(
   entries: { kind: FinanceKind; amount: number }[],
