@@ -5,6 +5,7 @@ import {
   aggregate,
   isCustomerPayment,
   linesTotal,
+  mergedHistory,
   sourcesOf,
   stepIndexOf,
   type AggregatedLine,
@@ -41,6 +42,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   const original = aggregate(sources, 'original');
   const remaining = aggregate(sources, 'remaining');
   const activeIndex = stepIndexOf(order.status);
+  const history = mergedHistory(order);
 
   const originalTotal = linesTotal(original);
   const paid = order.payments
@@ -104,18 +106,34 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
         </div>
       )}
 
-      {order.history.length > 0 && (
+      {order.note && (
+        <div className={CARD}>
+          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            Sipariş Notu
+          </h3>
+          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{order.note}</p>
+        </div>
+      )}
+
+      {history.length > 0 && (
         <div className={CARD}>
           <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">
             Sipariş Geçmişi
           </h3>
-          <ul className="space-y-2.5">
-            {order.history.map((h, i) => (
-              <li key={`${h.created_at}-${i}`} className="flex items-center gap-3 text-xs">
-                <span className="font-mono text-slate-400">{formatDateTime(h.created_at)}</span>
-                <span className="font-semibold text-slate-700">
-                  {ORDER_STATUS_META[h.status]?.label ?? h.status}
-                </span>
+          <ul className="space-y-3">
+            {history.map((h, i) => (
+              <li key={`${h.created_at}-${i}`} className="text-xs">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-mono text-slate-400">{formatDateTime(h.created_at)}</span>
+                  <span className="font-semibold text-slate-700">
+                    {ORDER_STATUS_META[h.status]?.label ?? h.status}
+                  </span>
+                </div>
+                {h.note && (
+                  <p className="mt-1 ml-1 rounded-lg bg-slate-50 border border-slate-100 px-3 py-2 text-slate-600 leading-relaxed whitespace-pre-line">
+                    {h.note}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

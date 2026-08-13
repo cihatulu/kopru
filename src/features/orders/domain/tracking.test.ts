@@ -3,6 +3,7 @@ import {
   aggregate,
   isCustomerPayment,
   linesTotal,
+  mergedHistory,
   sourcesOf,
   stepIndexOf,
   type TrackedItem,
@@ -95,6 +96,32 @@ describe('aggregate', () => {
       returned_items: [{ productId: 'p1', quantity: 2 }],
     });
     expect(aggregate(sourcesOf(o), 'remaining')).toHaveLength(0);
+  });
+});
+
+describe('mergedHistory', () => {
+  test('kök ve sevkiyat kayıtları zamana göre birleşir', () => {
+    const o = order({
+      history: [
+        { status: 'pending', note: 'Sipariş alındı', created_at: '2026-08-13T10:00:00Z' },
+        { status: 'in_production', note: null, created_at: '2026-08-13T12:00:00Z' },
+      ],
+      shipments: [
+        {
+          id: 's1',
+          status: 'shipped',
+          created_at: '',
+          items: [],
+          returned_items: [],
+          history: [
+            { status: 'shipped', note: 'Kargoya verildi', created_at: '2026-08-13T11:00:00Z' },
+          ],
+        },
+      ],
+    });
+
+    const merged = mergedHistory(o);
+    expect(merged.map((h) => h.note)).toEqual(['Sipariş alındı', 'Kargoya verildi', null]);
   });
 });
 

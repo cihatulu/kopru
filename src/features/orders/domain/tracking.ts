@@ -18,6 +18,8 @@ export interface TrackedReturnLine {
 
 export interface TrackedLog {
   status: OrderStatus;
+  /** Durum değiştirilirken yazılan açıklama; müşteriye de görünür. */
+  note: string | null;
   created_at: string;
 }
 
@@ -89,6 +91,17 @@ interface Source {
   items: TrackedItem[];
   returnedItems: TrackedReturnLine[];
   status: OrderStatus;
+}
+
+/**
+ * Kök siparişin ve tüm sevkiyatların geçmişi, zamana göre birleşik.
+ *
+ * Sevkiyat kayıtları çocuk siparişlerde tutulduğu için kökün geçmişi tek
+ * başına yarım kalıyordu; müşteri "kısmi sevk" satırlarının notunu göremezdi.
+ */
+export function mergedHistory(order: TrackedOrder): TrackedLog[] {
+  const all = [...order.history, ...order.shipments.flatMap((s) => s.history)];
+  return all.sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
 /**
