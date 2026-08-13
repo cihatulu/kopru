@@ -151,9 +151,20 @@ export function LedgerTable({
                               ))}
                             </ul>
                           ) : (
-                            <p className="italic text-slate-500 bg-white/60 p-2.5 rounded-lg border border-slate-200">
-                              Bu işlem için kaydedilmiş ürün kalemi bulunmuyor. (Sipariş No: {e.orderNo || e.description})
-                            </p>
+                            <div className="bg-white/60 p-2.5 rounded-lg border border-slate-200 space-y-1">
+                              {/* Sipariş no yalnız KENDİ siparişinde okunabilir: perakendeci
+                                  tahsilatı başka üreticinin carisinden düşebilir ve o sipariş
+                                  RLS gereği burada görünmez. Bilgi açıklamada taşınır. */}
+                              {e.orderNo && (
+                                <p className="font-mono font-semibold text-slate-700">
+                                  Sipariş #{e.orderNo}
+                                </p>
+                              )}
+                              <p className="text-slate-600">{e.description}</p>
+                              <p className="italic text-slate-400">
+                                Bu işlem için kaydedilmiş ürün kalemi bulunmuyor.
+                              </p>
+                            </div>
                           )}
                         </div>
                       </td>
