@@ -26,6 +26,9 @@ export type { OrderStatus } from './domain/status';
 
 export {
   addLine,
+  cartManufacturerName,
+  cartManufacturerOrgId,
+  conflictsWithCart,
   setQuantity,
   setRetailPrice,
   cartTotals,

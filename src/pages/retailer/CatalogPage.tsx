@@ -40,6 +40,13 @@ export default function CatalogPage() {
     [edges],
   );
 
+  // "Tüm Üreticiler" görünümünde satır hangi üreticiye ait olduğunu adıyla
+  // taşır; sepet çakışma uyarısı kimlik değil ad gösterebilsin diye.
+  const nameMap = useMemo(
+    () => Object.fromEntries(edges.map((e) => [e.manufacturerOrgId, e.manufacturer.companyName])),
+    [edges],
+  );
+
   // Gruplara, kategorilere veya tek ürüne göre süzme
   const products = allProducts.filter((p) => {
     if (paramGroupId && paramGroupId !== 'yok' && p.groupId !== paramGroupId) return false;
@@ -117,6 +124,7 @@ export default function CatalogPage() {
             // Sepet satırı hangi üreticiye ait olduğunu KENDİ taşır: "Tüm
             // Üreticiler" görünümünde seçili bir üretici yoktur.
             manufacturerOrgId: p.ownerOrgId,
+            manufacturerName: nameMap[p.ownerOrgId],
             name: p.name,
             code: p.code,
             imageUrl: p.images[0],

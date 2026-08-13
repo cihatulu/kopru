@@ -7,12 +7,15 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import {
   addLine,
+  cartManufacturerName,
+  conflictsWithCart,
   setQuantity,
   setRetailPrice,
   cartTotals,
   type CartLine,
   type CartTotals,
 } from '@/features/orders';
+import { CartConflictDialog } from '../components/CartConflictDialog';
 
 interface CartContextValue {
   lines: CartLine[];
@@ -40,10 +43,20 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [supplierId, setSupplierId] = useState<string | null>(null);
+  const [conflict, setConflict] = useState<CartLine | null>(null);
 
   const totals = cartTotals(lines);
 
+  /**
+   * Sepet üretici bazlıdır: bir sipariş = bir üretici. Farklı üreticinin ürünü
+   * eklenmek istenirse ekleme yapılmaz, kullanıcıya sorulur. Uyarı burada
+   * yaşıyor çünkü kuralı bilen tek yer sepetin kendisi.
+   */
   const addCartLine = (line: CartLine) => {
+    if (conflictsWithCart(lines, line)) {
+      setConflict(line);
+      return;
+    }
     setLines((prev) => addLine(prev, line));
   };
 
@@ -72,6 +85,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{ lines, totals, supplierId, setSupplierId, addCartLine, setCartQuantity, setCartRetailPrice, clearCart }}
     >
       {children}
+      {conflict && (
+        <CartConflictDialog
+          currentName={cartManufacturerName(lines)}
+          incomingName={conflict.manufacturerName?.trim() || 'başka bir üretici'}
+          productName={conflict.name}
+          onCancel={() => setConflict(null)}
+          onReplace={() => {
+            // Yeni sepet yalnız bu satırla başlar; eski üreticinin satırları
+            // kalırsa çakışma bir sonraki adımda yine patlar.
+            setLines([conflict]);
+            setConflict(null);
+          }}
+        />
+      )}
     </CartContext.Provider>
   );
 }

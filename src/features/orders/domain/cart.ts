@@ -10,6 +10,8 @@
 export interface CartLine {
   productId: string;
   manufacturerOrgId: string;
+  /** Üreticinin ekranda gösterilecek adı; çakışma uyarısında kullanılır. */
+  manufacturerName?: string | undefined;
   name: string;
   code: string;
   imageUrl?: string | undefined;
@@ -81,6 +83,32 @@ export function cartTotals(lines: CartLine[]): CartTotals {
     lineCount: lines.length,
     itemCount: lines.reduce((sum, l) => sum + l.quantity, 0),
   };
+}
+
+/**
+ * Sepetin bağlı olduğu üretici; sepet boşsa null.
+ *
+ * SEPET ÜRETİCİ BAZLIDIR: bir sipariş = bir üretici. Sepette birden çok üretici
+ * bulunamayacağı için ilk satır sepetin tamamını temsil eder.
+ */
+export function cartManufacturerOrgId(lines: CartLine[]): string | null {
+  return lines[0]?.manufacturerOrgId ?? null;
+}
+
+/** Sepetteki üreticinin adı; bilinmiyorsa jenerik metin. */
+export function cartManufacturerName(lines: CartLine[]): string {
+  return lines[0]?.manufacturerName?.trim() || 'başka bir üretici';
+}
+
+/**
+ * Eklenmek istenen satır sepetteki üreticiyle çakışıyor mu?
+ *
+ * Çakışma eskiden yalnız SİPARİŞ ANINDA yakalanıyordu: kullanıcı "Tüm
+ * Üreticiler" görünümünde sepeti doldurup en sonda reddediliyordu.
+ */
+export function conflictsWithCart(lines: CartLine[], line: CartLine): boolean {
+  const current = cartManufacturerOrgId(lines);
+  return current !== null && current !== line.manufacturerOrgId;
 }
 
 /** Aynı ürün aynı değişiklik talebi ve fiyat farkı ile eklenirse miktar artar, satır çoğalmaz. */

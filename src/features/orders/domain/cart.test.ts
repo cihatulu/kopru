@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import {
   addLine,
+  cartManufacturerName,
+  cartManufacturerOrgId,
   cartTotals,
+  conflictsWithCart,
   lineTotal,
   setQuantity,
   setRetailPrice,
@@ -18,6 +21,31 @@ const line = (over: Partial<CartLine> = {}): CartLine => ({
   unitPrice: 9000,
   quantity: 2,
   ...over,
+});
+
+describe('sepet üretici bazlıdır', () => {
+  test('boş sepetin üreticisi yoktur, her ürün eklenebilir', () => {
+    expect(cartManufacturerOrgId([])).toBeNull();
+    expect(conflictsWithCart([], line())).toBe(false);
+  });
+
+  test('aynı üreticinin ürünü çakışmaz', () => {
+    expect(conflictsWithCart([line()], line({ productId: 'p2' }))).toBe(false);
+  });
+
+  test('farklı üreticinin ürünü EKLEME ANINDA çakışır', () => {
+    // Eskiden yalnız sipariş anında yakalanıyordu; kullanıcı sepeti
+    // doldurduktan sonra reddediliyordu.
+    expect(conflictsWithCart([line()], line({ productId: 'p2', manufacturerOrgId: 'm2' }))).toBe(
+      true,
+    );
+  });
+
+  test('üretici adı gösterilebilir, yoksa jenerik metne düşer', () => {
+    expect(cartManufacturerName([line({ manufacturerName: 'kenan mobilya' })])).toBe('kenan mobilya');
+    expect(cartManufacturerName([line()])).toBe('başka bir üretici');
+    expect(cartManufacturerName([])).toBe('başka bir üretici');
+  });
 });
 
 describe('lineTotal', () => {
