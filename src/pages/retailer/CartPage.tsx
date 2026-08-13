@@ -10,8 +10,10 @@ import {
   useCheckout,
   type CartSupplier,
 } from '@/features/orders';
+import { SalespersonSelect, type SalespersonOption } from '@/features/orders';
 import { useCounterparties } from '@/features/counterparties';
 import { useAuthSession } from '@/features/auth';
+import { useStaff } from '@/features/team';
 import { ROUTES } from '@/constants';
 
 /** Perakendecinin sepeti — YALNIZ KOMPOZİSYON (A20). */
@@ -31,6 +33,12 @@ export default function CartPage() {
 
   const isSubscriber = user?.org?.isSubscriber ?? false;
   const checkout = useCheckout(lines, suppliers, isSubscriber);
+
+  // Satışçı adayları: kendi ekibinin AKTİF üyeleri. Sunucu da bunu doğruluyor.
+  const staff = useStaff();
+  const salespeople: SalespersonOption[] = (staff.data ?? [])
+    .filter((s) => s.isActive)
+    .map((s) => ({ id: s.id, label: s.fullName?.trim() || s.userCode }));
 
   if (!user?.org) return null;
 
@@ -64,11 +72,18 @@ export default function CartPage() {
 
   return (
     <div className="font-sans">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Alışveriş Sepeti</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          {lines.length} ürün · {totalQty} adet
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Alışveriş Sepeti</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {lines.length} ürün · {totalQty} adet
+          </p>
+        </div>
+        <SalespersonSelect
+          options={salespeople}
+          value={checkout.salespersonUserId}
+          onChange={checkout.setSalespersonUserId}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

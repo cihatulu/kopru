@@ -36,10 +36,10 @@ export type { CartLine, CartTotals } from './domain/cart';
 
 export { useOrderStatusFlow } from './api/useOrderStatusFlow';
 export { useCheckout } from './api/useCheckout';
-export type { CustomerFields, PaymentMethod } from './api/useCheckout';
+export type { PaymentMethod } from './api/useCheckout';
 
-export { manufacturersInCart, resolveCartTarget } from './domain/checkout';
-export type { CartSupplier, CartTarget } from './domain/checkout';
+export { manufacturersInCart, resolveCartTarget, toOrderCustomer } from './domain/checkout';
+export type { CartSupplier, CartTarget, CustomerFields } from './domain/checkout';
 
 export { OrderTable } from './components/OrderTable';
 export { OrderStatCards } from './components/OrderStatCards';
@@ -52,6 +52,8 @@ export { CartNotice } from './components/CartNotice';
 export { CartSummaryCard } from './components/CartSummaryCard';
 export { CheckoutFields } from './components/CheckoutFields';
 export { DownPaymentPanel } from './components/DownPaymentPanel';
+export { SalespersonSelect } from './components/SalespersonSelect';
+export type { SalespersonOption } from './components/SalespersonSelect';
 export { ShipmentDialog } from './components/ShipmentDialog';
 export { OrderDetailPanel } from './components/OrderDetailPanel';
 export { CartProvider, useCart } from './context/CartContext';

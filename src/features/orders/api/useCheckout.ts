@@ -1,41 +1,26 @@
 import { useState } from 'react';
 import { useAddFinanceTransaction } from '@/features/finance';
 import { errorMessage } from '@/lib/errorMessage';
-import { resolveCartTarget, type CartSupplier } from '../domain/checkout';
+import {
+  EMPTY_CUSTOMER,
+  resolveCartTarget,
+  toOrderCustomer,
+  type CartSupplier,
+  type CustomerFields,
+} from '../domain/checkout';
 import { usePlaceOrder } from './useOrderMutations';
 import type { CartLine } from '../domain/cart';
 
 export type PaymentMethod = 'cash' | 'pos_own' | 'pos_manufacturer';
 
-export interface CustomerFields {
-  name: string;
-  phone: string;
-  email: string;
-  province: string;
-  district: string;
-  address: string;
-  note: string;
-}
-
-const EMPTY_CUSTOMER: CustomerFields = {
-  name: '',
-  phone: '',
-  email: '',
-  province: '',
-  district: '',
-  address: '',
-  note: '',
-};
-
-/** Boş metin gönderilmez: RPC `nullif` uyguluyor ama niyeti burada da netleştiriyoruz. */
-const trimmed = (v: string) => v.trim() || undefined;
-
 /**
  * Sepetten sipariş verme akışı.
  *
  * Hedef ilişki SEPET SATIRLARINDAN türetilir (bkz. `resolveCartTarget`).
- * Hata artık YUTULMUYOR: sunucudan gelen mesaj `error` ile ekrana çıkar —
- * eskiden butona basılıyor ve hiçbir şey olmuyordu.
+ * Satışçı zorunludur — raporlarda personel kırılımı buna dayanır ve sunucu da
+ * satışçısız siparişi reddeder.
+ *
+ * Hata YUTULMAZ: sunucudan gelen mesaj `error` ile ekrana çıkar.
  */
 export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubscriber: boolean) {
   const place = usePlaceOrder();
@@ -46,6 +31,7 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [salespersonUserId, setSalespersonUserId] = useState('');
   const [placed, setPlaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,11 +39,20 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
   const downPayment = Number(paymentAmount);
   const needsPayment = isSubscriber && !allowNoPayment;
   const canSubmit =
-    target.ok && !place.isPending && !addTx.isPending && (!needsPayment || downPayment > 0);
+    target.ok &&
+    salespersonUserId !== '' &&
+    !place.isPending &&
+    !addTx.isPending &&
+    (!needsPayment || downPayment > 0);
 
   const submit = (onDone: () => void) => {
     if (!target.ok) {
       setError(target.error);
+      return;
+    }
+    // Sunucu da reddeder; buradaki kontrol anlamlı mesaj vermek için.
+    if (!salespersonUserId) {
+      setError('Lütfen satışı yapan personeli seçin.');
       return;
     }
     setError(null);
@@ -66,20 +61,8 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
       {
         relationshipId: target.relationshipId,
         lines,
-        customer: {
-          name: trimmed(customer.name),
-          note: trimmed(customer.note),
-          // Adres ve iletişim yalnız abone perakendecide toplanır.
-          ...(isSubscriber
-            ? {
-                phone: trimmed(customer.phone),
-                email: trimmed(customer.email),
-                province: trimmed(customer.province),
-                district: trimmed(customer.district),
-                address: trimmed(customer.address),
-              }
-            : {}),
-        },
+        salespersonUserId,
+        customer: toOrderCustomer(customer, isSubscriber),
       },
       {
         onError: (err) => setError(errorMessage(err, 'Sipariş oluşturulamadı.')),
@@ -89,7 +72,7 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
             onDone();
             return;
           }
-          // Peşinat siparişle AYNI anda yazılır ama ayrı bir defter kaydıdır.
+          // Peşinat siparişle aynı anda alınır ama ayrı bir defter kaydıdır.
           addTx.mutate(
             {
               type: 'income',
@@ -127,6 +110,8 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
     setPaymentMethod,
     paymentAmount,
     setPaymentAmount,
+    salespersonUserId,
+    setSalespersonUserId,
     placed,
     error,
     target,

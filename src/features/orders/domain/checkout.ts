@@ -13,6 +13,50 @@ export type CartTarget =
   | { ok: true; relationshipId: string; supplier: CartSupplier }
   | { ok: false; error: string };
 
+export interface CustomerFields {
+  name: string;
+  phone: string;
+  email: string;
+  province: string;
+  district: string;
+  address: string;
+  note: string;
+}
+
+export const EMPTY_CUSTOMER: CustomerFields = {
+  name: '',
+  phone: '',
+  email: '',
+  province: '',
+  district: '',
+  address: '',
+  note: '',
+};
+
+const trimmed = (v: string) => v.trim() || undefined;
+
+/**
+ * RPC'ye gidecek müşteri yükü.
+ *
+ * Adres ve iletişim YALNIZ abone perakendecide toplanır; misafirde bu alanlar
+ * ekranda hiç görünmez, boş değerlerini göndermek de yanıltıcı olurdu.
+ */
+export function toOrderCustomer(fields: CustomerFields, isSubscriber: boolean) {
+  return {
+    name: trimmed(fields.name),
+    note: trimmed(fields.note),
+    ...(isSubscriber
+      ? {
+          phone: trimmed(fields.phone),
+          email: trimmed(fields.email),
+          province: trimmed(fields.province),
+          district: trimmed(fields.district),
+          address: trimmed(fields.address),
+        }
+      : {}),
+  };
+}
+
 /** Sepetteki farklı üreticiler. */
 export function manufacturersInCart(lines: CartLine[]): string[] {
   return [...new Set(lines.map((l) => l.manufacturerOrgId).filter(Boolean))];

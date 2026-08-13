@@ -1,4 +1,4 @@
-import type { CustomerFields } from '../api/useCheckout';
+import type { CustomerFields } from '../domain/checkout';
 
 const FIELD =
   'w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all';

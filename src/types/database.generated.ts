@@ -597,8 +597,11 @@ export type Database = {
           created_at: string
           currency: string
           customer_address: string | null
+          customer_district: string | null
+          customer_email: string | null
           customer_name: string | null
           customer_phone: string | null
+          customer_province: string | null
           id: string
           manufacturer_org_id: string
           note: string | null
@@ -607,6 +610,7 @@ export type Database = {
           parent_order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          salesperson_user_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
@@ -615,8 +619,11 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_address?: string | null
+          customer_district?: string | null
+          customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          customer_province?: string | null
           id?: string
           manufacturer_org_id: string
           note?: string | null
@@ -625,6 +632,7 @@ export type Database = {
           parent_order_id?: string | null
           relationship_id: string
           retailer_org_id: string
+          salesperson_user_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
@@ -633,8 +641,11 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_address?: string | null
+          customer_district?: string | null
+          customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          customer_province?: string | null
           id?: string
           manufacturer_org_id?: string
           note?: string | null
@@ -643,6 +654,7 @@ export type Database = {
           parent_order_id?: string | null
           relationship_id?: string
           retailer_org_id?: string
+          salesperson_user_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
@@ -674,6 +686,13 @@ export type Database = {
             columns: ["retailer_org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_salesperson_user_id_fkey"
+            columns: ["salesperson_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1733,8 +1752,11 @@ export type Database = {
           created_at: string
           currency: string
           customer_address: string | null
+          customer_district: string | null
+          customer_email: string | null
           customer_name: string | null
           customer_phone: string | null
+          customer_province: string | null
           id: string
           manufacturer_org_id: string
           note: string | null
@@ -1743,6 +1765,7 @@ export type Database = {
           parent_order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          salesperson_user_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
@@ -1822,8 +1845,11 @@ export type Database = {
           created_at: string
           currency: string
           customer_address: string | null
+          customer_district: string | null
+          customer_email: string | null
           customer_name: string | null
           customer_phone: string | null
+          customer_province: string | null
           id: string
           manufacturer_org_id: string
           note: string | null
@@ -1832,6 +1858,7 @@ export type Database = {
           parent_order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          salesperson_user_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
@@ -2056,7 +2083,12 @@ export type Database = {
         Returns: string
       }
       place_order_atomic: {
-        Args: { p_customer?: Json; p_items: Json; p_relationship_id: string }
+        Args: {
+          p_customer?: Json
+          p_items: Json
+          p_relationship_id: string
+          p_salesperson_user_id?: string
+        }
         Returns: string
       }
       recalculate_relationship_balances: {

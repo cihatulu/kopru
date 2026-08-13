@@ -7,6 +7,8 @@ import type { OrderStatus } from '../domain/status';
 export interface PlaceOrderInput {
   relationshipId: string;
   lines: CartLine[];
+  /** Satışı yapan personel — raporlarda personel kırılımı için ZORUNLU. */
+  salespersonUserId: string;
   // Tüm alanlar `| undefined`: form boş bıraktığında undefined gelir
   // (exactOptionalPropertyTypes açıkken "yok" ile "undefined" ayrı tiplerdir).
   customer?: {
@@ -41,6 +43,7 @@ export function usePlaceOrder() {
         p_relationship_id: input.relationshipId,
         p_items: toOrderItems(input.lines),
         p_customer: input.customer ?? {},
+        p_salesperson_user_id: input.salespersonUserId,
       }));
       if (error) throw error;
       return data;
