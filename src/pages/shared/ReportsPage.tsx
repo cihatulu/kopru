@@ -3,9 +3,8 @@ import {
   ProfitabilityTab,
   ReportDetailModal,
   ReportOverview,
-  RetailerReportSummary,
+  RetailerPeriodReport,
   useReportsPage,
-  useSummaryFor,
   type ReportKind,
 } from '@/features/reports';
 import { useAuthSession } from '@/features/auth';
@@ -19,26 +18,12 @@ export default function ReportsPage() {
   const { data: user } = useAuthSession();
   const isManufacturer = user?.org?.kind === ORG_KIND.manufacturer;
 
-  const { retailer } = useSummaryFor(user?.org?.kind);
   const page = useReportsPage(user?.org?.id, isManufacturer);
   const [openReport, setOpenReport] = useState<ReportKind | null>(null);
 
   if (!user?.org) return null;
 
-  if (!isManufacturer) {
-    return (
-      <div className="space-y-5 text-left">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Raporlar</h2>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Son 30 gün. İptal ve iade edilen siparişler hariç tutulur. Beklenen ciro ve kâr yalnız
-            size görünür.
-          </p>
-        </div>
-        <RetailerReportSummary data={retailer.data} isPending={retailer.isPending} />
-      </div>
-    );
-  }
+  if (!isManufacturer) return <RetailerPeriodReport />;
 
   return (
     <div className="space-y-6 font-sans text-slate-800 text-left">
