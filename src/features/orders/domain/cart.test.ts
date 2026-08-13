@@ -14,6 +14,7 @@ const line = (over: Partial<CartLine> = {}): CartLine => ({
   manufacturerOrgId: 'm1',
   name: 'Koltuk',
   code: 'K-1',
+  supplierUnitPrice: 6000,
   unitPrice: 9000,
   quantity: 2,
   ...over,
@@ -27,30 +28,39 @@ describe('lineTotal', () => {
 });
 
 describe('cartTotals', () => {
-  test('alış toplamı — cari bu tutardan işler', () => {
-    const t = cartTotals([line(), line({ productId: 'p2', unitPrice: 500, quantity: 4 })]);
-    expect(t.supplierTotal).toBe(20000);
+  test('CARİ toplamı üretici fiyatından çıkar, ekranda görünenden DEĞİL', () => {
+    // Asıl hata buydu: sepet perakende fiyatı toplayıp cari tutar diye
+    // gösteriyordu (₺240.000 yazarken cariye ₺120.000 yazılıyordu).
+    const t = cartTotals([line()]);
+    expect(t.supplierTotal).toBe(12000); // 6000 × 2
+    expect(t.retailTotal).toBe(18000); // 9000 × 2
+    expect(t.expectedProfit).toBe(6000);
+  });
+
+  test('birden fazla satır toplanır', () => {
+    const t = cartTotals([
+      line(),
+      line({ productId: 'p2', supplierUnitPrice: 250, unitPrice: 500, quantity: 4 }),
+    ]);
+    expect(t.supplierTotal).toBe(13000);
+    expect(t.retailTotal).toBe(20000);
     expect(t.lineCount).toBe(2);
     expect(t.itemCount).toBe(6);
   });
 
-  test('tüm satırlar fiyatlıysa ciro ve kâr hesaplanır', () => {
-    const t = cartTotals([line({ retailPrice: 15000 })]);
-    expect(t.retailTotal).toBe(30000);
-    expect(t.expectedProfit).toBe(12000);
+  test('fiyat farkı YALNIZ perakende tarafını etkiler', () => {
+    // Müşteriye özel talebin ücreti üreticinin fiyatını değiştirmez.
+    const t = cartTotals([line({ priceDifference: 1000 })]);
+    expect(t.supplierTotal).toBe(12000);
+    expect(t.retailTotal).toBe(20000);
+    expect(t.expectedProfit).toBe(8000);
   });
 
-  test('bir satır bile fiyatsızsa ciro ve kâr null', () => {
-    // Yanıltıcı bir sayı göstermektense hiç göstermemek doğrusu.
-    const t = cartTotals([line({ retailPrice: 15000 }), line({ productId: 'p2' })]);
-    expect(t.retailTotal).toBeNull();
-    expect(t.expectedProfit).toBeNull();
-  });
-
-  test('boş sepette ciro null, toplam sıfır', () => {
+  test('boş sepette toplamlar sıfır', () => {
     const t = cartTotals([]);
     expect(t.supplierTotal).toBe(0);
-    expect(t.retailTotal).toBeNull();
+    expect(t.retailTotal).toBe(0);
+    expect(t.expectedProfit).toBe(0);
   });
 });
 

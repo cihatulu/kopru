@@ -22,9 +22,15 @@ interface Props {
    */
   isSubscriber: boolean;
   loading: boolean;
+  /**
+   * `unitPrice` ekranda görünen PERAKENDE fiyatıdır (KATMAN 3);
+   * `supplierUnitPrice` ise cariye yazılacak iskontolu ÜRETİCİ fiyatı
+   * (KATMAN 2). İkisi ayrı taşınır, sepet ikisini de gösterir (A4).
+   */
   onAdd: (
     product: CatalogProduct,
     unitPrice: number,
+    supplierUnitPrice: number,
     customDescription?: string,
     priceDifference?: number
   ) => void;
@@ -132,7 +138,7 @@ export function RetailerCatalogGrid({
               stock={stock.data?.[p.id] ?? null}
               ownStock={isSubscriber ? (ownStock.data?.[p.id] ?? 0) : undefined}
               onOpen={setPreview}
-              onAdd={(product) => onAdd(product, displayPriceOf(product))}
+              onAdd={(product) => onAdd(product, displayPriceOf(product), costPriceOf(product))}
             />
           ))}
         </div>
@@ -145,7 +151,7 @@ export function RetailerCatalogGrid({
           stock={stock.data?.[preview.id] ?? null}
           priceOverride={displayPriceOf(preview)}
           onAddToCart={(customDesc, priceDiff) => {
-            onAdd(preview, displayPriceOf(preview), customDesc, priceDiff);
+            onAdd(preview, displayPriceOf(preview), costPriceOf(preview), customDesc, priceDiff);
             setPreview(null);
           }}
           onClose={() => setPreview(null)}

@@ -110,9 +110,10 @@ export default function CatalogPage() {
         discountMap={discountMap}
         isSubscriber={user.org.isSubscriber}
         loading={list.isPending}
-        onAdd={(p, unitPrice, customDescription, priceDifference) =>
+        onAdd={(p, unitPrice, supplierUnitPrice, customDescription, priceDifference) =>
           addCartLine({
             productId: p.id,
+            supplierUnitPrice,
             // Sepet satırı hangi üreticiye ait olduğunu KENDİ taşır: "Tüm
             // Üreticiler" görünümünde seçili bir üretici yoktur.
             manufacturerOrgId: p.ownerOrgId,

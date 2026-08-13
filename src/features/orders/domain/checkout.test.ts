@@ -7,7 +7,8 @@ const line = (over: Partial<CartLine> = {}): CartLine => ({
   manufacturerOrgId: 'm-cihat',
   name: 'Pierro Masa',
   code: 'Pierro',
-  unitPrice: 20000,
+  supplierUnitPrice: 20000,
+  unitPrice: 40000,
   quantity: 1,
   ...over,
 });

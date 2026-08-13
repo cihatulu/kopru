@@ -83,21 +83,17 @@ export function CartPanel({
                 />
               </label>
             </div>
-            <p className="mt-1 text-xs text-slate-400">Alış: {formatMoney(l.unitPrice)}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Alış: {formatMoney(l.supplierUnitPrice)}
+            </p>
           </li>
         ))}
       </ul>
 
       <dl className="space-y-1.5 border-t border-slate-200 pt-3 text-sm">
-        <Row label="Sipariş tutarı" value={formatMoney(totals.supplierTotal)} strong />
-        <Row
-          label="Beklenen ciro"
-          value={totals.retailTotal === null ? 'fiyat girin' : formatMoney(totals.retailTotal)}
-        />
-        <Row
-          label="Beklenen kâr"
-          value={totals.expectedProfit === null ? '—' : formatMoney(totals.expectedProfit)}
-        />
+        <Row label="Üreticiye ödenecek" value={formatMoney(totals.supplierTotal)} strong />
+        <Row label="Beklenen ciro" value={formatMoney(totals.retailTotal)} />
+        <Row label="Beklenen kâr" value={formatMoney(totals.expectedProfit)} />
       </dl>
 
       <p className="text-xs leading-relaxed text-slate-400">

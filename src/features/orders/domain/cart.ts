@@ -14,7 +14,15 @@ export interface CartLine {
   code: string;
   imageUrl?: string | undefined;
   model?: string | undefined;
-  /** İskonto uygulanmış taban birim alış fiyatı. */
+  /**
+   * KATMAN 2 — iskonto uygulanmış ÜRETİCİ satış fiyatı.
+   * Cariye yazılan tek baz budur; sunucu da siparişte bunu yeniden hesaplar.
+   */
+  supplierUnitPrice: number;
+  /**
+   * KATMAN 3 — perakendecinin kendi satış fiyatı. Katalogda ve sepette
+   * GÖRÜNEN fiyat budur; üretici hiçbir zaman görmez.
+   */
   unitPrice: number;
   quantity: number;
   /** Perakendecinin kendi satış fiyatı; isteğe bağlı. */
@@ -26,12 +34,12 @@ export interface CartLine {
 }
 
 export interface CartTotals {
-  /** Üreticiye ödenecek toplam — cari bu tutardan işler. */
+  /** Üreticiye ödenecek toplam — cari bu tutardan işler (KATMAN 2). */
   supplierTotal: number;
-  /** Perakendecinin beklenen cirosu; yalnız kendisi görür. */
-  retailTotal: number | null;
-  /** Beklenen kâr. Satırlardan biri bile fiyatsızsa null. */
-  expectedProfit: number | null;
+  /** Perakendecinin beklenen cirosu; yalnız kendisi görür (KATMAN 3). */
+  retailTotal: number;
+  /** Beklenen kâr = ciro − üreticiye ödenecek. */
+  expectedProfit: number;
   lineCount: number;
   /** Toplam adet (parça sayısı). */
   itemCount: number;
@@ -39,28 +47,39 @@ export interface CartTotals {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Satırın PERAKENDE toplamı (KATMAN 3) — sepette gösterilen tutar. */
 export function lineTotal(line: CartLine): number {
   const effectivePrice = line.unitPrice + (line.priceDifference || 0);
   return round2(effectivePrice * line.quantity);
 }
 
+/**
+ * Sepet toplamları.
+ *
+ * İKİ TOPLAM AYRI HESAPLANIR ve karıştırılmamalıdır:
+ *   · `supplierTotal` üreticiye borçlanılan tutardır (KATMAN 2). Sipariş
+ *     ekranındaki bağlayıcı sayı budur; cariye bu yazılır.
+ *   · `retailTotal` perakendecinin kendi müşterisinden bekledeği tutardır
+ *     (KATMAN 3) ve üreticiye hiç gitmez.
+ *
+ * Eskiden `supplierTotal` de ekranda görünen (yani PERAKENDE) fiyattan
+ * hesaplanıyordu; sepet "₺240.000" derken cariye ₺120.000 yazılıyordu.
+ *
+ * Fiyat farkı yalnız perakende tarafını etkiler: müşteriye özel bir talebin
+ * ücreti üreticinin fiyatını değiştirmez.
+ */
 export function cartTotals(lines: CartLine[]): CartTotals {
-  const supplierTotal = round2(lines.reduce((sum, l) => sum + lineTotal(l), 0));
-  const itemCount = lines.reduce((sum, l) => sum + l.quantity, 0);
-
-  // Tek bir satırın satış fiyatı bile eksikse ciro/kâr "kısmen doğru" olur —
-  // yanıltıcı bir sayı göstermektense hiç göstermemek doğrusu.
-  const allPriced = lines.length > 0 && lines.every((l) => l.retailPrice !== undefined);
-  const retailTotal = allPriced
-    ? round2(lines.reduce((sum, l) => sum + ((l.retailPrice ?? 0) + (l.priceDifference || 0)) * l.quantity, 0))
-    : null;
+  const supplierTotal = round2(
+    lines.reduce((sum, l) => sum + l.supplierUnitPrice * l.quantity, 0),
+  );
+  const retailTotal = round2(lines.reduce((sum, l) => sum + lineTotal(l), 0));
 
   return {
     supplierTotal,
     retailTotal,
-    expectedProfit: retailTotal === null ? null : round2(retailTotal - supplierTotal),
+    expectedProfit: round2(retailTotal - supplierTotal),
     lineCount: lines.length,
-    itemCount,
+    itemCount: lines.reduce((sum, l) => sum + l.quantity, 0),
   };
 }
 

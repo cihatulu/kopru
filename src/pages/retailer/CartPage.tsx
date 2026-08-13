@@ -60,8 +60,6 @@ export default function CartPage() {
 
   const target = checkout.target;
   const supplier = target.ok ? target.supplier : null;
-  const discountRate =
-    (counterparties.data?.pages.flat() ?? []).find((e) => e.id === supplier?.id)?.discountRate ?? 0;
   const totalQty = lines.reduce((acc, l) => acc + l.quantity, 0);
 
   return (
@@ -94,11 +92,7 @@ export default function CartPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <CartSummaryCard
-            subtotal={totals.supplierTotal}
-            discountRate={discountRate}
-            supplierName={supplier?.companyName ?? null}
-          />
+          <CartSummaryCard totals={totals} supplierName={supplier?.companyName ?? null} />
 
           <CheckoutFields
             values={checkout.customer}
