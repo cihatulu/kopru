@@ -1,0 +1,117 @@
+import { describe, expect, test } from 'vitest';
+import {
+  aggregate,
+  isCustomerPayment,
+  linesTotal,
+  sourcesOf,
+  stepIndexOf,
+  type TrackedItem,
+  type TrackedOrder,
+} from './tracking';
+
+const item = (over: Partial<TrackedItem> = {}): TrackedItem => ({
+  productId: 'p1',
+  name: 'Largo',
+  quantity: 4,
+  unit_price: 1000,
+  total_price: 4000,
+  ...over,
+});
+
+const order = (over: Partial<TrackedOrder> = {}): TrackedOrder => ({
+  order_no: '260813-0001',
+  status: 'pending',
+  customer_name: 'Ahmet',
+  note: null,
+  created_at: '2026-08-13T00:00:00Z',
+  updated_at: '2026-08-13T00:00:00Z',
+  items: [item()],
+  returned_items: [],
+  history: [],
+  shipments: [],
+  payments: [],
+  ...over,
+});
+
+describe('stepIndexOf', () => {
+  test('dört ana aşama sırayla', () => {
+    expect(stepIndexOf('pending')).toBe(0);
+    expect(stepIndexOf('in_production')).toBe(1);
+    expect(stepIndexOf('shipped')).toBe(2);
+    expect(stepIndexOf('delivered')).toBe(3);
+  });
+
+  test('KÖPRÜ ye özgü ara durumlar en yakın aşamaya eşlenir', () => {
+    expect(stepIndexOf('confirmed')).toBe(0);
+    expect(stepIndexOf('partially_shipped')).toBe(2);
+    expect(stepIndexOf('return_requested')).toBe(2);
+  });
+
+  test('iptal ve iade zincir dışıdır', () => {
+    expect(stepIndexOf('cancelled')).toBe(-1);
+    expect(stepIndexOf('returned')).toBe(-1);
+  });
+});
+
+describe('aggregate', () => {
+  test('kök ve sevkiyatlar birlikte toplanır', () => {
+    const o = order({
+      items: [item({ quantity: 1 })],
+      shipments: [
+        {
+          id: 's1',
+          status: 'shipped',
+          created_at: '',
+          items: [item({ quantity: 3 })],
+          returned_items: [],
+          history: [],
+        },
+      ],
+    });
+    // Kısmi sevkiyatta adet çocuğa taşınır; orijinal toplam yine 4 olmalı.
+    expect(aggregate(sourcesOf(o), 'original')).toEqual([
+      { key: 'p1', name: 'Largo', unitPrice: 1000, quantity: 4 },
+    ]);
+  });
+
+  test('kalan hesabında iade edilen adet düşülür', () => {
+    const o = order({
+      items: [item({ quantity: 4 })],
+      returned_items: [{ productId: 'p1', quantity: 1 }],
+    });
+    expect(aggregate(sourcesOf(o), 'original')[0]?.quantity).toBe(4);
+    expect(aggregate(sourcesOf(o), 'remaining')[0]?.quantity).toBe(3);
+  });
+
+  test('iptal edilen kaynak kalandan tamamen düşer ama orijinali korur', () => {
+    const o = order({ status: 'cancelled', items: [item({ quantity: 2 })] });
+    expect(aggregate(sourcesOf(o), 'original')[0]?.quantity).toBe(2);
+    expect(aggregate(sourcesOf(o), 'remaining')).toHaveLength(0);
+  });
+
+  test('tamamı iade edilen kalem kalanda görünmez', () => {
+    const o = order({
+      items: [item({ quantity: 2 })],
+      returned_items: [{ productId: 'p1', quantity: 2 }],
+    });
+    expect(aggregate(sourcesOf(o), 'remaining')).toHaveLength(0);
+  });
+});
+
+describe('linesTotal', () => {
+  test('birim × adet toplanır', () => {
+    expect(linesTotal(aggregate(sourcesOf(order()), 'original'))).toBe(4000);
+  });
+});
+
+describe('isCustomerPayment', () => {
+  test('iptal ve iade karşılığı alacaklar tahsilat sayılmaz', () => {
+    expect(isCustomerPayment({ amount: 1, method: 'cash', description: 'Sipariş iptali', created_at: '' })).toBe(false);
+    expect(isCustomerPayment({ amount: 1, method: 'cash', description: 'İade bedeli', created_at: '' })).toBe(false);
+  });
+
+  test('normal tahsilat sayılır', () => {
+    expect(isCustomerPayment({ amount: 1, method: 'cash', description: 'Peşinat', created_at: '' })).toBe(true);
+    expect(isCustomerPayment({ amount: 1, method: 'cash', description: null, created_at: '' })).toBe(true);
+  });
+});

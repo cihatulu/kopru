@@ -1,12 +1,14 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ORG_KIND, ROUTES } from '@/constants';
+import { TRACK_PATH } from '@/features/orders';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { RequireOrgKind, RequirePlatformAdmin } from './guards';
 
 // PLAN §17.2 — panel bazlı kod bölme. Her panel ayrı chunk.
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const InvitePage = lazy(() => import('@/pages/auth/InvitePage'));
+const OrderTrackPage = lazy(() => import('@/pages/public/OrderTrackPage'));
 const PanelLayout = lazy(() => import('@/app/layout/PanelLayout'));
 
 const OrdersPage = lazy(() => import('@/pages/shared/OrdersPage'));
@@ -47,6 +49,8 @@ export const router = createBrowserRouter([
   { path: ROUTES.login, element: lazyRoute(<LoginPage />) },
   // Davet linki oturum GEREKTİRMEZ — guard'ların dışında durur.
   { path: ROUTES.invite, element: lazyRoute(<InvitePage />) },
+  // Sipariş takibi de public: bağlantı müşteriye gider, jetonu bilen görür.
+  { path: `/${TRACK_PATH}/:token`, element: lazyRoute(<OrderTrackPage />) },
 
   {
     path: ROUTES.manufacturer,

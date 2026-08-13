@@ -35,6 +35,19 @@ export {
 export type { CartLine, CartTotals } from './domain/cart';
 
 export { useOrderStatusFlow } from './api/useOrderStatusFlow';
+export { useTrackOrder } from './api/useTrackOrder';
+export {
+  TRACK_STEPS,
+  aggregate,
+  isCustomerPayment,
+  linesTotal,
+  sourcesOf,
+  stepIndexOf,
+} from './domain/tracking';
+export type { TrackedOrder, TrackedItem, AggregatedLine } from './domain/tracking';
+export { TrackOrderView } from './components/TrackOrderView';
+export { TrackSteps } from './components/TrackSteps';
+
 export { useCheckout } from './api/useCheckout';
 export type { CheckoutContext } from './api/useCheckout';
 export { useCheckoutForm } from './api/useCheckoutForm';
