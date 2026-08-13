@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAddFinanceTransaction } from '@/features/finance';
+import { errorMessage } from '@/lib/errorMessage';
 import { resolveCartTarget, type CartSupplier } from '../domain/checkout';
 import { usePlaceOrder } from './useOrderMutations';
 import type { CartLine } from '../domain/cart';
@@ -81,8 +82,7 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
         },
       },
       {
-        onError: (err) =>
-          setError(err instanceof Error ? err.message : 'Sipariş oluşturulamadı.'),
+        onError: (err) => setError(errorMessage(err, 'Sipariş oluşturulamadı.')),
         onSuccess: (orderId) => {
           if (!needsPayment || downPayment <= 0) {
             setPlaced(true);
@@ -102,9 +102,7 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
             {
               onError: (err) =>
                 setError(
-                  `Sipariş oluşturuldu ancak peşinat kaydedilemedi: ${
-                    err instanceof Error ? err.message : 'bilinmeyen hata'
-                  }`,
+                  `Sipariş oluşturuldu ancak peşinat kaydedilemedi: ${errorMessage(err, 'bilinmeyen hata')}`,
                 ),
               onSuccess: () => {
                 setPlaced(true);
