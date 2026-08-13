@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { formatMoney } from '@/lib/format';
 import {
+  CartCheckoutPanel,
   CartLinesTable,
   CartNotice,
-  CartSummaryCard,
-  CheckoutFields,
   DownPaymentPanel,
+  OrderPlacedDialog,
+  SalespersonSelect,
   useCart,
   useCheckout,
   type CartSupplier,
+  type SalespersonOption,
 } from '@/features/orders';
-import { SalespersonSelect, type SalespersonOption } from '@/features/orders';
 import { useCounterparties } from '@/features/counterparties';
 import { useAuthSession } from '@/features/auth';
 import { useStaff } from '@/features/team';
@@ -21,6 +21,7 @@ export default function CartPage() {
   const { data: user } = useAuthSession();
   const { lines, totals, setCartQuantity, clearCart } = useCart();
   const counterparties = useCounterparties();
+  const staff = useStaff();
   const navigate = useNavigate();
 
   const suppliers: CartSupplier[] = (counterparties.data?.pages.flat() ?? [])
@@ -31,25 +32,30 @@ export default function CartPage() {
       companyName: e.manufacturer.companyName,
     }));
 
-  const isSubscriber = user?.org?.isSubscriber ?? false;
-  const checkout = useCheckout(lines, suppliers, isSubscriber);
-
   // Satışçı adayları: kendi ekibinin AKTİF üyeleri. Sunucu da bunu doğruluyor.
-  const staff = useStaff();
   const salespeople: SalespersonOption[] = (staff.data ?? [])
     .filter((s) => s.isActive)
     .map((s) => ({ id: s.id, label: s.fullName?.trim() || s.userCode }));
 
+  const isSubscriber = user?.org?.isSubscriber ?? false;
+  const checkout = useCheckout(lines, suppliers, isSubscriber, {
+    retailerName: user?.org?.companyName ?? '',
+    salespersonLabel: (id) => salespeople.find((s) => s.id === id)?.label ?? null,
+  });
+
+  const goToOrders = () => void navigate(`${ROUTES.retailer}/siparisler`);
+
   if (!user?.org) return null;
 
-  if (checkout.placed) {
+  if (checkout.placed && checkout.printData) {
     return (
-      <CartNotice
-        tone="success"
-        title="Siparişiniz Alındı!"
-        description="Siparişlerim sekmesinden takip edebilirsiniz."
-        actionLabel="Siparişlerime Git"
-        onAction={() => void navigate(`${ROUTES.retailer}/siparisler`)}
+      <OrderPlacedDialog
+        orderToken={checkout.placed.orderToken}
+        customerName={checkout.printData.customerName}
+        customerPhone={checkout.printData.customerPhone}
+        printData={checkout.printData}
+        onClose={goToOrders}
+        onGoToOrders={goToOrders}
       />
     );
   }
@@ -67,7 +73,6 @@ export default function CartPage() {
   }
 
   const target = checkout.target;
-  const supplier = target.ok ? target.supplier : null;
   const totalQty = lines.reduce((acc, l) => acc + l.quantity, 0);
 
   return (
@@ -106,37 +111,13 @@ export default function CartPage() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4">
-          <CartSummaryCard totals={totals} supplierName={supplier?.companyName ?? null} />
-
-          <CheckoutFields
-            values={checkout.customer}
-            isSubscriber={isSubscriber}
-            allowNoPayment={checkout.allowNoPayment}
-            marketingConsent={checkout.marketingConsent}
-            onChange={checkout.setCustomerField}
-            onAllowNoPaymentChange={checkout.setAllowNoPayment}
-            onMarketingConsentChange={checkout.setMarketingConsent}
-          />
-
-          {/* Sipariş verilemiyorsa SEBEBİ görünür; eskiden hata yutuluyordu. */}
-          {(checkout.error ?? (!target.ok ? target.error : null)) && (
-            <p role="alert" className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-xs font-semibold text-rose-700">
-              {checkout.error ?? (target.ok ? '' : target.error)}
-            </p>
-          )}
-
-          <button
-            type="button"
-            disabled={!checkout.canSubmit}
-            onClick={() => checkout.submit(clearCart)}
-            className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
-          >
-            {checkout.pending
-              ? 'Gönderiliyor...'
-              : `Siparişi Tamamla · ${formatMoney(totals.supplierTotal)}`}
-          </button>
-        </div>
+        <CartCheckoutPanel
+          checkout={checkout}
+          totals={totals}
+          supplierName={target.ok ? target.supplier.companyName : null}
+          isSubscriber={isSubscriber}
+          onSubmit={() => checkout.submit(clearCart)}
+        />
       </div>
     </div>
   );

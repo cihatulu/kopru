@@ -31,14 +31,26 @@ function useInvalidate() {
   };
 }
 
+export interface PlacedOrder {
+  id: string;
+  orderNo: string;
+  /** Müşteriye gönderilen public takip bağlantısının anahtarı. */
+  orderToken: string;
+  createdAt: string;
+}
+
 /**
  * Sipariş verme — sipariş, kalemler, KATMAN 3 fiyatları, stok düşümü ve
  * cari borç kaydı TEK transaction'da yazılır. Yarım sipariş oluşamaz.
+ *
+ * RPC yalnız id döndürür; takip bağlantısı ve yazdırma formu için gereken
+ * jeton/numara ardından okunur. Ayrı bir sorgu olması siparişi riske atmaz —
+ * sipariş çoktan yazılmıştır, bu okuma yalnız ekranı besler.
  */
 export function usePlaceOrder() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (input: PlaceOrderInput): Promise<string> => {
+    mutationFn: async (input: PlaceOrderInput): Promise<PlacedOrder> => {
       const { data, error } = await supabase.rpc('place_order_atomic', rpcArgs({
         p_relationship_id: input.relationshipId,
         p_items: toOrderItems(input.lines),
@@ -46,7 +58,21 @@ export function usePlaceOrder() {
         p_salesperson_user_id: input.salespersonUserId,
       }));
       if (error) throw error;
-      return data;
+
+      const orderId = String(data);
+      const { data: row, error: readError } = await supabase
+        .from('orders')
+        .select('order_no, order_token, created_at')
+        .eq('id', orderId)
+        .single();
+      if (readError) throw readError;
+
+      return {
+        id: orderId,
+        orderNo: String(row.order_no),
+        orderToken: String(row.order_token),
+        createdAt: String(row.created_at),
+      };
     },
     onSuccess: invalidate,
   });

@@ -2,56 +2,73 @@ import { useState } from 'react';
 import { useAddFinanceTransaction } from '@/features/finance';
 import { errorMessage } from '@/lib/errorMessage';
 import {
-  EMPTY_CUSTOMER,
+  buildPrintableOrder,
   resolveCartTarget,
   toOrderCustomer,
   type CartSupplier,
-  type CustomerFields,
 } from '../domain/checkout';
-import { usePlaceOrder } from './useOrderMutations';
+import { paymentMethodLabel, type PrintableOrder } from '../domain/printOrder';
+import { usePlaceOrder, type PlacedOrder } from './useOrderMutations';
+import { useCheckoutForm } from './useCheckoutForm';
 import type { CartLine } from '../domain/cart';
 
-export type PaymentMethod = 'cash' | 'pos_own' | 'pos_manufacturer';
+export interface CheckoutContext {
+  retailerName: string;
+  /** Satışçı kimliğini okunur ada çevirir — yazdırma formunda görünür. */
+  salespersonLabel: (userId: string) => string | null;
+}
 
 /**
  * Sepetten sipariş verme akışı.
  *
- * Hedef ilişki SEPET SATIRLARINDAN türetilir (bkz. `resolveCartTarget`).
- * Satışçı zorunludur — raporlarda personel kırılımı buna dayanır ve sunucu da
- * satışçısız siparişi reddeder.
- *
- * Hata YUTULMAZ: sunucudan gelen mesaj `error` ile ekrana çıkar.
+ * Hedef ilişki SEPET SATIRLARINDAN türetilir. Satışçı zorunludur.
+ * Hata YUTULMAZ; sunucu mesajı `error` ile ekrana çıkar.
  */
-export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubscriber: boolean) {
+export function useCheckout(
+  lines: CartLine[],
+  suppliers: CartSupplier[],
+  isSubscriber: boolean,
+  ctx: CheckoutContext,
+) {
   const place = usePlaceOrder();
   const addTx = useAddFinanceTransaction();
+  const form = useCheckoutForm();
 
-  const [customer, setCustomer] = useState<CustomerFields>(EMPTY_CUSTOMER);
-  const [allowNoPayment, setAllowNoPayment] = useState(false);
-  const [marketingConsent, setMarketingConsent] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [salespersonUserId, setSalespersonUserId] = useState('');
-  const [placed, setPlaced] = useState(false);
+  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
+  const [printData, setPrintData] = useState<PrintableOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const target = resolveCartTarget(lines, suppliers);
-  const downPayment = Number(paymentAmount);
-  const needsPayment = isSubscriber && !allowNoPayment;
+  const downPayment = Number(form.paymentAmount);
+  const needsPayment = isSubscriber && !form.allowNoPayment;
   const canSubmit =
     target.ok &&
-    salespersonUserId !== '' &&
+    form.salespersonUserId !== '' &&
     !place.isPending &&
     !addTx.isPending &&
     (!needsPayment || downPayment > 0);
+
+  /** Sepet temizlenmeden ÖNCE kopyalanır ki yazdırma sonradan da çalışsın. */
+  const capture = (order: PlacedOrder, withPayment: boolean) =>
+    setPrintData(
+      buildPrintableOrder({
+        lines,
+        customer: form.customer,
+        retailerName: ctx.retailerName,
+        salespersonLabel: ctx.salespersonLabel(form.salespersonUserId),
+        orderNo: order.orderNo,
+        createdAt: order.createdAt,
+        paymentMethodLabel: withPayment ? paymentMethodLabel(form.paymentMethod) : null,
+        paymentAmount: withPayment ? downPayment : null,
+      }),
+    );
 
   const submit = (onDone: () => void) => {
     if (!target.ok) {
       setError(target.error);
       return;
     }
-    // Sunucu da reddeder; buradaki kontrol anlamlı mesaj vermek için.
-    if (!salespersonUserId) {
+    if (!form.salespersonUserId) {
       setError('Lütfen satışı yapan personeli seçin.');
       return;
     }
@@ -61,14 +78,16 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
       {
         relationshipId: target.relationshipId,
         lines,
-        salespersonUserId,
-        customer: toOrderCustomer(customer, isSubscriber),
+        salespersonUserId: form.salespersonUserId,
+        customer: toOrderCustomer(form.customer, isSubscriber),
       },
       {
         onError: (err) => setError(errorMessage(err, 'Sipariş oluşturulamadı.')),
-        onSuccess: (orderId) => {
+        onSuccess: (order) => {
+          capture(order, needsPayment && downPayment > 0);
+
           if (!needsPayment || downPayment <= 0) {
-            setPlaced(true);
+            setPlaced(order);
             onDone();
             return;
           }
@@ -76,10 +95,10 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
           addTx.mutate(
             {
               type: 'income',
-              method: paymentMethod,
+              method: form.paymentMethod,
               amount: downPayment,
               description: 'Sipariş anında peşinat tahsilatı',
-              order_id: orderId,
+              order_id: order.id,
               manufacturer_id: target.supplier.manufacturerOrgId,
             },
             {
@@ -88,7 +107,7 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
                   `Sipariş oluşturuldu ancak peşinat kaydedilemedi: ${errorMessage(err, 'bilinmeyen hata')}`,
                 ),
               onSuccess: () => {
-                setPlaced(true);
+                setPlaced(order);
                 onDone();
               },
             },
@@ -99,20 +118,9 @@ export function useCheckout(lines: CartLine[], suppliers: CartSupplier[], isSubs
   };
 
   return {
-    customer,
-    setCustomerField: (key: keyof CustomerFields, value: string) =>
-      setCustomer((prev) => ({ ...prev, [key]: value })),
-    allowNoPayment,
-    setAllowNoPayment,
-    marketingConsent,
-    setMarketingConsent,
-    paymentMethod,
-    setPaymentMethod,
-    paymentAmount,
-    setPaymentAmount,
-    salespersonUserId,
-    setSalespersonUserId,
+    ...form,
     placed,
+    printData,
     error,
     target,
     canSubmit,

@@ -1,5 +1,6 @@
 /** Sepetin hangi ilişkiye sipariş vereceğinin çözümü — SAF (A20). */
-import type { CartLine } from './cart';
+import { lineTotal, type CartLine } from './cart';
+import type { PrintableOrder, PrintableOrderItem } from './printOrder';
 
 /** İlişkinin sipariş için gereken en küçük gösterimi. */
 export interface CartSupplier {
@@ -54,6 +55,49 @@ export function toOrderCustomer(fields: CustomerFields, isSubscriber: boolean) {
           address: trimmed(fields.address),
         }
       : {}),
+  };
+}
+
+/**
+ * Yazdırılabilir sipariş formu verisi.
+ *
+ * Sepet gönderimden hemen sonra temizlendiği için satırlar BURADA, temizlik
+ * öncesinde kopyalanır. Fiyatlar perakende (KATMAN 3): belge müşteriye gider.
+ */
+export function buildPrintableOrder(params: {
+  lines: CartLine[];
+  customer: CustomerFields;
+  retailerName: string;
+  salespersonLabel: string | null;
+  orderNo: string;
+  createdAt: string;
+  paymentMethodLabel: string | null;
+  paymentAmount: number | null;
+}): PrintableOrder {
+  const items: PrintableOrderItem[] = params.lines.map((l) => ({
+    name: l.name,
+    customDescription: l.customDescription ?? null,
+    quantity: l.quantity,
+    unitPrice: l.unitPrice + (l.priceDifference ?? 0),
+    totalPrice: lineTotal(l),
+  }));
+
+  return {
+    retailerName: params.retailerName,
+    orderNo: params.orderNo,
+    createdAt: params.createdAt,
+    salespersonLabel: params.salespersonLabel,
+    customerName: params.customer.name.trim() || null,
+    customerPhone: params.customer.phone.trim() || null,
+    customerEmail: params.customer.email.trim() || null,
+    customerProvince: params.customer.province.trim() || null,
+    customerDistrict: params.customer.district.trim() || null,
+    customerAddress: params.customer.address.trim() || null,
+    note: params.customer.note.trim() || null,
+    items,
+    total: items.reduce((sum, i) => sum + i.totalPrice, 0),
+    paymentMethodLabel: params.paymentMethodLabel,
+    paymentAmount: params.paymentAmount,
   };
 }
 
