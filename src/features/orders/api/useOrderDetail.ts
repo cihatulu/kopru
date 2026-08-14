@@ -19,7 +19,7 @@ const ORDER_DETAIL_COLUMNS =
   'manufacturer_org_id, retailer_org_id, relationship_id, parent_order_id, ' +
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name), ' +
   'customer_phone, customer_address, note, order_token, ' +
-  'order_items(id, product_id, quantity, supplier_unit_price, total_price, product_snapshot, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price)))';
+  'order_items(id, product_id, quantity, supplier_unit_price, total_price, product_snapshot, custom_description, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price)))';
 
 export function useOrderDetail(orderId: string | null, myOrgId: string) {
   return useQuery({

@@ -71,8 +71,32 @@ describe('aggregate', () => {
     });
     // Kısmi sevkiyatta adet çocuğa taşınır; orijinal toplam yine 4 olmalı.
     expect(aggregate(sourcesOf(o), 'original')).toEqual([
-      { key: 'p1', name: 'Largo', unitPrice: 1000, quantity: 4 },
+      { key: 'p1|', name: 'Largo', unitPrice: 1000, quantity: 4, customDescription: null },
     ]);
+  });
+
+  test('aynı ürün farklı özel talebe sahipse ayrı satır kalır', () => {
+    const o = order({
+      items: [
+        item({ quantity: 1, custom_description: 'Kapılar cam olsun' }),
+        item({ quantity: 2 }),
+      ],
+    });
+    const lines = aggregate(sourcesOf(o), 'original');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]?.customDescription).toBe('Kapılar cam olsun');
+    expect(lines[1]?.customDescription).toBeNull();
+  });
+
+  test('aynı talep aynı üründe toplanır', () => {
+    const o = order({
+      items: [
+        item({ quantity: 1, custom_description: 'Cam kapak' }),
+        item({ quantity: 3, custom_description: 'Cam kapak' }),
+      ],
+    });
+    expect(aggregate(sourcesOf(o), 'original')).toHaveLength(1);
+    expect(aggregate(sourcesOf(o), 'original')[0]?.quantity).toBe(4);
   });
 
   test('kalan hesabında iade edilen adet düşülür', () => {

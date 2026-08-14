@@ -8,6 +8,8 @@ export interface TrackedItem {
   /** Perakendecinin satış fiyatı (KATMAN 3); kayıt yoksa 0. */
   unit_price: number;
   total_price: number;
+  /** Müşterinin kendi değişiklik talebi; takip sayfasında da görünür. */
+  custom_description?: string | null;
 }
 
 export interface TrackedReturnLine {
@@ -58,6 +60,8 @@ export interface AggregatedLine {
   name: string;
   unitPrice: number;
   quantity: number;
+  /** Bu ürün için verilen özel talep; yoksa null. */
+  customDescription: string | null;
 }
 
 /** Müşteriye gösterilen dört aşama. Ara durumlar bu adımlara eşlenir. */
@@ -126,12 +130,21 @@ export function aggregate(sources: Source[], mode: 'original' | 'remaining'): Ag
           : item.quantity - returnedQtyFor(item, src.returnedItems);
       if (qty <= 0) continue;
 
-      const key = item.productId ?? item.name;
+      // Özel talep anahtarın parçası: aynı üründen biri düz biri değişiklikli
+      // sipariş edilmişse bunlar ayrı satırdır, tek satırda toplanmamalı.
+      const custom = item.custom_description?.trim() || null;
+      const key = `${item.productId ?? item.name}|${custom ?? ''}`;
       const existing = map.get(key);
       if (existing) {
         existing.quantity += qty;
       } else {
-        map.set(key, { key, name: item.name, unitPrice: item.unit_price, quantity: qty });
+        map.set(key, {
+          key,
+          name: item.name,
+          unitPrice: item.unit_price,
+          quantity: qty,
+          customDescription: custom,
+        });
       }
     }
   }

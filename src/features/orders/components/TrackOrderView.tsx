@@ -23,6 +23,11 @@ const Lines = ({ title, lines }: { title: string; lines: AggregatedLine[] }) => 
           <div>
             <p className="font-semibold text-slate-800">{l.name}</p>
             <p className="text-xs text-slate-400">{l.quantity} adet</p>
+            {l.customDescription && (
+              <p className="mt-1 text-xs leading-snug text-amber-800">
+                Talebiniz: {l.customDescription}
+              </p>
+            )}
           </div>
           {l.unitPrice > 0 && (
             <span className="font-bold text-slate-900 whitespace-nowrap">

@@ -123,6 +123,12 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
                     <td className="py-3 pr-2">
                       <p className="font-bold text-slate-800">{i.name}</p>
                       <p className="font-mono text-[10px] text-slate-400">{i.code}</p>
+                      {/* Üretim talimatı: üretici bunu görmezse iş yapılamaz. */}
+                      {i.customDescription && (
+                        <p className="mt-1 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-semibold leading-snug text-amber-900 ring-1 ring-inset ring-amber-200">
+                          Talep: {i.customDescription}
+                        </p>
+                      )}
                     </td>
                     <td className="py-3 text-center font-bold text-slate-900 whitespace-nowrap">
                       {i.quantity} Adet

@@ -37,6 +37,8 @@ export interface OrderItemRow {
   quantity: number;
   supplierUnitPrice: number;
   totalPrice: number;
+  /** Müşterinin değişiklik talebi — üretim talimatı, her iki taraf görür. */
+  customDescription: string | null;
 }
 
 export interface OrderStatusLogItem {
@@ -152,5 +154,6 @@ export function toItem(raw: unknown, isRetailer: boolean): OrderItemRow {
     quantity: qty,
     supplierUnitPrice: unitPrice,
     totalPrice: Math.round(unitPrice * qty * 100) / 100,
+    customDescription: nullable(i.custom_description),
   };
 }

@@ -135,17 +135,24 @@ export function LedgerTable({
                           {e.itemsSnapshot && e.itemsSnapshot.length > 0 ? (
                             <ul className="space-y-1.5 pl-1">
                               {e.itemsSnapshot.map((item, idx) => (
-                                <li key={idx} className="flex items-center gap-2 text-slate-800 font-medium">
-                                  <span className="text-slate-400">•</span>
-                                  <span>{item.name}</span>
-                                  {item.code && <span className="font-mono text-slate-400">({item.code})</span>}
-                                  <span className="font-bold text-slate-900 bg-slate-200/70 px-2 py-0.5 rounded text-[11px]">
-                                    x{item.quantity}
-                                  </span>
-                                  {item.unitPrice !== undefined && item.unitPrice > 0 && (
-                                    <span className="text-slate-500 text-[11px] ml-auto font-mono">
-                                      {formatMoney(item.unitPrice)} / Adet
+                                <li key={idx} className="text-slate-800 font-medium">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-slate-400">•</span>
+                                    <span>{item.name}</span>
+                                    {item.code && <span className="font-mono text-slate-400">({item.code})</span>}
+                                    <span className="font-bold text-slate-900 bg-slate-200/70 px-2 py-0.5 rounded text-[11px]">
+                                      x{item.quantity}
                                     </span>
+                                    {item.unitPrice !== undefined && item.unitPrice > 0 && (
+                                      <span className="text-slate-500 text-[11px] ml-auto font-mono">
+                                        {formatMoney(item.unitPrice)} / Adet
+                                      </span>
+                                    )}
+                                  </div>
+                                  {item.customDescription && (
+                                    <p className="ml-4 mt-0.5 text-[11px] font-semibold text-amber-800">
+                                      Talep: {item.customDescription}
+                                    </p>
                                   )}
                                 </li>
                               ))}
