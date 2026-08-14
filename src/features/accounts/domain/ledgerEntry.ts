@@ -20,6 +20,8 @@ export interface LedgerItemSnapshot {
   total?: number | undefined;
   /** Müşterinin değişiklik talebi — üretim talimatı, fiyat taşımaz. */
   customDescription?: string | undefined;
+  /** Özel talep için üreticinin eklediği birim ek ücret (eksi ise indirim). */
+  priceDifference?: number | undefined;
 }
 
 export interface LedgerEntry {
@@ -75,6 +77,7 @@ export function toEntry(raw: unknown): LedgerEntry {
       unitPrice: item.unit_price !== undefined ? num(item.unit_price) : undefined,
       total: item.total !== undefined ? num(item.total) : undefined,
       customDescription: str(item.custom_description) || undefined,
+      priceDifference: item.price_difference ? num(item.price_difference) : undefined,
     };
   });
 

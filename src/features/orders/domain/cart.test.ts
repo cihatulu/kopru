@@ -48,6 +48,31 @@ describe('sepet üretici bazlıdır', () => {
   });
 });
 
+describe('özel talep fiyat farkı', () => {
+  test('fark ÜRETİCİ toplamına girer — işi üretici yapar, ücreti o ister', () => {
+    const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 1, priceDifference: 3000 });
+    expect(cartTotals([l]).supplierTotal).toBe(23000);
+  });
+
+  test('fark perakende toplamına da yansır; kâr değişmez', () => {
+    const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 1, priceDifference: 3000 });
+    const t = cartTotals([l]);
+    expect(t.retailTotal).toBe(43000);
+    // Fark aradan geçer: perakendeci ek ücreti öder ve müşterisinden alır.
+    expect(t.expectedProfit).toBe(20000);
+  });
+
+  test('fark birim başınadır, adetle çarpılır', () => {
+    const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 2, priceDifference: 3000 });
+    expect(cartTotals([l]).supplierTotal).toBe(46000);
+  });
+
+  test('eksi fark indirimdir', () => {
+    const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 1, priceDifference: -2000 });
+    expect(cartTotals([l]).supplierTotal).toBe(18000);
+  });
+});
+
 describe('lineTotal', () => {
   test('birim × adet, kuruşa yuvarlanır', () => {
     expect(lineTotal(line())).toBe(18000);
@@ -76,12 +101,13 @@ describe('cartTotals', () => {
     expect(t.itemCount).toBe(6);
   });
 
-  test('fiyat farkı YALNIZ perakende tarafını etkiler', () => {
-    // Müşteriye özel talebin ücreti üreticinin fiyatını değiştirmez.
+  test('fiyat farkı HER İKİ tarafı da etkiler', () => {
+    // Özel talebi üretici üretir ve ek ücreti üretici ister; perakendeci de
+    // bunu satış fiyatına yansıtır. Fark aradan geçer, kâra dokunmaz.
     const t = cartTotals([line({ priceDifference: 1000 })]);
-    expect(t.supplierTotal).toBe(12000);
+    expect(t.supplierTotal).toBe(14000);
     expect(t.retailTotal).toBe(20000);
-    expect(t.expectedProfit).toBe(8000);
+    expect(t.expectedProfit).toBe(6000);
   });
 
   test('boş sepette toplamlar sıfır', () => {

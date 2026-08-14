@@ -10,14 +10,12 @@ interface Props {
 /**
  * Sipariş özeti.
  *
- * BAĞLAYICI SAYI "üreticiye ödenecek" tutardır: cariye borç olarak o yazılır.
- * Beklenen ciro ve kâr perakendecinin kendi satış fiyatından (KATMAN 3) çıkar
- * ve üreticiye HİÇ gitmez (A4). Eskiden özet yalnız perakende toplamını
- * gösteriyordu; kullanıcı iki katı borçlandığını sanıyordu.
+ * YALNIZ MÜŞTERİ TUTARI GÖSTERİLİR. Sepet ekranı satış sırasında son
+ * tüketiciye dönük duruyor; "üreticiye ödenecek" ve "beklenen kâr" burada
+ * yazarken müşteri perakendecinin alış fiyatını ve kârını okuyabiliyordu.
  *
- * İskonto burada gösterilmez: uygulanan oran `place_order_atomic` içinde
- * ilişkinin `discount_rate` değerinden hesaplanır (A5 — iskontoyu üretici
- * belirler) ve `supplierUnitPrice` zaten iskontolu gelir.
+ * Bu iki sayı kaybolmuyor: sipariş verildikten sonra Siparişlerim detayında
+ * ve Cari Hesabım ekranında görünür — ikisi de müşterinin önünde açılmaz.
  */
 export function CartSummaryCard({ totals, supplierName }: Props) {
   return (
@@ -37,30 +35,16 @@ export function CartSummaryCard({ totals, supplierName }: Props) {
           </div>
         )}
 
-        <div className="flex justify-between items-center border-t border-slate-100 pt-3">
-          <span className="text-sm font-bold text-slate-800">Üreticiye Ödenecek</span>
-          <span className="text-xl font-bold text-slate-900">
-            {formatMoney(totals.supplierTotal)}
-          </span>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-slate-500">Ürün adedi</span>
+          <span className="font-semibold text-slate-700">{totals.itemCount} adet</span>
         </div>
-        <p className="text-[11px] text-slate-400 -mt-1">Cari hesabınıza borç olarak bu tutar işlenir.</p>
 
-        <div className="border-t border-slate-100 pt-3 space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-500">Beklenen ciro</span>
-            <span className="font-semibold text-slate-700">{formatMoney(totals.retailTotal)}</span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-500">Beklenen kâr</span>
-            <span
-              className={`font-bold ${totals.expectedProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-            >
-              {formatMoney(totals.expectedProfit)}
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-400">
-            Satış fiyatınız ve kârınız yalnız size görünür; üreticiye iletilmez.
-          </p>
+        <div className="flex justify-between items-center border-t border-slate-100 pt-3">
+          <span className="text-sm font-bold text-slate-800">Sipariş Tutarı</span>
+          <span className="text-xl font-bold text-slate-900">
+            {formatMoney(totals.retailTotal)}
+          </span>
         </div>
       </div>
     </div>

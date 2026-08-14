@@ -31,7 +31,12 @@ export interface CartLine {
   retailPrice?: number | undefined;
   /** Müşteri değişiklik talebi açıklaması (opsiyonel). */
   customDescription?: string | undefined;
-  /** Müşteri isteğine özel fiyat farkı (₺, opsiyonel). */
+  /**
+   * Özel talep için ÜRETİCİNİN istediği birim ek ücret (eksi ise indirim).
+   *
+   * KATMAN 2'ye aittir: işi üretici yapar, ücreti üretici ister, cariye o
+   * yazılır. Perakendeci bunu kendi satış fiyatına da yansıtır.
+   */
   priceDifference?: number | undefined;
 }
 
@@ -67,12 +72,13 @@ export function lineTotal(line: CartLine): number {
  * Eskiden `supplierTotal` de ekranda görünen (yani PERAKENDE) fiyattan
  * hesaplanıyordu; sepet "₺240.000" derken cariye ₺120.000 yazılıyordu.
  *
- * Fiyat farkı yalnız perakende tarafını etkiler: müşteriye özel bir talebin
- * ücreti üreticinin fiyatını değiştirmez.
+ * Fiyat farkı HER İKİ toplamı da etkiler: özel talebi üretici üretir ve ek
+ * ücreti üretici ister (cariye girer), perakendeci de bunu kendi satış
+ * fiyatına yansıtır. Kâr farktan etkilenmez — aradan geçer.
  */
 export function cartTotals(lines: CartLine[]): CartTotals {
   const supplierTotal = round2(
-    lines.reduce((sum, l) => sum + l.supplierUnitPrice * l.quantity, 0),
+    lines.reduce((sum, l) => sum + (l.supplierUnitPrice + (l.priceDifference || 0)) * l.quantity, 0),
   );
   const retailTotal = round2(lines.reduce((sum, l) => sum + lineTotal(l), 0));
 
