@@ -488,8 +488,10 @@ export type Database = {
       order_items: {
         Row: {
           created_at: string
+          custom_description: string | null
           id: string
           order_id: string
+          price_difference: number
           product_id: string | null
           product_snapshot: Json
           quantity: number
@@ -498,8 +500,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_description?: string | null
           id?: string
           order_id: string
+          price_difference?: number
           product_id?: string | null
           product_snapshot?: Json
           quantity: number
@@ -508,8 +512,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_description?: string | null
           id?: string
           order_id?: string
+          price_difference?: number
           product_id?: string | null
           product_snapshot?: Json
           quantity?: number
@@ -1982,6 +1988,10 @@ export type Database = {
         Args: { p_relationship_id: string }
         Returns: undefined
       }
+      delete_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       delete_manual_transaction: {
         Args: { p_transaction_id: string }
         Returns: boolean
@@ -2193,6 +2203,10 @@ export type Database = {
         }
         Returns: string
       }
+      set_catalog_permission: {
+        Args: { p_can_edit: boolean; p_relationship_id: string }
+        Returns: undefined
+      }
       set_counterparty_discount: {
         Args: { p_discount_rate: number; p_relationship_id: string }
         Returns: {
@@ -2332,7 +2346,25 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
-      track_order: { Args: { p_token: string }; Returns: Json }
+      track_order: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          customer_name: string
+          history: Json
+          items: Json
+          note: string
+          order_no: string
+          payments: Json
+          returned_items: Json
+          shipments: Json
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }[]
+      }
+      track_order_history: { Args: { p_order_id: string }; Returns: Json }
+      track_order_items: { Args: { p_order_id: string }; Returns: Json }
+      track_order_returns: { Args: { p_order_id: string }; Returns: Json }
       update_counterparty_profile: {
         Args: {
           p_address?: string
