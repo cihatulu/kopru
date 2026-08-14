@@ -129,15 +129,19 @@ export function SupplierInvitations({
                         ) : (
                           /* Silme YALNIZ kapanmış davette (kural 16): yaşayan
                              bir bağlantı listeden sessizce kaldırılamaz. */
+                          /* Onay hali `danger` VARYANTIDIR, className ile
+                             boyanmaz: `secondary`nin `bg-white`'ı aynı
+                             özgüllükte çakışıp zemini beyaz bırakıyor, beyaz
+                             yazıyla birlikte düğme boş görünüyordu. */
                           <Button
                             size="sm"
-                            variant="secondary"
+                            variant={confirmId === inv.id ? 'danger' : 'secondary'}
                             onClick={() => askDelete(inv.id)}
-                            className={`text-xs font-bold ${
+                            className={
                               confirmId === inv.id
-                                ? 'border-rose-300 bg-rose-600 text-white hover:bg-rose-700'
-                                : 'border-rose-200 text-rose-600 hover:bg-rose-50'
-                            }`}
+                                ? 'text-xs font-bold'
+                                : 'border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold'
+                            }
                             disabled={deleting}
                           >
                             {confirmId === inv.id ? 'Emin misiniz?' : 'Sil'}
