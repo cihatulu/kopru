@@ -39,6 +39,11 @@ export interface OrderItemRow {
   totalPrice: number;
   /** Müşterinin değişiklik talebi — üretim talimatı, her iki taraf görür. */
   customDescription: string | null;
+  /**
+   * `supplierUnitPrice` İÇİNDEKİ özel talep farkı — yalnız kırılım için.
+   * Her iki katmanda da fiyata dahildir; toplama ayrıca eklenmez.
+   */
+  priceDifference: number;
 }
 
 export interface OrderStatusLogItem {
@@ -155,5 +160,6 @@ export function toItem(raw: unknown, isRetailer: boolean): OrderItemRow {
     supplierUnitPrice: unitPrice,
     totalPrice: Math.round(unitPrice * qty * 100) / 100,
     customDescription: nullable(i.custom_description),
+    priceDifference: num(i.price_difference),
   };
 }

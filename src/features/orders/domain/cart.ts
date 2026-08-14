@@ -164,12 +164,22 @@ export function setRetailPrice(
   return lines.map((l) => (match(l) ? { ...l, retailPrice } : l));
 }
 
-/** `place_order_atomic`'in beklediği yük. */
+/**
+ * `place_order_atomic`'in beklediği yük.
+ *
+ * `retail_unit_price` HER ŞEY DAHİL gider: taban perakende fiyatı + özel talep
+ * farkı. Sunucu bu tutarı olduğu gibi yazar, üstüne bir şey EKLEMEZ.
+ *
+ * Eskiden farkı sunucu ekliyordu; `20260814020000` farkı KATMAN 2'ye taşırken
+ * o toplamayı kaldırdı ama istemci devralmadı. Sonuç: fark üreticiye borç
+ * yazılıyor, perakende tarafında yok sayılıyordu — takip sayfası, müşteri
+ * carisi ve sipariş listesi üçü birden farkı eksik gösteriyordu.
+ */
 export function toOrderItems(lines: CartLine[]) {
   return lines.map((l) => ({
     product_id: l.productId,
     quantity: l.quantity,
-    retail_unit_price: l.retailPrice ?? l.unitPrice,
+    retail_unit_price: round2((l.retailPrice ?? l.unitPrice) + (l.priceDifference ?? 0)),
     ...(l.customDescription ? { custom_description: l.customDescription } : {}),
     ...(l.priceDifference ? { price_difference: l.priceDifference } : {}),
   }));

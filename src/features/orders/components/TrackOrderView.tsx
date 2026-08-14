@@ -26,6 +26,15 @@ const Lines = ({ title, lines }: { title: string; lines: AggregatedLine[] }) => 
             {l.customDescription && (
               <p className="mt-1 text-xs leading-snug text-amber-800">
                 Talebiniz: {l.customDescription}
+                {/* Fark tutara zaten dahil; burada yalnız "bu sayı neden böyle"
+                    sorusunu yanıtlar. Eksi fark indirimdir, işaretiyle yazılır. */}
+                {l.priceDifference !== 0 && (
+                  <span className="font-semibold">
+                    {' '}
+                    ({l.priceDifference > 0 ? '+' : '−'}
+                    {formatMoney(Math.abs(l.priceDifference))})
+                  </span>
+                )}
               </p>
             )}
           </div>

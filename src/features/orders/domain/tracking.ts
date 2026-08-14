@@ -10,6 +10,11 @@ export interface TrackedItem {
   total_price: number;
   /** Müşterinin kendi değişiklik talebi; takip sayfasında da görünür. */
   custom_description?: string | null;
+  /**
+   * `unit_price` İÇİNDEKİ özel talep farkı — yalnız kırılım için.
+   * Toplama ayrıca eklenmez; eklenirse fark iki kez sayılır.
+   */
+  price_difference?: number | null;
 }
 
 export interface TrackedReturnLine {
@@ -62,6 +67,8 @@ export interface AggregatedLine {
   quantity: number;
   /** Bu ürün için verilen özel talep; yoksa null. */
   customDescription: string | null;
+  /** `unitPrice` içindeki talep farkı; kırılım metni için. 0 ise gösterilmez. */
+  priceDifference: number;
 }
 
 /** Müşteriye gösterilen dört aşama. Ara durumlar bu adımlara eşlenir. */
@@ -144,6 +151,7 @@ export function aggregate(sources: Source[], mode: 'original' | 'remaining'): Ag
           unitPrice: item.unit_price,
           quantity: qty,
           customDescription: custom,
+          priceDifference: Number(item.price_difference ?? 0),
         });
       }
     }

@@ -71,8 +71,28 @@ describe('aggregate', () => {
     });
     // Kısmi sevkiyatta adet çocuğa taşınır; orijinal toplam yine 4 olmalı.
     expect(aggregate(sourcesOf(o), 'original')).toEqual([
-      { key: 'p1|', name: 'Largo', unitPrice: 1000, quantity: 4, customDescription: null },
+      {
+        key: 'p1|',
+        name: 'Largo',
+        unitPrice: 1000,
+        quantity: 4,
+        customDescription: null,
+        priceDifference: 0,
+      },
     ]);
+  });
+
+  test('talep farkı kırılım için taşınır, birim fiyata TEKRAR eklenmez', () => {
+    // `unit_price` (= retail_unit_price) farkı zaten içerir. Burada bir kez daha
+    // toplansaydı müşteri 45.000 yerine 50.000 görürdü.
+    const o = order({
+      items: [
+        item({ quantity: 1, unit_price: 45000, custom_description: 'Cam kapak', price_difference: 5000 }),
+      ],
+    });
+    const line = aggregate(sourcesOf(o), 'original')[0];
+    expect(line?.unitPrice).toBe(45000);
+    expect(line?.priceDifference).toBe(5000);
   });
 
   test('aynı ürün farklı özel talebe sahipse ayrı satır kalır', () => {

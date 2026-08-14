@@ -82,6 +82,28 @@ describe('özel talep fiyat farkı', () => {
     );
     expect(toOrderItems([line({ priceDifference: 0 })])[0]).not.toHaveProperty('price_difference');
   });
+
+  test('RPC yüküne giden perakende fiyat HER ŞEY DAHİLDİR', () => {
+    // Asıl hata: fark KATMAN 2'ye taşınırken sunucudaki toplama kaldırıldı,
+    // istemci devralmadı. Sipariş üreticiye 25.000 borç yazarken müşteri
+    // tarafı 40.000 kalıyordu — takip sayfası, müşteri carisi ve sipariş
+    // listesi farkı topluca yutuyordu.
+    const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 1, priceDifference: 5000 });
+    expect(toOrderItems([l])[0]).toMatchObject({
+      retail_unit_price: 45000,
+      price_difference: 5000,
+    });
+  });
+
+  test('perakendeci kendi satış fiyatını yazdıysa fark onun üstüne biner', () => {
+    const l = line({ retailPrice: 50000, priceDifference: 5000 });
+    expect(toOrderItems([l])[0]).toHaveProperty('retail_unit_price', 55000);
+  });
+
+  test('eksi fark perakende fiyatı da düşürür', () => {
+    const l = line({ unitPrice: 40000, priceDifference: -2000 });
+    expect(toOrderItems([l])[0]).toHaveProperty('retail_unit_price', 38000);
+  });
 });
 
 describe('lineTotal', () => {
