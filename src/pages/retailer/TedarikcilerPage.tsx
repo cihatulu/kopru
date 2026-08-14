@@ -10,6 +10,7 @@ import {
   SupplierTable,
   SupplierInvitations,
   InviteSupplierModal,
+  InviteSentDialog,
   CustomerDialog,
   EditCustomerDialog,
   ResetCustomerPasswordDialog,
@@ -82,10 +83,15 @@ export default function TedarikcilerPage() {
       {a.dialog === 'invite' && (
         <InviteSupplierModal
           pending={invites.create.isPending}
+          errorMessage={
+            invites.create.error instanceof Error ? invites.create.error.message : undefined
+          }
           onClose={a.close}
           onSubmit={(values) => invites.send(values, a.close)}
         />
       )}
+
+      {invites.sent && <InviteSentDialog sent={invites.sent} onClose={invites.clearSent} />}
 
       {a.dialog === 'edit' && a.target && (
         <EditCustomerDialog

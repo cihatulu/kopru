@@ -13,6 +13,17 @@ export interface InvitePreview {
   authorizedName: string | null;
   vknTc: string | null;
   expiresAt: string;
+  /**
+   * Hesap daveti gönderen tarafından ZATEN kuruldu mu?
+   *
+   * Kurulduysa doldurulacak form yoktur; ekran yalnız giriş bilgilerini
+   * gösterir. Şifre burada DÖNMEZ — WhatsApp mesajında iletilmiştir.
+   */
+  provisioned?: boolean;
+  /** Misafir girişinde istenen sponsor numarası: davet edenin VKN'si. */
+  sponsorVkn?: string;
+  /** Davet edilenin giriş kodu. */
+  userCode?: string;
 }
 
 export interface AcceptResult {

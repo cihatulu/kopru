@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   AcceptInviteFormView,
   AcceptSuccess,
+  InviteReadyPanel,
   InviteError,
   isTerminalInviteError,
   useAcceptInvitation,
@@ -61,7 +62,10 @@ export default function InvitePage() {
           <AcceptSuccess result={result} inviterName={preview.data.inviterName} />
         )}
 
-        {preview.data && !result && (
+        {/* Hesabı davet eden kurduysa doldurulacak form yoktur. */}
+        {preview.data?.provisioned && !result && <InviteReadyPanel preview={preview.data} />}
+
+        {preview.data && !preview.data.provisioned && !result && (
           <>
             <header className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

@@ -14,6 +14,8 @@ export interface CreateCustomerInput {
   userCode?: string;
   /** Boş bırakılırsa giriş hesabı açılmaz — yalnız cari kart oluşur. */
   password?: string;
+  /** Davet akışı: WhatsApp ile paylaşılacak bilgi bağlantısı da üretilsin. */
+  withInviteLink?: boolean;
 }
 
 export interface CreateCustomerResult {
@@ -26,6 +28,8 @@ export interface CreateCustomerResult {
   status: RelationshipStatus;
   accountCreated: boolean;
   userCode?: string;
+  /** Davet bilgi sayfasının jetonu; yalnız `withInviteLink` istendiyse dolu. */
+  inviteToken?: string | null;
 }
 
 const MESSAGES: Record<string, string> = {

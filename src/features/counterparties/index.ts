@@ -19,6 +19,7 @@ export {
 export { useCounterpartyActions } from './api/useCounterpartyActions';
 export type { SupplierDialog } from './api/useCounterpartyActions';
 export { useSupplierInvites } from './api/useSupplierInvites';
+export type { InviteSent } from './api/useSupplierInvites';
 export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
 export { useToggleCatalogPermission } from './api/useCatalogPermission';
 export type {
@@ -65,6 +66,7 @@ export { ResetCustomerPasswordDialog } from './components/ResetCustomerPasswordD
 export { DeleteCounterpartyConfirm } from './components/DeleteCounterpartyConfirm';
 export { InviteSupplierModal } from './components/InviteSupplierModal';
 export type { InviteSupplierValues } from './components/InviteSupplierModal';
+export { InviteSentDialog } from './components/InviteSentDialog';
 export { SupplierInvitations } from './components/SupplierInvitations';
 export { OutgoingRequests } from './components/OutgoingRequests';
 export { SupplierTable } from './components/SupplierTable';

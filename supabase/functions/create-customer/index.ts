@@ -29,6 +29,52 @@ interface Body {
   userCode?: string;
   /** Boş bırakılırsa hesap açılmaz — yalnız cari kart oluşur. */
   password?: string;
+  /**
+   * WhatsApp ile paylaşılacak bilgi bağlantısı istenip istenmediği.
+   *
+   * Davet akışında hesap ZATEN burada kurulur; link kabul etmeye değil, karşı
+   * tarafa giriş bilgilerini göstermeye yarar. Bu yüzden davet satırı
+   * kullanılmış olarak yazılır — kimse onunla ikinci bir kayıt açamaz.
+   */
+  withInviteLink?: boolean;
+}
+
+/** Davet jetonu — tahmin edilemez olmak zorunda, istemciden GELMEZ. */
+function newInviteToken(): string {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Bilgi sayfası bağlantısı için kullanılmış davet satırı yazar. */
+async function createInviteLink(
+  inviterOrgId: string,
+  orgId: string,
+  body: Body,
+): Promise<string | null> {
+  const token = newInviteToken();
+  const now = new Date();
+  const expires = new Date(now.getTime() + 30 * 86_400_000);
+
+  const { error } = await admin.from('invitations').insert({
+    token,
+    inviter_org_id: inviterOrgId,
+    company_name: body.companyName ?? null,
+    phone: body.phone ?? null,
+    authorized_name: body.authorizedName ?? null,
+    vkn_tc: (body.vknTc ?? '').replace(/[\s.-]/g, '') || null,
+    discount_rate: 0,
+    expires_at: expires.toISOString(),
+    used_at: now.toISOString(),
+    used_by_org_id: orgId,
+  });
+
+  if (error) {
+    // Bağlantı üretilemese de firma ve hesap kuruldu; işlem başarısız sayılmaz.
+    console.error('davet baglantisi yazilamadi', error);
+    return null;
+  }
+  return token;
 }
 
 function validPassword(p: string): boolean {
@@ -94,6 +140,13 @@ Deno.serve(async (req) => {
       await admin.from('organizations').update({ address: body.address }).eq('id', orgId);
     }
 
+    // Bağlantı isteniyorsa çağıranın org'u gerekir; RPC yalnız karşı tarafı döner.
+    let inviteToken: string | null = null;
+    if (body.withInviteLink) {
+      const { data: myOrg } = await caller.rpc('get_my_org_id');
+      if (myOrg) inviteToken = await createInviteLink(String(myOrg), orgId, body);
+    }
+
     // 2) Şifre verilmediyse yalnız cari kart açılır; giriş hesabı istenmemiştir.
     if (!password) {
       return json({
@@ -101,6 +154,7 @@ Deno.serve(async (req) => {
         alreadyExisted: Boolean(row.already_existed),
         status: row.status,
         accountCreated: false,
+        inviteToken,
       });
     }
 
@@ -120,6 +174,7 @@ Deno.serve(async (req) => {
         status: row.status,
         accountCreated: false,
         userCode: existing.user_code,
+        inviteToken,
       });
     }
 
@@ -160,6 +215,7 @@ Deno.serve(async (req) => {
       status: row.status,
       accountCreated: true,
       userCode,
+      inviteToken,
     });
   } catch (e) {
     console.error('create-customer failed', e);

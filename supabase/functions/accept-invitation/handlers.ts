@@ -3,7 +3,7 @@ import { json } from '../_shared/cors.ts';
 
 const INVITE_COLUMNS =
   'id, token, inviter_org_id, company_name, email, phone, authorized_name,' +
-  ' vkn_tc, discount_rate, expires_at, used_at, revoked_at';
+  ' vkn_tc, discount_rate, expires_at, used_at, used_by_org_id, revoked_at';
 
 /** Davetin kullanılabilir olup olmadığı — tek yerde karar verilir. */
 function invalidReason(row: {
@@ -47,16 +47,22 @@ export async function peekInvitation(admin: SupabaseClient, token: string): Prom
 
   if (!invite) return json({ error: 'INVITATION_NOT_FOUND' }, 404);
 
-  const reason = invalidReason(invite);
-  if (reason) return json({ error: reason }, 410);
-
   const { data: inviter } = await admin
     .from('organizations')
-    .select('id, kind, company_name')
+    .select('id, kind, company_name, vkn_tc')
     .eq('id', invite.inviter_org_id)
     .maybeSingle();
 
   if (!inviter) return json({ error: 'INVITATION_NOT_FOUND' }, 404);
+
+  // Hesabı davet eden kurduysa link kabul etmeye değil, giriş bilgilerini
+  // göstermeye yarar. "Kullanıldı" hatası vermek yerine bilgileri döneriz.
+  if (invite.used_at && invite.used_by_org_id) {
+    return json(await provisionedInfo(admin, invite, inviter));
+  }
+
+  const reason = invalidReason(invite);
+  if (reason) return json({ error: reason }, 410);
 
   return json({
     inviterName: inviter.company_name,
@@ -70,6 +76,43 @@ export async function peekInvitation(admin: SupabaseClient, token: string): Prom
     vknTc: invite.vkn_tc,
     expiresAt: invite.expires_at,
   });
+}
+
+/**
+ * Kurulmuş hesabın giriş bilgileri.
+ *
+ * ŞİFRE BURADA DÖNMEZ ve hiçbir yerde saklanmaz — daveti gönderen onu WhatsApp
+ * mesajında kendi iletir. Misafir girişi sponsor vergi numarası istediği için
+ * davet edenin VKN'si de gösterilir; kullanıcının ilk girişte takıldığı tek yer
+ * orasıydı.
+ */
+async function provisionedInfo(
+  admin: SupabaseClient,
+  invite: { used_by_org_id: string | null; company_name: string | null },
+  inviter: { id: string; kind: string; company_name: string; vkn_tc: string | null },
+) {
+  const { data: owner } = await admin
+    .from('users')
+    .select('user_code')
+    .eq('org_id', invite.used_by_org_id)
+    .eq('org_role', 'owner')
+    .maybeSingle();
+
+  const { data: org } = await admin
+    .from('organizations')
+    .select('company_name')
+    .eq('id', invite.used_by_org_id)
+    .maybeSingle();
+
+  return {
+    provisioned: true,
+    inviterName: inviter.company_name,
+    inviterKind: inviter.kind,
+    targetKind: inviter.kind === 'manufacturer' ? 'retailer' : 'manufacturer',
+    sponsorVkn: inviter.vkn_tc ?? '',
+    userCode: owner?.user_code ?? '',
+    companyName: org?.company_name ?? invite.company_name,
+  };
 }
 
 interface AcceptBody {
