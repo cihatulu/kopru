@@ -1,7 +1,11 @@
 // features/invitations PUBLIC YÜZEYİ (A20).
 
 export { useInvitations } from './api/useInvitations';
-export { useCreateInvitation, useRevokeInvitation } from './api/useInviteMutations';
+export {
+  useCreateInvitation,
+  useRevokeInvitation,
+  useDeleteInvitation,
+} from './api/useInviteMutations';
 export type { CreateInviteInput } from './api/useInviteMutations';
 export { useInvitePreview, useAcceptInvitation, InviteError } from './api/useInviteAcceptance';
 export type { InvitePreview, AcceptResult, AcceptInput } from './api/useInviteAcceptance';

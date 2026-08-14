@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { useInvitations, useRevokeInvitation } from '@/features/invitations';
+import {
+  useDeleteInvitation,
+  useInvitations,
+  useRevokeInvitation,
+} from '@/features/invitations';
 import { buildInviteMessage, inviteUrl, whatsappShareUrl } from '@/features/invitations';
 import { useCreateCustomer } from './useCustomerMutations';
 import { useAuthSession } from '@/features/auth';
@@ -32,6 +36,7 @@ export function useSupplierInvites() {
   const { data: user } = useAuthSession();
   const list = useInvitations();
   const revoke = useRevokeInvitation();
+  const remove = useDeleteInvitation();
   const create = useCreateCustomer();
   const [sent, setSent] = useState<InviteSent | null>(null);
 
@@ -40,6 +45,7 @@ export function useSupplierInvites() {
     loading: list.isPending,
     create,
     revoke,
+    remove,
     sent,
     clearSent: () => setSent(null),
 

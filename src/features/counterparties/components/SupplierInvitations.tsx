@@ -7,7 +7,10 @@ interface Props {
   invitations: Invitation[];
   loading: boolean;
   revoking: boolean;
+  deleting: boolean;
   onRevoke: (invitationId: string) => void;
+  /** Satırı kalıcı olarak kaldırır. Yalnız kapanmış davetlerde çağrılır. */
+  onDelete: (invitationId: string) => void;
 }
 
 const TH = 'px-5 py-3.5';
@@ -25,14 +28,33 @@ const STATE_LABEL: Record<string, string> = {
 };
 
 /** WhatsApp üzerinden gönderilen üretici davetlerinin listesi. */
-export function SupplierInvitations({ invitations, loading, revoking, onRevoke }: Props) {
+export function SupplierInvitations({
+  invitations,
+  loading,
+  revoking,
+  deleting,
+  onRevoke,
+  onDelete,
+}: Props) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const copyLink = (token: string, id: string) => {
     void navigator.clipboard.writeText(inviteUrl(token, window.location.origin)).then(() => {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  // Silme geri alınamaz: ilk tıklama düğmeyi onaya çevirir, ikincisi siler.
+  const askDelete = (id: string) => {
+    if (confirmId !== id) {
+      setConfirmId(id);
+      setTimeout(() => setConfirmId((cur) => (cur === id ? null : cur)), 4000);
+      return;
+    }
+    setConfirmId(null);
+    onDelete(id);
   };
 
   return (
@@ -83,26 +105,43 @@ export function SupplierInvitations({ invitations, loading, revoking, onRevoke }
                     </td>
                     <td className="px-5 py-4 text-right pr-6">
                       <div className="flex justify-end gap-2 text-xs font-medium">
-                        {state === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => copyLink(inv.token, inv.id)}
-                              className="text-xs font-bold"
-                            >
-                              {copiedId === inv.id ? 'Kopyalandı!' : 'Linki Kopyala'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => onRevoke(inv.id)}
-                              className="border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold"
-                              disabled={revoking}
-                            >
-                              İptal Et
-                            </Button>
-                          </>
+                        {/* Kopyalama her durumda: davet linki karşı tarafta
+                            kaybolduğunda tek geri alma yolu budur. */}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => copyLink(inv.token, inv.id)}
+                          className="text-xs font-bold"
+                        >
+                          {copiedId === inv.id ? 'Kopyalandı!' : 'Linki Kopyala'}
+                        </Button>
+
+                        {state === 'pending' ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => onRevoke(inv.id)}
+                            className="border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold"
+                            disabled={revoking}
+                          >
+                            İptal Et
+                          </Button>
+                        ) : (
+                          /* Silme YALNIZ kapanmış davette (kural 16): yaşayan
+                             bir bağlantı listeden sessizce kaldırılamaz. */
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => askDelete(inv.id)}
+                            className={`text-xs font-bold ${
+                              confirmId === inv.id
+                                ? 'border-rose-300 bg-rose-600 text-white hover:bg-rose-700'
+                                : 'border-rose-200 text-rose-600 hover:bg-rose-50'
+                            }`}
+                            disabled={deleting}
+                          >
+                            {confirmId === inv.id ? 'Emin misiniz?' : 'Sil'}
+                          </Button>
                         )}
                       </div>
                     </td>

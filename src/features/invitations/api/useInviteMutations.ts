@@ -76,3 +76,22 @@ export function useRevokeInvitation() {
     onSuccess: invalidate,
   });
 }
+
+/**
+ * Kapanmış davet satırını listeden kaldırır — GERİ ALINAMAZ.
+ *
+ * Yalnız pasifleşmiş davet silinebilir (kural 16); yaşayan daveti sunucu
+ * `INVITATION_ACTIVE` ile reddeder, önce iptal edilmesi gerekir.
+ */
+export function useDeleteInvitation() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (invitationId: string) => {
+      const { error } = await supabase.rpc('delete_invitation', rpcArgs({
+        p_invitation_id: invitationId,
+      }));
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}

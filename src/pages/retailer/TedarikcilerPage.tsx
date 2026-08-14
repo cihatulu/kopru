@@ -64,7 +64,9 @@ export default function TedarikcilerPage() {
         invitations={invites.invitations}
         loading={invites.loading}
         revoking={invites.revoke.isPending}
+        deleting={invites.remove.isPending}
         onRevoke={(invitationId) => invites.revoke.mutate(invitationId)}
+        onDelete={(invitationId) => invites.remove.mutate(invitationId)}
       />
 
       {a.dialog === 'add' && (
