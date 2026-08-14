@@ -74,10 +74,21 @@ export interface OrderDetail extends OrderRow {
   hasUnfulfilledBalance: boolean;
 }
 
-/** Gömülü tek satırlık diziden ilk kaydı okur. */
+/**
+ * Gömülü tek kaydı okur.
+ *
+ * PostgREST bire-bir gömmeyi kimi yerde tek elemanlı DİZİ, kimi yerde doğrudan
+ * NESNE döndürür (ilişkiyi tekil algıladığında). Yalnız diziyi karşılamak,
+ * `order_item_retail_prices` nesne geldiğinde kaydı görünmez yapıyordu: sipariş
+ * listesi ve detayı sipariş anındaki fiyat yerine ürünün GÜNCEL perakende
+ * fiyatına düşüyor, özel talep farkı da böylece ekranda kayboluyordu.
+ */
 function firstOf(v: unknown): Row | undefined {
-  const arr = Array.isArray(v) ? (v as unknown[]) : [];
-  return arr.length > 0 ? nested(arr[0]) : undefined;
+  if (Array.isArray(v)) {
+    const arr = v as unknown[];
+    return arr.length > 0 ? nested(arr[0]) : undefined;
+  }
+  return v && typeof v === 'object' ? (v as Row) : undefined;
 }
 
 /**
