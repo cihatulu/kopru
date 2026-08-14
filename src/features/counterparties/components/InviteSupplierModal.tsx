@@ -37,11 +37,22 @@ function Field({
   type?: string;
   placeholder?: string;
   inputMode?: 'numeric' | 'tel';
+  autoComplete?: string;
+  name?: string;
 }) {
   return (
     <div>
       <label className={LABEL}>{label}</label>
-      <input {...rest} value={value} onChange={(e) => onChange(e.target.value)} className={INPUT} />
+      <input
+        {...rest}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={INPUT}
+        // Chrome kayıtlı GİRİŞ bilgisini bu forma yapıştırıyordu: burada
+        // doldurulan kimlik davet EDİLENE ait, oturumu açık kullanıcıya değil.
+        data-1p-ignore
+        data-lpignore="true"
+      />
       {hint && <p className="mt-1 text-[11px] text-slate-400">{hint}</p>}
     </div>
   );
@@ -104,9 +115,11 @@ export function InviteSupplierModal({ pending, errorMessage, onClose, onSubmit }
           </div>
         )}
 
-        <form onSubmit={submit} className="space-y-4 text-left">
+        <form onSubmit={submit} autoComplete="off" className="space-y-4 text-left">
           <Field
             label="Cep Telefonu"
+            name="davet-telefon"
+            autoComplete="off"
             inputMode="tel"
             value={phone}
             onChange={setPhone}
@@ -115,20 +128,40 @@ export function InviteSupplierModal({ pending, errorMessage, onClose, onSubmit }
           />
           <Field
             label="Firma Adı"
+            name="davet-firma"
+            autoComplete="off"
             value={name}
             onChange={setName}
             placeholder="Firma Resmi Unvanı"
           />
           <Field
             label="VKN / T.C. No — Kullanıcı Kodu"
+            name="davet-vkn"
+            autoComplete="off"
             inputMode="numeric"
             value={vkn}
             onChange={setVkn}
             placeholder="Vergi No veya T.C. Kimlik"
             hint="Bu numara aynı zamanda karşı tarafın giriş kullanıcı kodudur."
           />
-          <Field label="Şifre" type="password" value={password} onChange={setPassword} />
-          <Field label="Şifre (Tekrar)" type="password" value={repeat} onChange={setRepeat} />
+          {/* `new-password`: Chrome `off`'u şifre alanlarında yok sayar, ama
+              "yeni şifre" dediğinde kayıtlı şifreyi yapıştırmaz. */}
+          <Field
+            label="Şifre"
+            type="password"
+            name="davet-sifre"
+            autoComplete="new-password"
+            value={password}
+            onChange={setPassword}
+          />
+          <Field
+            label="Şifre (Tekrar)"
+            type="password"
+            name="davet-sifre-tekrar"
+            autoComplete="new-password"
+            value={repeat}
+            onChange={setRepeat}
+          />
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <Button variant="secondary" type="button" onClick={onClose} disabled={pending}>
