@@ -207,3 +207,33 @@ olarak bu yaşandı: kullanıcı "kaydetmiyor" dedi, sebebi görünmüyordu.
 
 **Teşhis yöntemi:** Playwright ile düğmeye bas ve `rpc/...` isteğinin gidip gitmediğine
 bak. İstek hiç gitmiyorsa hata sunucuda değil, formun doğrulamasındadır.
+
+### 30. Gömülü kayıt "yok" sayılıyor — PostgREST bire-bir ilişkiyi NESNE döndürür
+**Sebep:** PostgREST bire-bir gömmeyi kimi yerde tek elemanlı **dizi**, kimi yerde doğrudan
+**nesne** döndürür (ilişkiyi tekil algıladığında). `Array.isArray` ile başlayıp diziyi
+karşılamayan okuyucu, nesne geldiğinde kaydı **görmez ve sessizce yedeğe düşer**.
+`orderMapping.ts`'te yaşandı: `order_item_retail_prices` okunamayınca sipariş listesi ve
+detayı, sipariş anında donmuş fiyat yerine ürünün **güncel** liste fiyatını gösteriyordu —
+45.000'lik sipariş 40.000, 43.000'lik sipariş de 40.000 görünüyordu.
+**Çözüm:** Gömme okuyucusu her iki biçimi de karşılasın (`finance.ts`'teki `asRows`,
+`orderMapping.ts`'teki `firstOf` bunu yapar). Yeni bir gömme yazdığında iki biçim için de
+test yaz — tip sistemi bunu yakalamaz, `unknown` üzerinden geçer.
+
+**Ders:** Yanlış sayı gösteren ekranda "yedeğe düşmüş olabilir mi" sorusunu erken sor.
+Ayırt edici belirti: **farklı** siparişlerin **aynı** tutarı göstermesi. O tutar
+çoğunlukla ürünün güncel fiyatıdır ve kaydın hiç okunmadığını söyler.
+
+### 31. Katman taşıması sonrası sözleşme kopukluğu — hesap iki tarafın da dışında kalır
+**Sebep:** Bir tutarı sunucu mu ekliyor istemci mi belirsizken katman kararı değişince
+**ikisi de eklemeyi bırakır**. `20260814020000` özel talep farkını KATMAN 3'ten KATMAN 2'ye
+taşırken RPC'deki `retail_unit_price = retail + diff` toplamasını kaldırdı; istemci
+devralmadı. Sonuç: fark üreticiye borç yazılıyor ama perakende tarafında yok sayılıyordu —
+takip sayfası, müşteri carisi ve sipariş listesi üçü birden farkı yutuyordu. Hiçbir test
+kırılmadı, çünkü sözleşmeyi kilitleyen test yoktu.
+**Çözüm:** "Bu tutarı kim ekler" sorusunu **kolon yorumunda** yaz (`retail_unit_price`
+HER ŞEY DAHİL'dir) ve karşılığını **istemci tarafında bir testle kilitle**. Katman kararı
+değiştiren her migration'da, o kolonu yazan istemci kodunu aynı commit'te gözden geçir.
+
+**Ders:** Bir alanın "dahil mi değil mi" olduğu tutara bakarak anlaşılamaz. Geçmiş veriyi
+onarırken bu yüzden genel `UPDATE` yazma — farkı zaten içeren kayıtları ikinci kez şişirir;
+etkilenen kayıtları kimlikle hedefle.
