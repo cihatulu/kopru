@@ -20,30 +20,55 @@ const item = (recorded: unknown) => ({
 });
 
 describe('kayıtlı perakende fiyatı iki gömme biçiminde de okunur', () => {
+  // Kayıtlı fiyat 45.000 her şey dahildir: ürün 40.000 + talep farkı 5.000.
   test('dizi olarak geldiğinde', () => {
     const r = toItem(item([{ retail_unit_price: 45000 }]), true);
-    expect(r.supplierUnitPrice).toBe(45000);
+    expect(r.supplierUnitPrice).toBe(40000);
     expect(r.totalPrice).toBe(45000);
   });
 
   test('NESNE olarak geldiğinde', () => {
     const r = toItem(item({ retail_unit_price: 45000 }), true);
-    expect(r.supplierUnitPrice).toBe(45000);
+    expect(r.supplierUnitPrice).toBe(40000);
     expect(r.totalPrice).toBe(45000);
   });
 
-  test('kayıt yoksa ürünün güncel perakende fiyatına düşülür', () => {
-    expect(toItem(item(null), true).supplierUnitPrice).toBe(40000);
+  test('kayıt yoksa ürünün güncel liste fiyatı TABANDIR, fark üstüne biner', () => {
+    const r = toItem(item(null), true);
+    expect(r.supplierUnitPrice).toBe(40000);
+    expect(r.totalPrice).toBe(45000);
   });
 
   test('üretici görünümünde perakende fiyatı hiç kullanılmaz (A4)', () => {
-    expect(toItem(item({ retail_unit_price: 45000 }), false).supplierUnitPrice).toBe(20000);
+    const r = toItem(item({ retail_unit_price: 45000 }), false);
+    expect(r.supplierUnitPrice).toBe(20000);
+    expect(r.totalPrice).toBe(25000);
+  });
+});
+
+describe('ürünün fiyatı sabit kalır, fark ayrı okunur', () => {
+  const discounted = (recorded: unknown, isRetailer: boolean) =>
+    toItem({ ...item(recorded), price_difference: -10000 }, isRetailer);
+
+  test('eksi fark: perakendecide ürün 40.000, fark −10.000, toplam 30.000', () => {
+    const r = discounted({ retail_unit_price: 30000 }, true);
+    expect(r.supplierUnitPrice).toBe(40000);
+    expect(r.priceDifference).toBe(-10000);
+    expect(r.totalPrice).toBe(30000);
   });
 
-  test('fark kırılım olarak taşınır, fiyata tekrar eklenmez', () => {
-    const r = toItem(item({ retail_unit_price: 45000 }), true);
-    expect(r.priceDifference).toBe(5000);
-    expect(r.supplierUnitPrice).toBe(45000);
+  test('eksi fark: üreticide ürün 20.000, fark −10.000, toplam 10.000', () => {
+    // Eskiden satır toplamı farkı hiç saymıyordu; kalem 20.000 derken siparişin
+    // kendi toplamı 10.000 yazıyor, iki sayı çelişiyordu.
+    const r = discounted({ retail_unit_price: 30000 }, false);
+    expect(r.supplierUnitPrice).toBe(20000);
+    expect(r.totalPrice).toBe(10000);
+  });
+
+  test('fark adetle çarpılır', () => {
+    const r = toItem({ ...item({ retail_unit_price: 45000 }), quantity: 3 }, true);
+    expect(r.supplierUnitPrice).toBe(40000);
+    expect(r.totalPrice).toBe(135000);
   });
 });
 

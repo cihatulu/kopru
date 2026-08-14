@@ -82,17 +82,39 @@ describe('aggregate', () => {
     ]);
   });
 
-  test('talep farkı kırılım için taşınır, birim fiyata TEKRAR eklenmez', () => {
-    // `unit_price` (= retail_unit_price) farkı zaten içerir. Burada bir kez daha
-    // toplansaydı müşteri 45.000 yerine 50.000 görürdü.
+  test('ürünün kendi fiyatı ayrılır, fark ayrı satırda durur', () => {
+    // `unit_price` her şey dahil gelir (45.000). Ekran ürünü 40.000 gösterip
+    // farkı +5.000 olarak altına yazar; ürünün fiyatı pazarlıkla oynamaz.
     const o = order({
       items: [
         item({ quantity: 1, unit_price: 45000, custom_description: 'Cam kapak', price_difference: 5000 }),
       ],
     });
     const line = aggregate(sourcesOf(o), 'original')[0];
-    expect(line?.unitPrice).toBe(45000);
+    expect(line?.unitPrice).toBe(40000);
     expect(line?.priceDifference).toBe(5000);
+  });
+
+  test('eksi fark indirimdir: ürün 40.000 kalır, fark −10.000 yazılır', () => {
+    const o = order({
+      items: [
+        item({ quantity: 1, unit_price: 30000, custom_description: 'xxxxxxx', price_difference: -10000 }),
+      ],
+    });
+    const line = aggregate(sourcesOf(o), 'original')[0];
+    expect(line?.unitPrice).toBe(40000);
+    expect(line?.priceDifference).toBe(-10000);
+    // Toplam yine 30.000: taban ile fark ekranda ayrılır, hesapta birleşir.
+    expect(linesTotal(aggregate(sourcesOf(o), 'original'))).toBe(30000);
+  });
+
+  test('fark adetle çarpılır', () => {
+    const o = order({
+      items: [
+        item({ quantity: 3, unit_price: 45000, custom_description: 'Cam kapak', price_difference: 5000 }),
+      ],
+    });
+    expect(linesTotal(aggregate(sourcesOf(o), 'original'))).toBe(135000);
   });
 
   test('aynı ürün farklı özel talebe sahipse ayrı satır kalır', () => {

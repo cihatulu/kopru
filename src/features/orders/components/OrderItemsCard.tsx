@@ -4,21 +4,8 @@ import type { OrderItemRow } from '../domain/orderMapping';
 const CARD = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
 const CAPTION = 'text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5';
 
-/**
- * Özel talep farkının kırılım metni.
- *
- * Fark birim fiyata ZATEN dahildir; bu satır yalnız "bu tutar neden böyle"
- * sorusunu yanıtlar. Eksi fark indirimdir ve işaretiyle yazılır.
- */
-function DiffNote({ amount }: { amount: number }) {
-  if (amount === 0) return null;
-  return (
-    <span className="ml-1 whitespace-nowrap">
-      ({amount > 0 ? '+' : '−'}
-      {formatMoney(Math.abs(amount))})
-    </span>
-  );
-}
+/** İşaretli tutar: eksi fark indirimdir ve öyle okunmalıdır. */
+const signed = (n: number) => `${n > 0 ? '+' : '−'}${formatMoney(Math.abs(n))}`;
 
 /** Sipariş detayının kalem tablosu. `OrderExpandedDetail`'den bütçe için ayrıldı. */
 export function OrderItemsCard({
@@ -51,26 +38,43 @@ export function OrderItemsCard({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((i) => (
-              <tr key={i.id} className="text-slate-700">
+              <tr key={i.id} className="text-slate-700 align-top">
                 <td className="py-3 pr-2">
                   <p className="font-bold text-slate-800">{i.name}</p>
                   <p className="font-mono text-[10px] text-slate-400">{i.code}</p>
-                  {/* Üretim talimatı: üretici bunu görmezse iş yapılamaz. */}
+                  {/* Üretim talimatı: üretici bunu görmezse iş yapılamaz.
+                      Tutar burada YAZILMAZ; kırılım sağdaki sütunda durur. */}
                   {i.customDescription && (
                     <p className="mt-1 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-semibold leading-snug text-amber-900 ring-1 ring-inset ring-amber-200">
                       Talep: {i.customDescription}
-                      <DiffNote amount={i.priceDifference} />
                     </p>
                   )}
                 </td>
                 <td className="py-3 text-center font-bold text-slate-900 whitespace-nowrap">
                   {i.quantity} Adet
                 </td>
+                {/* Ürünün kendi fiyatı: talep farkı bu tutara KARIŞMAZ. */}
                 <td className="py-3 text-right text-slate-500 whitespace-nowrap">
                   {formatMoney(i.supplierUnitPrice)}
                 </td>
-                <td className="py-3 text-right font-bold text-slate-900 whitespace-nowrap">
-                  {formatMoney(i.totalPrice)}
+                <td className="py-3 text-right whitespace-nowrap">
+                  <p className="font-bold text-slate-900">
+                    {formatMoney(i.supplierUnitPrice * i.quantity)}
+                  </p>
+                  {i.priceDifference !== 0 && (
+                    <>
+                      <p
+                        className={`mt-1 font-semibold ${
+                          i.priceDifference > 0 ? 'text-amber-700' : 'text-emerald-700'
+                        }`}
+                      >
+                        {signed(i.priceDifference * i.quantity)}
+                      </p>
+                      <p className="mt-1 border-t border-slate-200 pt-1 font-bold text-slate-900">
+                        {formatMoney(i.totalPrice)}
+                      </p>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

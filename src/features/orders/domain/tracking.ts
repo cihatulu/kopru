@@ -5,7 +5,7 @@ export interface TrackedItem {
   productId: string | null;
   name: string;
   quantity: number;
-  /** Perakendecinin satış fiyatı (KATMAN 3); kayıt yoksa 0. */
+  /** Perakendecinin satış fiyatı, HER ŞEY DAHİL (taban + fark); kayıt yoksa 0. */
   unit_price: number;
   total_price: number;
   /** Müşterinin kendi değişiklik talebi; takip sayfasında da görünür. */
@@ -67,7 +67,10 @@ export interface AggregatedLine {
   quantity: number;
   /** Bu ürün için verilen özel talep; yoksa null. */
   customDescription: string | null;
-  /** `unitPrice` içindeki talep farkı; kırılım metni için. 0 ise gösterilmez. */
+  /**
+   * Talep farkı (eksi ise indirim). `unitPrice`'a DAHİL DEĞİLDİR: ürünün kendi
+   * fiyatı sabit gösterilir, fark ayrı satırda okunur.
+   */
   priceDifference: number;
 }
 
@@ -145,13 +148,16 @@ export function aggregate(sources: Source[], mode: 'original' | 'remaining'): Ag
       if (existing) {
         existing.quantity += qty;
       } else {
+        // `unit_price` her şey dahil gelir; ürünün kendi fiyatı için fark geri
+        // çıkarılır. İkisi ekranda ayrı satırda durur, toplamda birleşir.
+        const diff = Number(item.price_difference ?? 0);
         map.set(key, {
           key,
           name: item.name,
-          unitPrice: item.unit_price,
+          unitPrice: Math.round((item.unit_price - diff) * 100) / 100,
           quantity: qty,
           customDescription: custom,
-          priceDifference: Number(item.price_difference ?? 0),
+          priceDifference: diff,
         });
       }
     }
@@ -169,8 +175,11 @@ export const sourcesOf = (order: TrackedOrder): Source[] => [
   })),
 ];
 
+/** Sipariş toplamı — taban fiyat AYRI durduğu için fark burada geri eklenir. */
 export const linesTotal = (lines: AggregatedLine[]): number =>
-  Math.round(lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0) * 100) / 100;
+  Math.round(
+    lines.reduce((sum, l) => sum + (l.unitPrice + l.priceDifference) * l.quantity, 0) * 100,
+  ) / 100;
 
 /**
  * Müşteri tahsilatı mı, iptal/iade karşılığı mı?
