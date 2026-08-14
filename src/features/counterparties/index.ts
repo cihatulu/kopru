@@ -18,8 +18,8 @@ export {
 } from './api/useCounterpartyMutations';
 export { useCounterpartyActions } from './api/useCounterpartyActions';
 export type { SupplierDialog } from './api/useCounterpartyActions';
-export { useSupplierInvites } from './api/useSupplierInvites';
-export type { InviteSent } from './api/useSupplierInvites';
+export { useCounterpartyInvites } from './api/useCounterpartyInvites';
+export type { InviteSent } from './api/useCounterpartyInvites';
 export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
 export { useToggleCatalogPermission } from './api/useCatalogPermission';
 export type {
@@ -64,10 +64,11 @@ export { VknNotice } from './components/VknNotice';
 export { EditCustomerDialog } from './components/EditCustomerDialog';
 export { ResetCustomerPasswordDialog } from './components/ResetCustomerPasswordDialog';
 export { DeleteCounterpartyConfirm } from './components/DeleteCounterpartyConfirm';
-export { InviteSupplierModal } from './components/InviteSupplierModal';
-export type { InviteSupplierValues } from './components/InviteSupplierModal';
+export { InviteCounterpartyModal } from './components/InviteCounterpartyModal';
+export type { InviteCounterpartyValues } from './components/InviteCounterpartyModal';
+export { CounterpartyInvitePanel } from './components/CounterpartyInvitePanel';
 export { InviteSentDialog } from './components/InviteSentDialog';
-export { SupplierInvitations } from './components/SupplierInvitations';
+export { CounterpartyInvitations } from './components/CounterpartyInvitations';
 export { OutgoingRequests } from './components/OutgoingRequests';
 export { SupplierTable } from './components/SupplierTable';
 export { SupplierHeader } from './components/SupplierHeader';

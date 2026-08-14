@@ -4,6 +4,8 @@ import { Spinner } from '@/components/ui/Spinner';
 import { inviteState, inviteUrl, type Invitation } from '@/features/invitations';
 
 interface Props {
+  /** Davet edilen tarafın adı: "Üretici" ya da "Bayi". Yalnız başlık metni. */
+  noun: string;
   invitations: Invitation[];
   loading: boolean;
   revoking: boolean;
@@ -27,8 +29,9 @@ const STATE_LABEL: Record<string, string> = {
   pending: 'Beklemede',
 };
 
-/** WhatsApp üzerinden gönderilen üretici davetlerinin listesi. */
-export function SupplierInvitations({
+/** WhatsApp üzerinden gönderilen davetlerin listesi — iki yönde de kullanılır. */
+export function CounterpartyInvitations({
+  noun,
   invitations,
   loading,
   revoking,
@@ -61,7 +64,7 @@ export function SupplierInvitations({
     <div className="space-y-3 pt-6 border-t border-slate-100">
       <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
         <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-        WhatsApp Üretici Davetleri
+        WhatsApp {noun} Davetleri
       </h2>
 
       {loading ? (

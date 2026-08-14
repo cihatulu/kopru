@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { PASSWORD_MIN_LENGTH } from '@/constants';
 import { isValidVknTc } from '@/lib/tckn';
 
-export interface InviteSupplierValues {
+export interface InviteCounterpartyValues {
   companyName: string;
   phone: string;
   vknTc: string;
@@ -12,11 +12,17 @@ export interface InviteSupplierValues {
 }
 
 interface Props {
+  /**
+   * Davet edilen tarafın adı: perakendeci davet ederse "Üretici", üretici
+   * davet ederse "Bayi". Karşı taraf ÇAĞIRANIN TERSİDİR ve sunucu bunu kendi
+   * belirler; bu prop yalnız ekrandaki metni ayarlar.
+   */
+  noun: string;
   pending: boolean;
   /** Sunucudan dönen hata — kullanıcı kodu çakışması, aynı tip firma vb. */
   errorMessage?: string | undefined;
   onClose: () => void;
-  onSubmit: (values: InviteSupplierValues) => void;
+  onSubmit: (values: InviteCounterpartyValues) => void;
 }
 
 const LABEL = 'block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5';
@@ -59,7 +65,8 @@ function Field({
 }
 
 /**
- * Üretici daveti.
+ * Karşı taraf daveti — İKİ YÖNDE de çalışır: perakendeci üretici davet eder,
+ * üretici bayi davet eder. Form ve doğrulamalar aynıdır, yalnız başlık değişir.
  *
  * Hesap DAVET OLUŞTURULURKEN kurulur; link kabul etmeye değil, karşı tarafa
  * giriş bilgilerini göstermeye yarar. Bu yüzden şifreyi davet eden belirler ve
@@ -68,7 +75,7 @@ function Field({
  * İSKONTO ALANI YOKTUR: iskontoyu üretici belirler (A5). Aynı ekranın düzenleme
  * akışı bunu zaten uyguluyordu, davet formu atlanmıştı.
  */
-export function InviteSupplierModal({ pending, errorMessage, onClose, onSubmit }: Props) {
+export function InviteCounterpartyModal({ noun, pending, errorMessage, onClose, onSubmit }: Props) {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [vkn, setVkn] = useState('');
@@ -100,10 +107,10 @@ export function InviteSupplierModal({ pending, errorMessage, onClose, onSubmit }
   };
 
   return (
-    <Modal label="Üretici Davet Et" onClose={onClose}>
+    <Modal label={`${noun} Davet Et`} onClose={onClose}>
       <div className="space-y-5">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Üretici Davet Et</h2>
+          <h2 className="text-lg font-bold text-slate-900">{noun} Davet Et</h2>
           <p className="mt-1 text-sm text-slate-500">
             Giriş bilgilerini siz belirleyin; davet WhatsApp ile gönderilsin.
           </p>

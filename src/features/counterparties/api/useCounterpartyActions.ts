@@ -23,7 +23,7 @@ interface EditValues {
  * Üretici Yönetimi ekranının durumu ve eylemleri.
  *
  * Sayfa yalnız kompozisyondur (A19/A20); diyalog durumu ve mutation'lar
- * oraya yazılmaz. Davetler ayrı hook'ta: `useSupplierInvites`.
+ * oraya yazılmaz. Davetler ayrı hook'ta: `useCounterpartyInvites`.
  */
 export function useCounterpartyActions(myOrgId: string) {
   const [dialog, setDialog] = useState<SupplierDialog>('none');

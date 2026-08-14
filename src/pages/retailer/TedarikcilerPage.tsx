@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useAuthSession } from '@/features/auth';
 import {
   useCounterpartyActions,
-  useSupplierInvites,
+  useCounterpartyInvites,
   IncomingRequests,
   OutgoingRequests,
   SupplierHeader,
   SupplierTabs,
   SupplierTable,
-  SupplierInvitations,
-  InviteSupplierModal,
+  CounterpartyInvitations,
+  InviteCounterpartyModal,
   InviteSentDialog,
   CustomerDialog,
   EditCustomerDialog,
@@ -24,7 +24,7 @@ export default function TedarikcilerPage() {
   const [tab, setTab] = useState<SupplierTab>('active');
   const org = user?.org;
   const a = useCounterpartyActions(org?.id ?? '');
-  const invites = useSupplierInvites();
+  const invites = useCounterpartyInvites();
 
   if (!org) return null;
 
@@ -60,7 +60,8 @@ export default function TedarikcilerPage() {
         onDelete={a.askDelete}
       />
 
-      <SupplierInvitations
+      <CounterpartyInvitations
+        noun="Üretici"
         invitations={invites.invitations}
         loading={invites.loading}
         revoking={invites.revoke.isPending}
@@ -83,7 +84,8 @@ export default function TedarikcilerPage() {
       )}
 
       {a.dialog === 'invite' && (
-        <InviteSupplierModal
+        <InviteCounterpartyModal
+          noun="Üretici"
           pending={invites.create.isPending}
           errorMessage={
             invites.create.error instanceof Error ? invites.create.error.message : undefined

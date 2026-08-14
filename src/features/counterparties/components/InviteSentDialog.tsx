@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import type { InviteSent } from '../api/useSupplierInvites';
+import type { InviteSent } from '../api/useCounterpartyInvites';
 
 interface Props {
   sent: InviteSent;

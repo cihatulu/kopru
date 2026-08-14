@@ -24,7 +24,11 @@ export interface InviteSent {
 }
 
 /**
- * WhatsApp üretici davetleri — liste, oluşturma, iptal.
+ * WhatsApp davetleri — liste, oluşturma, iptal, silme.
+ *
+ * İKİ YÖNDE de aynı: perakendeci üretici davet eder, üretici bayi davet eder.
+ * Karşı tarafın tipi burada BELİRTİLMEZ — sunucu çağıranın tersini açar
+ * (aynı `kind`'a sahip iki org arasında ilişki kurulamaz).
  *
  * HESAP DAVET ANINDA KURULUR. Daveti gönderen firma adını, VKN'yi ve şifreyi
  * zaten giriyor; karşı tarafa doldurulacak bir form kalmıyor. Böylece şifre
@@ -32,7 +36,7 @@ export interface InviteSent {
  *
  * Link kabul etmeye değil, karşı tarafa giriş bilgilerini göstermeye yarar.
  */
-export function useSupplierInvites() {
+export function useCounterpartyInvites() {
   const { data: user } = useAuthSession();
   const list = useInvitations();
   const revoke = useRevokeInvitation();
