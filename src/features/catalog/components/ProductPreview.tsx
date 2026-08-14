@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { formatMoney } from '@/lib/format';
 import { formatDimensions } from '../domain/variants';
+import { CustomRequestFields } from './CustomRequestFields';
 import type { CatalogProduct } from '../api/useProducts';
 
 interface Props {
@@ -135,63 +136,14 @@ export function ProductPreview({
           </div>
         )}
 
-        {/* Müşteri Değişiklik Talebi */}
         {onAddToCart && (
-          <div className="mt-6 border-t border-slate-100 pt-4 space-y-3">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              MÜŞTERİ DEĞİŞİKLİK TALEBİ
-            </h4>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
-                  AÇIKLAMA / DEĞİŞİKLİK TALEBİ
-                </label>
-                <input
-                  type="text"
-                  value={customDescription}
-                  onChange={(e) => setCustomDescription(e.target.value)}
-                  placeholder="Örn: Kapılar cam olsun, 4 kapaklı olsun vb."
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
-                  FİYAT FARKI (₺)
-                </label>
-                <input
-                  type="number"
-                  value={priceDifference}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setPriceDifference(val === '' ? '' : Number(val));
-                  }}
-                  placeholder="0"
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all outline-none font-mono"
-                />
-              </div>
-            </div>
-
-            {(customDescription.trim() || diffVal !== 0) && (
-              <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
-                <div>
-                  <p className="font-extrabold text-slate-400 uppercase text-[9px]">Nihai Birim Fiyat</p>
-                  {customDescription && (
-                    <p className="text-slate-600 font-semibold truncate max-w-[180px]">
-                      Talep: {customDescription}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <span className="font-black text-indigo-600 text-base">{formatMoney(finalPrice)}</span>
-                  {diffVal !== 0 && (
-                    <span className="block text-[10px] text-slate-400">
-                      Fark: {diffVal > 0 ? '+' : ''}{formatMoney(diffVal)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <CustomRequestFields
+            description={customDescription}
+            onDescriptionChange={setCustomDescription}
+            difference={priceDifference}
+            onDifferenceChange={setPriceDifference}
+            basePrice={basePrice}
+          />
         )}
 
         <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">

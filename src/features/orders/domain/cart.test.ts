@@ -68,8 +68,19 @@ describe('özel talep fiyat farkı', () => {
   });
 
   test('eksi fark indirimdir', () => {
+    // "kırlent istemiyoruz" — talep maliyeti düşürür.
     const l = line({ supplierUnitPrice: 20000, unitPrice: 40000, quantity: 1, priceDifference: -2000 });
     expect(cartTotals([l]).supplierTotal).toBe(18000);
+  });
+
+  test('eksi fark RPC yüküne girer, sıfır girmez', () => {
+    // -500 JavaScript'te truthy; yükten düşen yalnız 0 olmalı. Eksi fark
+    // sessizce yutulsaydı indirim cariye hiç yansımazdı.
+    expect(toOrderItems([line({ priceDifference: -500 })])[0]).toHaveProperty(
+      'price_difference',
+      -500,
+    );
+    expect(toOrderItems([line({ priceDifference: 0 })])[0]).not.toHaveProperty('price_difference');
   });
 });
 
