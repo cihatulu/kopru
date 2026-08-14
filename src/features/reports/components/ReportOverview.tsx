@@ -1,5 +1,4 @@
 import { formatMoney } from '@/lib/format';
-import { MonthlyBarChart } from './MonthlyBarChart';
 import { ReportKpiCards } from './ReportKpiCards';
 import { EmptyNote, ProductThumb, RankBadge, ReportCard, RowShell } from './ReportCard';
 import type { useReportsPage } from '../api/useReportsPage';
@@ -20,19 +19,6 @@ export function ReportOverview({ page, onOpenReport }: Props) {
   return (
     <div className="space-y-6">
       <ReportKpiCards kpi={page.kpi} />
-
-      {page.months.some((m) => m.revenue > 0) && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-4 rounded-full bg-blue-500" />
-              <h2 className="text-sm font-bold text-slate-800">Aylık Ciro Grafiği</h2>
-            </div>
-            <span className="text-[10px] text-slate-400 font-semibold">Son 6 ay</span>
-          </div>
-          <MonthlyBarChart months={page.months} />
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ReportCard

@@ -34,14 +34,12 @@ export type { ReportKind, ReportSources } from './domain/reportColumns';
 export {
   kpiSummary,
   marginPercent,
-  monthlyRevenue,
   profitabilityRows,
   profitTotals,
 } from './domain/profitability';
-export type { ProfitFilters, ProfitRow, Kpi, MonthPoint } from './domain/profitability';
+export type { ProfitFilters, ProfitRow, Kpi } from './domain/profitability';
 
 export { StatCard } from './components/StatCard';
-export { MonthlyBarChart } from './components/MonthlyBarChart';
 export { ReportKpiCards } from './components/ReportKpiCards';
 export { ReportOverview } from './components/ReportOverview';
 export { ReportDetailModal } from './components/ReportDetailModal';

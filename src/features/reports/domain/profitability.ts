@@ -115,27 +115,3 @@ export function kpiSummary(data: ManufacturerReportsData): Kpi {
   };
 }
 
-export interface MonthPoint {
-  key: string;
-  label: string;
-  revenue: number;
-}
-
-const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-
-/** Son 6 ayın cirosu. `now` dışarıdan verilir; saf kalsın ve test edilebilsin. */
-export function monthlyRevenue(data: ManufacturerReportsData, now: Date): MonthPoint[] {
-  const months: MonthPoint[] = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({ key: monthKey(d), label: d.toLocaleString('tr-TR', { month: 'short' }), revenue: 0 });
-  }
-
-  const byKey = new Map(months.map((m) => [m.key, m]));
-  for (const order of data.orders.filter(isRevenueOrder)) {
-    const month = byKey.get(monthKey(new Date(order.createdAt)));
-    if (month) month.revenue += order.totalAmount;
-  }
-
-  return months;
-}

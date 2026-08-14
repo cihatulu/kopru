@@ -7,7 +7,7 @@ import {
   topCustomers,
   topProducts,
 } from './reportAggregates';
-import { kpiSummary, marginPercent, monthlyRevenue, profitTotals, profitabilityRows } from './profitability';
+import { kpiSummary, marginPercent, profitTotals, profitabilityRows } from './profitability';
 import type { ManufacturerReportsData, ReportOrder, ReportProduct } from './reportTypes';
 
 const product = (over: Partial<ReportProduct> = {}): ReportProduct => ({
@@ -161,22 +161,5 @@ describe('kpiSummary', () => {
       netProfit: 400,
       activeRetailers: 1,
     });
-  });
-});
-
-describe('monthlyRevenue', () => {
-  test('son 6 ayı döndürür ve ilgili aya yazar', () => {
-    const now = new Date(2026, 7, 15); // Ağustos 2026
-    const months = monthlyRevenue(data(), now);
-    expect(months).toHaveLength(6);
-    expect(months[5]?.key).toBe('2026-08');
-    expect(months[5]?.revenue).toBe(1000);
-    expect(months[0]?.revenue).toBe(0);
-  });
-
-  test('pencere dışındaki sipariş hiçbir aya yazılmaz', () => {
-    // Pencere Ocak–Haziran 2027; sipariş Ağustos 2026'da.
-    const months = monthlyRevenue(data(), new Date(2027, 5, 15));
-    expect(months.every((m) => m.revenue === 0)).toBe(true);
   });
 });

@@ -10,7 +10,6 @@ import {
 import {
   EMPTY_PROFIT_FILTERS,
   kpiSummary,
-  monthlyRevenue,
   profitTotals,
   profitabilityRows,
   type ProfitFilters,
@@ -45,8 +44,6 @@ export function useReportsPage(myOrgId: string | undefined, enabled: boolean) {
       categories: categoriesOf(data),
       retailers: retailersOf(data),
       kpi: kpiSummary(data),
-      // Grafiğin penceresi render anına göre belirlenir.
-      months: monthlyRevenue(data, new Date()),
     }),
     [data],
   );
