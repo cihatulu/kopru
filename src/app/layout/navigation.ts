@@ -67,6 +67,7 @@ export const RETAILER_NAV: readonly NavItem[] = [
   { to: ROUTES.retailer, label: 'Anasayfa', icon: ICONS.home },
   { to: `${ROUTES.retailer}/urun-yonetimi`, label: 'Ürün Yönetimi', icon: ICONS.box },
   { to: `${ROUTES.retailer}/katalog`, label: 'Ürün Kataloğu', icon: ICONS.catalog, slot: 'catalog-tree' },
+  { to: `${ROUTES.retailer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   { to: `${ROUTES.retailer}/sepetim`, label: 'Sepetim', icon: ICONS.cart },
   { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim', icon: ICONS.cart },
   { to: `${ROUTES.retailer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },

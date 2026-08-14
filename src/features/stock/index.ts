@@ -4,6 +4,20 @@ export { useStockList } from './api/useStockList';
 export type { StockRow } from './api/useStockList';
 export { useSetProductStock, useBulkUpdateStock } from './api/useStockMutations';
 
+export { useRetailerStockList } from './api/useRetailerStockList';
+export type { RetailerStockRow } from './api/useRetailerStockList';
+export {
+  useSetRetailerStock,
+  useBulkUpdateRetailerStock,
+} from './api/useRetailerStockMutations';
+export {
+  EMPTY_STOCK_FILTERS,
+  filterStockRows,
+  isStockFilterActive,
+} from './domain/retailerStockFilter';
+export type { StockFilters } from './domain/retailerStockFilter';
+export { RetailerStockTable } from './components/RetailerStockTable';
+
 export { parseCsv, toCsv, parseQuantity, CSV_HEADERS } from './domain/csv';
 export type { StockCsvRow, ParsedCsv } from './domain/csv';
 

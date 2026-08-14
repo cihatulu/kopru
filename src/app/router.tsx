@@ -21,6 +21,7 @@ const ReportsPage = lazy(() => import('@/pages/shared/ReportsPage'));
 const FinancePage = lazy(() => import('@/pages/retailer/FinancePage'));
 const RetailerTedarikcilerPage = lazy(() => import('@/pages/retailer/TedarikcilerPage'));
 const RetailerProductManagementPage = lazy(() => import('@/pages/retailer/ProductManagementPage'));
+const RetailerStockPage = lazy(() => import('@/pages/retailer/StockPage'));
 
 const ProductsPage = lazy(() => import('@/pages/manufacturer/ProductsPage'));
 const StockPage = lazy(() => import('@/pages/manufacturer/StockPage'));
@@ -96,6 +97,7 @@ export const router = createBrowserRouter([
           { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
           { path: 'tedarikcilerim', element: lazyRoute(<RetailerTedarikcilerPage />) },
           { path: 'urun-yonetimi', element: lazyRoute(<RetailerProductManagementPage />) },
+          { path: 'stok', element: lazyRoute(<RetailerStockPage />) },
           { path: 'ekip', element: lazyRoute(<RetailerTeamPage />) },
         ],
       },

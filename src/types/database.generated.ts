@@ -1844,6 +1844,7 @@ export type Database = {
         }
         Returns: number
       }
+      bulk_update_retailer_stock: { Args: { p_rows: Json }; Returns: number }
       bulk_update_stock: { Args: { p_rows: Json }; Returns: number }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
@@ -2296,6 +2297,10 @@ export type Database = {
         }
       }
       set_product_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
+      set_retailer_stock: {
         Args: { p_product_id: string; p_quantity: number }
         Returns: undefined
       }
