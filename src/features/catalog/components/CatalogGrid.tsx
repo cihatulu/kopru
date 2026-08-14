@@ -64,13 +64,31 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
 
   return (
     <div className="space-y-5">
-      <input
-        className="input w-full rounded-xl px-4 py-3"
-        placeholder="Ürün adı veya model ara…"
-        aria-label="Ürün ara"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* Arama kutusu perakendeci kataloğuyla aynı: iki ekran aynı işi yapıyor,
+          aynı görünmeli. */}
+      <div className="relative rounded-2xl border border-slate-100 bg-white p-2 shadow-md">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            className="size-4"
+            aria-hidden="true"
+          >
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          placeholder="Ürün adı veya model ara..."
+          aria-label="Ürün ara"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="block w-full rounded-xl border-none bg-transparent py-3 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0"
+        />
+      </div>
 
       {activeFilterName && (
         <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -88,11 +106,26 @@ export function CatalogGrid({ ownerOrgId }: { ownerOrgId: string }) {
           <Spinner />
         </div>
       ) : products.length === 0 ? (
-        <p className="rounded-xl bg-white p-10 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
-          Bu görünümde ürün yok.
-        </p>
+        <div className="space-y-3 rounded-2xl border border-slate-100 bg-white py-16 text-center shadow-sm">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mx-auto size-10 text-slate-300"
+            aria-hidden="true"
+          >
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-slate-800">Ürün bulunamadı</h3>
+            <p className="text-xs text-slate-400">Bu görünümde ürün yok.</p>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {products.map((p) => (
             <ProductCard
               key={p.id}
