@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { parseCsv, type ParsedCsv, type StockCsvRow } from '../domain/csv';
+import { looksLikeXlsx, parseXlsx } from '../domain/xlsx';
 
 interface Props {
   pending: boolean;
@@ -43,15 +44,32 @@ export function CsvImportDialog({
     ? (parsed?.rows.filter((r) => !r.productId).length ?? 0)
     : 0;
 
+  const [readError, setReadError] = useState<string | null>(null);
+
+  /**
+   * Biçim UZANTIDAN DEĞİL, içerikten anlaşılır: kullanıcı Excel'de kaydedip
+   * adını `.csv` bırakabiliyor. xlsx bir ZIP'tir ve "PK" ile başlar.
+   */
   const read = async (file: File | undefined) => {
     if (!file) return;
     setFileName(file.name);
-    setParsed(parseCsv(await file.text()));
+    setParsed(null);
+    setReadError(null);
+    try {
+      const buffer = await file.arrayBuffer();
+      if (looksLikeXlsx(new Uint8Array(buffer.slice(0, 2)))) {
+        setParsed(await parseXlsx(buffer));
+      } else {
+        setParsed(parseCsv(new TextDecoder('utf-8').decode(buffer)));
+      }
+    } catch {
+      setReadError('Dosya okunamadı. Excel (.xlsx) veya CSV bekleniyor.');
+    }
   };
 
   return (
     <Modal
-      label={'CSV ile stok yükle'}
+      label={'Excel ile stok yükle'}
       panelClassName={
         'flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl bg-white p-6 shadow-xl'
       }
@@ -71,10 +89,11 @@ export function CsvImportDialog({
               aktifleştirin.
             </p>
           )}
-          {parsed && appliedCount < parsed.rows.length && (
+          {parsed && appliedCount + (createdCount ?? 0) < parsed.rows.length && (
             <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
-              Dosyadaki {parsed.rows.length} satırın {parsed.rows.length - appliedCount} tanesi
-              işlenmedi — bu ürünler size ait değil veya silinmiş olabilir.
+              Dosyadaki {parsed.rows.length} satırın{' '}
+              {parsed.rows.length - appliedCount - (createdCount ?? 0)} tanesi işlenmedi — bu
+              ürünler size ait değil veya silinmiş olabilir.
             </p>
           )}
           <div className="mt-6 flex justify-end">
@@ -83,16 +102,22 @@ export function CsvImportDialog({
         </>
       ) : (
         <>
-          <h2 className="text-lg font-bold text-slate-900">CSV ile stok yükle</h2>
+          <h2 className="text-lg font-bold text-slate-900">Excel ile stok yükle</h2>
           <p className="mt-1 text-sm text-slate-500">
             Şablonu indirin, <strong>stok</strong> sütununu doldurun ve dosyayı geri yükleyin. Diğer
-            sütunları değiştirmeyin.
+            sütunları, özellikle <strong>ürün kimliğini</strong>, değiştirmeyin.
           </p>
+
+          {readError && (
+            <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2.5 text-xs font-semibold text-red-700">
+              {readError}
+            </p>
+          )}
 
           <input
             ref={inputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
             className="hidden"
             onChange={(e) => void read(e.target.files?.[0])}
           />

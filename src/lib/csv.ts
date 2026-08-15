@@ -17,6 +17,23 @@ export function downloadCSV(
 }
 
 /**
+ * Hazır bir dosyayı indirtir.
+ *
+ * `Promise<Blob>` alır: xlsx üreticisi kütüphaneyi dinamik yüklediği için
+ * asenkrondur ve çağrı yerinin `await` ile uğraşmasına gerek kalmaz.
+ */
+export async function downloadBlob(blob: Blob | Promise<Blob>, fileName: string): Promise<void> {
+  const url = URL.createObjectURL(await blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Hazır CSV metnini indirtir.
  *
  * Metni kendi üreten çağıranlar için (ör. stok şablonu). BOM ve mime tipi

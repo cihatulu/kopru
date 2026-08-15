@@ -20,9 +20,10 @@ export type { StockFilters } from './domain/retailerStockFilter';
 export { RetailerStockTable } from './components/RetailerStockTable';
 
 export { parseCsv, toCsv, parseQuantity, CSV_HEADERS } from './domain/csv';
+export { parseXlsx, toXlsxBlob, looksLikeXlsx } from './domain/xlsx';
 export type { StockCsvRow, ParsedCsv } from './domain/csv';
 
-export { toStockCsv } from './domain/stockCsv';
+export { toStockRows } from './domain/stockCsv';
 export {
   uniqueCategories,
   filterByCategory,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
 import { Pagination } from '@/components/ui/Pagination';
-import { downloadCsvText } from '@/lib/csv';
+import { downloadBlob } from '@/lib/csv';
 import { useProductGroups } from '@/features/catalog';
 import {
   CsvImportDialog,
@@ -11,7 +11,8 @@ import {
   StockToolbar,
   filterByCategory,
   pageSlice,
-  toStockCsv,
+  toStockRows,
+  toXlsxBlob,
   uniqueCategories,
   useBulkUpdateStock,
   useSetProductStock,
@@ -47,9 +48,9 @@ export default function StockPage() {
       <StockHeader
         exportDisabled={all.length === 0}
         onExport={() =>
-          downloadCsvText(
-            toStockCsv(all, groups),
-            `stok_listesi-${new Date().toISOString().slice(0, 10)}.csv`,
+          void downloadBlob(
+            toXlsxBlob(toStockRows(all, groups)),
+            `stok_listesi-${new Date().toISOString().slice(0, 10)}.xlsx`,
           )
         }
         onImport={() => {

@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { downloadBlob } from '@/lib/csv';
 import {
   CsvImportDialog,
   EMPTY_STOCK_FILTERS,
   RetailerStockTable,
   filterStockRows,
-  toCsv,
+  toXlsxBlob,
   useBulkUpdateRetailerStock,
   useRetailerStockList,
   useSetRetailerStock,
@@ -26,26 +27,22 @@ export default function RetailerStockPage() {
   const all = useMemo(() => list.data ?? [], [list.data]);
   const rows = useMemo(() => filterStockRows(all, filters), [all, filters]);
 
-  const exportCsv = () => {
-    const csv = toCsv(
-      all.map((r) => ({
-        productId: r.productId,
-        productName: r.name,
-        productCode: r.code,
-        category: r.category,
-        // Perakendecide grup yerine üretici adı anlamlı: aynı ürün adı farklı
-        // üreticilerde tekrar edebilir, dosyada ayırt edilebilmeli.
-        groupName: r.manufacturerName,
-        quantity: r.quantity ?? 0,
-      })),
+  const exportXlsx = () =>
+    void downloadBlob(
+      toXlsxBlob(
+        all.map((r) => ({
+          productId: r.productId,
+          productName: r.name,
+          productCode: r.code,
+          category: r.category,
+          // Perakendecide grup yerine üretici adı anlamlı: aynı ürün adı farklı
+          // üreticilerde tekrar edebilir, dosyada ayırt edilebilmeli.
+          groupName: r.manufacturerName,
+          quantity: r.quantity ?? 0,
+        })),
+      ),
+      `stok_${new Date().toISOString().slice(0, 10)}.xlsx`,
     );
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `stok_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="space-y-6">
@@ -59,7 +56,7 @@ export default function RetailerStockPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={exportCsv} disabled={all.length === 0}>
+          <Button variant="secondary" size="sm" onClick={exportXlsx} disabled={all.length === 0}>
             Excel Dışa Aktar
           </Button>
           <Button

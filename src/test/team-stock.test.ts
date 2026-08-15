@@ -129,6 +129,15 @@ describe('Excel tanınmayan satırdan PASİF ürün doğurur', () => {
     expect(body).toMatch(/if v_product_id is null then[\s\S]*?insert into public\.products/i);
   });
 
+  test('ÜRETİLMİŞ kolona yazılmaz', () => {
+    // `products.owner_kind` GENERATED ALWAYS'tir; INSERT'e yazmak 428C9 verir
+    // ve toplu yükleme 400 ile düşer. Üretilen TS tipleri bunu ayırt etmediği
+    // için tip kontrolü yakalamaz — bu yüzden testle kilitlendi.
+    const insert = /insert into public\.products[\s\S]*?values/i.exec(body)?.[0] ?? '';
+    expect(insert).not.toBe('');
+    expect(insert).not.toMatch(/owner_kind/i);
+  });
+
   test('ürün PASİF ve fiyatı SIFIR doğar', () => {
     // supplier_price KATMAN 2'dir; sıfır fiyatlı ürün sipariş edilebilseydi
     // cari bozulurdu. Pasiflik bu yüzden güvenlik kilidi.

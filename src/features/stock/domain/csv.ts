@@ -5,6 +5,7 @@
  * ['Ürün ID (DEĞİŞTİRMEYİN)', 'Ürün Adı', 'Model', 'Kategori', 'Grup Adı', 'Mevcut Stok']
  */
 import { parseDecimal } from '@/lib/format';
+import { isHeaderRow, toStockRow } from './sheetRow';
 
 export interface StockCsvRow {
   /**
@@ -117,17 +118,6 @@ export function parseQuantity(raw: string): number | null {
   return n;
 }
 
-/** Başlık satırını tanır. */
-function isHeader(fields: string[]): boolean {
-  const first = (fields[0] ?? '').trim().toLowerCase();
-  return (
-    first.includes('ürün id') ||
-    first.includes('urun id') ||
-    first.includes('id') ||
-    first === 'ürün id (değiştirmeyin)'
-  );
-}
-
 export function parseCsv(text: string): ParsedCsv {
   const clean = text.startsWith(BOM) ? text.slice(BOM.length) : text;
   const lines = clean.split(/\r\n|\n|\r/).filter((l) => l.trim() !== '');
@@ -137,36 +127,13 @@ export function parseCsv(text: string): ParsedCsv {
   if (lines.length === 0) return { rows, errors };
 
   const sep = detectSeparator(lines[0]!);
-  const start = isHeader(splitLine(lines[0]!, sep)) ? 1 : 0;
+  const start = isHeaderRow(splitLine(lines[0]!, sep)) ? 1 : 0;
 
   for (let i = start; i < lines.length; i++) {
     const fields = splitLine(lines[i]!, sep).map((f) => f.trim());
-    const productId = fields[0] ?? '';
-    // Mevcut stok son kolondadır (index 5 veya son eleman)
-    const rawQuantity = fields[5] !== undefined ? fields[5] : fields[fields.length - 1];
-    const quantity = parseQuantity(rawQuantity ?? '');
-
-    const productName = (fields[1] ?? '').trim();
-
-    // Kimliği olmayan satır artık hata değil: adı varsa YENİ ürün demektir.
-    // İkisi de boşsa satırdan hiçbir şey anlaşılmaz.
-    if (!productId && !productName) {
-      errors.push({ line: i + 1, reason: 'Ürün kimliği ve adı boş' });
-      continue;
-    }
-    if (quantity === null) {
-      errors.push({ line: i + 1, reason: 'Stok değeri sayı değil veya negatif' });
-      continue;
-    }
-
-    rows.push({
-      productId,
-      productName,
-      productCode: fields[2] ?? '',
-      category: fields[3] || null,
-      groupName: fields[4] || null,
-      quantity,
-    });
+    const result = toStockRow(fields, i + 1);
+    if (result.ok) rows.push(result.row);
+    else errors.push(result.error);
   }
 
   return { rows, errors };

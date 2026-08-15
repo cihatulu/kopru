@@ -25,7 +25,8 @@ export function StockHowToBanner() {
           </li>
           <li>Ürünleri gruplamak isterseniz <strong>Grup Adı</strong> sütununa grup adını yazın.</li>
           <li>
-            <strong>Dosya Yükle</strong> ile geri yükleyin — uygulamadan önce önizleme gösterilir.
+            <strong>Dosya Yükle</strong> ile geri yükleyin — Excel dosyasını olduğu gibi
+            verebilirsiniz, uygulamadan önce önizleme gösterilir.
           </li>
         </ol>
       </div>
