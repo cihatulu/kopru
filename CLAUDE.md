@@ -100,7 +100,13 @@ RPC değişikliği sonrası (SQL Editor): `NOTIFY pgrst, 'reload schema';`
     tablolarına **asla** doğrudan yazmaz (bu tablolarda INSERT/UPDATE politikası yoktur).
     İki meşru yol vardır: (a) sipariş akışının parçasıysa ilgili **atomik RPC** içinde —
     stok hareketi siparişle aynı transaction'da olmak zorundadır, (b) sipariş dışı
-    düzeltmelerde `update-stock` Edge Function (service role).
+    düzeltmelerde `SECURITY DEFINER` RPC: `set_product_stock`, `bulk_update_stock`
+    (üretici) ve `set_retailer_stock`, `bulk_update_retailer_stock` (perakendeci).
+    Edge Function **kullanılmaz** — RPC aynı transaction'da çalışır, service role
+    anahtarı hiç devreye girmez ve yetki SQL'de verilir.
+    **Stok tutmak ÜYE hakkıdır:** misafir taraf yalnız karşısındaki üyenin stoğunu
+    görür. Tek istisna, üye perakendecinin `relationships.can_edit_catalog` anahtarını
+    açtığı misafir üreticidir.
 15. **Plan gating çift katman:** frontend + RLS/Edge.
 16. **Soft delete varsayılan** (`is_active=false`). Gerçek DELETE yalnız **pasifleştirilmiş**
     kayıtlar için yapılabilir: admin'in cascade RPC'si ile ya da kaydın sahibi org
@@ -175,6 +181,6 @@ src/
   test/         setup.ts, rls.test.ts, price-isolation.test.ts
 supabase/
   migrations/   *.sql
-  functions/    _shared/, login, update-user-password, update-stock, ...
+  functions/    _shared/, login, update-user-password, create-staff, ...
 e2e/            auth.spec.ts, upgrade.spec.ts, relationship.spec.ts
 ```

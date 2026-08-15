@@ -7,6 +7,7 @@
  * olarak yaşandı.
  */
 import { describe, expect, test } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { navFor } from '@/app/layout/navigation';
 import { ORG_KIND } from '@/constants';
 
@@ -37,6 +38,61 @@ describe('misafir perakendeci menüsü', () => {
 describe('üye perakendeci menüsü', () => {
   test('Stok Yönetimi görünür — kendi deposunu tutar', () => {
     expect(labels(ORG_KIND.retailer, true)).toContain('Stok Yönetimi');
+  });
+});
+
+describe('menüden gizlenen her bölüm ROTADA da kilitli', () => {
+  // `RequireSubscriber` guard'ı tanımlıydı ama router'da HİÇ kullanılmıyordu:
+  // menüden gizlenen sayfalar adres çubuğundan açılabiliyordu. Menü ile rota
+  // ayrışmasın diye kilit burada eşleştirilir (kilitli kural 15).
+  const router = readFileSync('src/app/router.tsx', 'utf8');
+
+  // `stok`, `ekip`, `raporlar` İKİ panelde de var; arama panel bazlı yapılır.
+  const mfrStart = router.indexOf('ROUTES.manufacturer');
+  const rtlStart = router.indexOf('ROUTES.retailer');
+  const adminStart = router.indexOf('ROUTES.admin');
+  const sections = {
+    m: router.slice(mfrStart, rtlStart),
+    r: router.slice(rtlStart, adminStart),
+  };
+
+  /**
+   * `path: 'x'` ile BİR SONRAKİ `path:` arasındaki metne bakar.
+   *
+   * Sabit karakter penceresi kullanılamaz: pencere bir sonraki rotanın
+   * korumasına taşıp korumasız bir rotayı korumalı gösteriyordu.
+   */
+  const guarded = (panel: 'm' | 'r', path: string) => {
+    const text = sections[panel];
+    const start = text.indexOf(`path: '${path}'`);
+    if (start === -1) throw new Error(`/${panel}/${path} rotası yok`);
+    const next = text.indexOf('path:', start + 8);
+    return text.slice(start, next === -1 ? undefined : next).includes('RequireSubscriber');
+  };
+
+  test('misafir perakendeciden gizlenenler', () => {
+    for (const path of ['finans', 'raporlar', 'tedarikcilerim', 'ekip', 'stok']) {
+      expect(guarded('r', path), `/r/${path} korumasız`).toBe(true);
+    }
+  });
+
+  test('misafir üreticiden gizlenenler', () => {
+    for (const path of ['musteriler', 'raporlar', 'ekip']) {
+      expect(guarded('m', path), `/m/${path} korumasız`).toBe(true);
+    }
+  });
+
+  test('üreticinin stok rotası kilitlenmez', () => {
+    // Misafir üretici, izin anahtarı açıksa stok tutabilir; karar org
+    // düzeyinde değil İLİŞKİ düzeyindedir, RPC verir.
+    expect(guarded('m', 'stok')).toBe(false);
+  });
+
+  test('herkese açık bölümler kilitlenmez', () => {
+    // Misafir de sipariş verir, cari görür, katalog gezer.
+    for (const path of ['katalog', 'siparisler', 'cari', 'iade', 'duyurular']) {
+      expect(guarded('r', path), `/r/${path} gereksiz kilitli`).toBe(false);
+    }
   });
 });
 

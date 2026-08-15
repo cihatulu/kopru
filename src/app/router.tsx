@@ -64,15 +64,26 @@ export const router = createBrowserRouter([
           { path: 'urunler', element: lazyRoute(<ProductsPage />) },
           { path: 'katalog', element: lazyRoute(<ManufacturerCatalogPage />) },
           { path: 'stok', element: lazyRoute(<StockPage />) },
-          { path: 'ekip', element: lazyRoute(<TeamPage />) },
+          // Misafir üreticiden GİZLENEN üç bölüm. Menüden çıkarmak birinci
+          // katmandır; adres çubuğuna yazan da girememeli (kilitli kural 15).
+          {
+            path: 'ekip',
+            element: <RequireSubscriber>{lazyRoute(<TeamPage />)}</RequireSubscriber>,
+          },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
           { path: 'iade', element: lazyRoute(<ReturnsPage />) },
           { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
-          { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
-          { path: 'musteriler', element: lazyRoute(<CustomersPage />) },
+          {
+            path: 'raporlar',
+            element: <RequireSubscriber>{lazyRoute(<ReportsPage />)}</RequireSubscriber>,
+          },
+          {
+            path: 'musteriler',
+            element: <RequireSubscriber>{lazyRoute(<CustomersPage />)}</RequireSubscriber>,
+          },
         ],
       },
     ],
@@ -87,15 +98,26 @@ export const router = createBrowserRouter([
           { index: true, element: lazyRoute(<RetailerHome />) },
           { path: 'katalog', element: lazyRoute(<CatalogPage />) },
           { path: 'sepetim', element: lazyRoute(<CartPage />) },
-          { path: 'finans', element: lazyRoute(<FinancePage />) },
+          {
+            path: 'finans',
+            element: <RequireSubscriber>{lazyRoute(<FinancePage />)}</RequireSubscriber>,
+          },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
           { path: 'cari', element: lazyRoute(<AccountsPage />) },
           { path: 'iade', element: lazyRoute(<ReturnsPage />) },
           { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
-          { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
-          { path: 'tedarikcilerim', element: lazyRoute(<RetailerTedarikcilerPage />) },
+          {
+            path: 'raporlar',
+            element: <RequireSubscriber>{lazyRoute(<ReportsPage />)}</RequireSubscriber>,
+          },
+          {
+            path: 'tedarikcilerim',
+            element: (
+              <RequireSubscriber>{lazyRoute(<RetailerTedarikcilerPage />)}</RequireSubscriber>
+            ),
+          },
           { path: 'urun-yonetimi', element: lazyRoute(<RetailerProductManagementPage />) },
           {
             // Stok tutmak ÜYE hakkıdır: misafir perakendeci yalnız tedarikçisinin
@@ -104,7 +126,10 @@ export const router = createBrowserRouter([
             path: 'stok',
             element: <RequireSubscriber>{lazyRoute(<RetailerStockPage />)}</RequireSubscriber>,
           },
-          { path: 'ekip', element: lazyRoute(<RetailerTeamPage />) },
+          {
+            path: 'ekip',
+            element: <RequireSubscriber>{lazyRoute(<RetailerTeamPage />)}</RequireSubscriber>,
+          },
         ],
       },
     ],

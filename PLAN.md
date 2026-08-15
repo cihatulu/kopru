@@ -463,7 +463,9 @@ RPC değişikliği sonrası (SQL Editor): `NOTIFY pgrst, 'reload schema';`
 12. **Sunucu durumu react-query'de.** Zustand'da sunucu verisi tutulmaz.
 13. **TS strict + ESLint zorunlu.** DB tipleri `npm run gen:types` ile üretilir;
     elle tip veya elle case-conversion katmanı yazılmaz.
-14. **Stok** yazımı `update-stock` Edge Function (service role) ile; istemci doğrudan yazmaz.
+14. **Stok** yazımı `SECURITY DEFINER` RPC ile (`set_product_stock`, `bulk_update_stock`,
+    `set_retailer_stock`, `bulk_update_retailer_stock`); istemci tabloya doğrudan yazmaz.
+    Stok tutmak ÜYE hakkıdır; misafir taraf yalnız karşısındakinin stoğunu görür.
 15. **Plan gating çift katman:** frontend + RLS/Edge.
 16. **Soft delete varsayılan** (`is_active=false`). Gerçek DELETE yalnız admin'in
     cascade RPC'si ile ve yalnız pasifleştirilmiş kayıtlar için.
@@ -502,7 +504,7 @@ src/
   types/        index.ts, database.generated.ts
 supabase/
   migrations/   *.sql
-  functions/    _shared/, login, update-user-password, update-stock, ...
+  functions/    _shared/, login, update-user-password, create-staff, ...
 ```
 ```
 
