@@ -32,3 +32,19 @@ enable_confirmations = false
 
 [analytics]
 enabled = false
+
+# ============================================================ Edge Functions
+# `login` OTURUMSUZ çağrılır: kullanıcı henüz giriş yapmamıştır. Platformun
+# `verify_jwt` kontrolü yalnız LEGACY (JWT tabanlı) anahtarları anlar; yeni
+# publishable anahtar JWT değildir ve supabase-js onu `Authorization: Bearer`
+# yerine yalnız `apikey` başlığına koyar. Kontrol açık kalsaydı publishable
+# anahtara geçtiğimiz an giriş 401 ile düşerdi.
+#
+# Güvenlik kaybı yok: fonksiyon yetkilendirmeyi ZATEN kendi yapıyor —
+# kullanıcı arama, sponsor VKN doğrulama ve kilit sayacı (kilitli kural 3).
+[functions.login]
+verify_jwt = false
+
+# Davet kabulü de oturumsuzdur; zaten kapalıydı, açıkça yazılıyor.
+[functions.accept-invitation]
+verify_jwt = false

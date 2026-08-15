@@ -10,12 +10,13 @@
  *   accept → org + ilişki + giriş hesabı; şifreyi davet edilen kendi belirler
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { projectUrl, publishableKey, secretKey } from '../_shared/keys.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 import { acceptInvitation, peekInvitation } from './handlers.ts';
 
 const admin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  projectUrl(),
+  secretKey(),
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 

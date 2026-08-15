@@ -5,6 +5,7 @@
  * Personel de sahibi olan firmanın VKN'sini girerek, tik işaretleyip kendi şifresiyle girer.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { projectUrl, publishableKey, secretKey } from '../_shared/keys.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 
 const MAX_ATTEMPTS = 5;
@@ -27,15 +28,15 @@ interface LoginBody {
 const normalize = (v: string) => v.replace(/[\s.-]/g, '');
 
 const admin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  projectUrl(),
+  secretKey(),
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
 function anonClient() {
   return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
+    projectUrl(),
+    publishableKey(),
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }

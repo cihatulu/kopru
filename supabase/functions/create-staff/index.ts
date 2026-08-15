@@ -13,12 +13,13 @@
  * normalize edildikten sonra hiçbir zaman eşleşmezdi.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { projectUrl, publishableKey, secretKey } from '../_shared/keys.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 import { requireOrgOwner } from '../_shared/auth.ts';
 
 const admin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  projectUrl(),
+  secretKey(),
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 

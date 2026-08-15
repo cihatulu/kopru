@@ -13,6 +13,7 @@
  *     şifresini günceller.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { projectUrl, publishableKey, secretKey } from '../_shared/keys.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 import { generateTempPassword, requirePlatformAdmin } from '../_shared/auth.ts';
 
@@ -20,15 +21,15 @@ const MIN_LENGTH = 8;
 const HAS_LETTER_AND_DIGIT = /^(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d).+$/;
 
 const admin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  projectUrl(),
+  secretKey(),
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
 function anonClient() {
   return createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
+    projectUrl(),
+    publishableKey(),
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }

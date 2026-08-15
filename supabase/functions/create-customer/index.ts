@@ -9,11 +9,12 @@
  * hiçbir müşteriye bağlı olmayan yetim bir giriş hesabı kalırdı.
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { projectUrl, publishableKey, secretKey } from '../_shared/keys.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 
 const admin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  projectUrl(),
+  secretKey(),
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
@@ -114,8 +115,8 @@ Deno.serve(async (req) => {
     // Service role ile yapılsaydı "kim kimi ekleyebilir" kuralları (abone mi,
     // rolü uygun mu, aynı kind mi) atlanırdı. RPC bunların hepsini uygular.
     const caller = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
+      projectUrl(),
+      publishableKey(),
       { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } },
     );
 
