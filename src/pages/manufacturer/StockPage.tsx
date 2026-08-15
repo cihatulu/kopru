@@ -16,6 +16,7 @@ import {
   useBulkUpdateStock,
   useSetProductStock,
   useStockList,
+  type BulkStockResult,
 } from '@/features/stock';
 
 const PER_PAGE = 10;
@@ -26,7 +27,7 @@ export default function StockPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [importing, setImporting] = useState(false);
-  const [applied, setApplied] = useState<number | null>(null);
+  const [applied, setApplied] = useState<BulkStockResult | null>(null);
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
   const list = useStockList(search);
@@ -117,9 +118,11 @@ export default function StockPage() {
       {importing && (
         <CsvImportDialog
           pending={bulk.isPending}
-          appliedCount={applied}
+          appliedCount={applied?.updated ?? null}
+          createdCount={applied?.created ?? null}
+          canCreateProducts
           onClose={() => setImporting(false)}
-          onApply={(csvRows) => bulk.mutate(csvRows, { onSuccess: (count) => setApplied(count) })}
+          onApply={(csvRows) => bulk.mutate(csvRows, { onSuccess: setApplied })}
         />
       )}
     </div>

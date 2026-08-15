@@ -7,6 +7,13 @@ interface Props {
   pending: boolean;
   /** Sunucunun GERÇEKTEN işlediği satır sayısı. */
   appliedCount: number | null;
+  /**
+   * Kimliksiz satırlardan doğan PASİF ürün sayısı. Bu yeteneğin olmadığı
+   * çağrı yerlerinde (perakendeci) verilmez.
+   */
+  createdCount?: number | null;
+  /** Yeni ürün doğurabiliyorsa önizlemede uyarı gösterilir. */
+  canCreateProducts?: boolean;
   onClose: () => void;
   onApply: (rows: StockCsvRow[]) => void;
 }
@@ -18,10 +25,23 @@ interface Props {
  * Tek adımda uygulamak, ayraç/ondalık yanlış yorumlandığında tüm stoğu sessizce
  * bozardı — ve bunu ancak günler sonra fark ederdi.
  */
-export function CsvImportDialog({ pending, appliedCount, onClose, onApply }: Props) {
+export function CsvImportDialog({
+  pending,
+  appliedCount,
+  createdCount = null,
+  canCreateProducts = false,
+  onClose,
+  onApply,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [parsed, setParsed] = useState<ParsedCsv | null>(null);
   const [fileName, setFileName] = useState('');
+
+  // Kimliği boş satır = yeni ürün. Kullanıcı UYGULAMADAN ÖNCE kaç ürün
+  // açılacağını görmeli; katalogu sessizce büyütmek kabul edilemez.
+  const newRows = canCreateProducts
+    ? (parsed?.rows.filter((r) => !r.productId).length ?? 0)
+    : 0;
 
   const read = async (file: File | undefined) => {
     if (!file) return;
@@ -44,6 +64,13 @@ export function CsvImportDialog({ pending, appliedCount, onClose, onApply }: Pro
           <p className="mt-2 text-sm text-slate-600">
             <strong>{appliedCount}</strong> ürünün stoğu güncellendi.
           </p>
+          {createdCount !== null && createdCount > 0 && (
+            <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2.5 text-xs leading-relaxed text-blue-900">
+              <strong>{createdCount}</strong> yeni ürün <strong>pasif</strong> olarak açıldı.
+              Katalogda görünmezler ve sipariş edilemezler; Ürün Yönetimi'nden fiyatını girip
+              aktifleştirin.
+            </p>
+          )}
           {parsed && appliedCount < parsed.rows.length && (
             <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
               Dosyadaki {parsed.rows.length} satırın {parsed.rows.length - appliedCount} tanesi
@@ -82,6 +109,14 @@ export function CsvImportDialog({ pending, appliedCount, onClose, onApply }: Pro
                 {parsed.rows.length} satır okundu
                 {parsed.errors.length > 0 && `, ${parsed.errors.length} satır atlanacak`}
               </p>
+
+              {newRows > 0 && (
+                <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900">
+                  Bunların <strong>{newRows} tanesinin ürün kimliği yok</strong> — yeni ürün olarak{' '}
+                  <strong>pasif</strong> açılacak, fiyatı 0 olacak. Katalogda görünmez, sipariş
+                  edilemezler.
+                </p>
+              )}
 
               {parsed.errors.length > 0 && (
                 <ul className="mt-2 space-y-0.5 text-xs text-red-700">

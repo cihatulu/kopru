@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { RetailerStockRow } from './RetailerStockRow';
+import { StockChangeMessage, type PendingStockChange } from './StockChangeMessage';
 import {
   EMPTY_STOCK_FILTERS,
   isStockFilterActive,
@@ -34,6 +37,9 @@ export function RetailerStockTable({
   onFiltersChange,
   onSave,
 }: Props) {
+  // Onay tabloda tutulur: satır yalnız önerir, yazmayı kullanıcı onaylar.
+  const [pending, setPending] = useState<PendingStockChange | null>(null);
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -92,11 +98,37 @@ export function RetailerStockTable({
               </tr>
             )}
             {rows.map((row) => (
-              <RetailerStockRow key={row.productId} row={row} busy={busy} onSave={onSave} />
+              <RetailerStockRow
+                key={row.productId}
+                row={row}
+                busy={busy}
+                onRequestSave={(quantity) =>
+                  setPending({
+                    productId: row.productId,
+                    productName: row.name,
+                    from: row.quantity,
+                    to: quantity,
+                  })
+                }
+              />
             ))}
           </tbody>
         </table>
       </div>
+
+      {pending && (
+        <ConfirmDialog
+          title="Stoğu güncelle"
+          message={<StockChangeMessage change={pending} />}
+          confirmLabel="Evet, güncelle"
+          pending={busy}
+          onCancel={() => setPending(null)}
+          onConfirm={() => {
+            onSave(pending.productId, pending.to);
+            setPending(null);
+          }}
+        />
+      )}
     </div>
   );
 }

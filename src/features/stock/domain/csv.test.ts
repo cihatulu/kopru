@@ -125,14 +125,38 @@ describe('parseCsv', () => {
   });
 
   test('hata satır numarası DOSYADAKİ numaradır', () => {
-    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\nabc;Masa;K1;;;5\n;Sandalye;K2;;;3');
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\nabc;Masa;K1;;;5\nxyz;Sandalye;K2;;;yok');
     expect(parsed.errors[0]?.line).toBe(3);
   });
 
-  test('ürün kimliği boş satır hata verir', () => {
-    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;Masa;K1;;;5');
+  test('kimliği BOŞ ama adı olan satır YENİ ÜRÜNDÜR — hata değil', () => {
+    // Sunucu bunu pasif ürün olarak açar; eskiden sessizce atlanıyordu.
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;Masa;K1;Mutfak;;5');
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.rows).toHaveLength(1);
+    expect(parsed.rows[0]?.productId).toBe('');
+    expect(parsed.rows[0]?.productName).toBe('Masa');
+    expect(parsed.rows[0]?.category).toBe('Mutfak');
+    expect(parsed.rows[0]?.quantity).toBe(5);
+  });
+
+  test('kimliği de adı da boş satır hata verir', () => {
+    // Böyle bir satırdan ne güncellenecek ürün ne de açılacak ürün anlaşılır.
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;;K1;;;5');
     expect(parsed.rows).toHaveLength(0);
-    expect(parsed.errors[0]?.reason).toContain('kimliği boş');
+    expect(parsed.errors[0]?.reason).toContain('kimliği ve adı boş');
+  });
+
+  test('yeni ürün satırında da negatif stok reddedilir', () => {
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;Masa;K1;;;-3');
+    expect(parsed.rows).toHaveLength(0);
+    expect(parsed.errors).toHaveLength(1);
+  });
+
+  test('yalnız boşluktan ibaret ad, ad sayılmaz', () => {
+    const parsed = parseCsv('Ürün ID (DEĞİŞTİRMEYİN);a;b;c;d;Mevcut Stok\n;   ;K1;;;5');
+    expect(parsed.rows).toHaveLength(0);
+    expect(parsed.errors).toHaveLength(1);
   });
 
   test('tırnaklı ve ayraç içeren ad doğru çözülür', () => {

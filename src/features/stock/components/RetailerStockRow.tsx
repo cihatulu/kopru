@@ -6,7 +6,8 @@ import type { RetailerStockRow as Row } from '../api/useRetailerStockList';
 interface Props {
   row: Row;
   busy: boolean;
-  onSave: (productId: string, quantity: number) => void;
+  /** Satır YAZMAZ; yalnız değişikliği önerir. Onayı tablo alır. */
+  onRequestSave: (quantity: number) => void;
 }
 
 /**
@@ -16,7 +17,7 @@ interface Props {
  * düğmesi yok. Elli satırlık bir sayımda her satır için düğmeye basmak
  * gereksiz sürtünme yaratırdı.
  */
-export function RetailerStockRow({ row, busy, onSave }: Props) {
+export function RetailerStockRow({ row, busy, onRequestSave }: Props) {
   const [value, setValue] = useState<string>(row.quantity === null ? '' : String(row.quantity));
 
   useEffect(() => {
@@ -28,7 +29,9 @@ export function RetailerStockRow({ row, busy, onSave }: Props) {
 
   const commit = () => {
     if (changed && parsed !== null && !busy) {
-      onSave(row.productId, parsed);
+      onRequestSave(parsed);
+      // Onay diyaloğu açılır; vazgeçilirse hücre eski değerinde kalır.
+      setValue(row.quantity === null ? '' : String(row.quantity));
     } else if (value.trim() === '') {
       // Boş bırakılan hücre "sıfır" demek değildir; eski değerine döner.
       setValue(row.quantity === null ? '' : String(row.quantity));

@@ -7,6 +7,10 @@
 import { parseDecimal } from '@/lib/format';
 
 export interface StockCsvRow {
+  /**
+   * BOŞ ise bu satır YENİ üründür — sunucu pasif olarak oluşturur.
+   * Dolu ama bize ait değilse sunucu satırı atlar, ürün doğurmaz.
+   */
   productId: string;
   productName: string;
   productCode: string;
@@ -142,8 +146,12 @@ export function parseCsv(text: string): ParsedCsv {
     const rawQuantity = fields[5] !== undefined ? fields[5] : fields[fields.length - 1];
     const quantity = parseQuantity(rawQuantity ?? '');
 
-    if (!productId) {
-      errors.push({ line: i + 1, reason: 'Ürün kimliği boş' });
+    const productName = (fields[1] ?? '').trim();
+
+    // Kimliği olmayan satır artık hata değil: adı varsa YENİ ürün demektir.
+    // İkisi de boşsa satırdan hiçbir şey anlaşılmaz.
+    if (!productId && !productName) {
+      errors.push({ line: i + 1, reason: 'Ürün kimliği ve adı boş' });
       continue;
     }
     if (quantity === null) {
@@ -153,7 +161,7 @@ export function parseCsv(text: string): ParsedCsv {
 
     rows.push({
       productId,
-      productName: fields[1] ?? '',
+      productName,
       productCode: fields[2] ?? '',
       category: fields[3] || null,
       groupName: fields[4] || null,

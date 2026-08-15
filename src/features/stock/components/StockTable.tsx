@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StockTableRow } from './StockTableRow';
+import { StockChangeMessage, type PendingStockChange } from './StockChangeMessage';
 import type { StockRow } from '../api/useStockList';
 
 interface Props {
@@ -23,6 +26,10 @@ const categoryColor = (index: number): string =>
 const TH = 'px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest';
 
 export function StockTable({ rows, groups, busyId, onSave }: Props) {
+  // Onay tabloda tutulur: satır yalnız "şunu yapmak istiyorum" der, kaydı
+  // kullanıcı onaylayınca üst katman yazar. Tek tık kazayla stok bozmasın.
+  const [pending, setPending] = useState<PendingStockChange | null>(null);
+
   if (rows.length === 0) {
     return (
       <div className="bg-white border border-slate-100 rounded-2xl p-16 text-center shadow-sm">
@@ -59,12 +66,33 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
                 groupName={groups.find((g) => g.id === r.groupId)?.name ?? null}
                 categoryBadgeColor={categoryColor(idx)}
                 busy={busyId === r.productId}
-                onSave={onSave}
+                onRequestSave={(quantity) =>
+                  setPending({
+                    productId: r.productId,
+                    productName: r.name,
+                    from: r.quantity,
+                    to: quantity,
+                  })
+                }
               />
             ))}
           </tbody>
         </table>
       </div>
+
+      {pending && (
+        <ConfirmDialog
+          title="Stoğu güncelle"
+          message={<StockChangeMessage change={pending} />}
+          confirmLabel="Evet, güncelle"
+          pending={busyId === pending.productId}
+          onCancel={() => setPending(null)}
+          onConfirm={() => {
+            onSave(pending.productId, pending.to);
+            setPending(null);
+          }}
+        />
+      )}
     </div>
   );
 }

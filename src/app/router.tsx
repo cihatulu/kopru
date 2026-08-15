@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ORG_KIND, ROUTES } from '@/constants';
 import { TRACK_PATH } from '@/features/orders';
 import { PageLoader } from '@/components/ui/PageLoader';
-import { RequireOrgKind, RequirePlatformAdmin } from './guards';
+import { RequireOrgKind, RequirePlatformAdmin, RequireSubscriber } from './guards';
 
 // PLAN §17.2 — panel bazlı kod bölme. Her panel ayrı chunk.
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -97,7 +97,13 @@ export const router = createBrowserRouter([
           { path: 'raporlar', element: lazyRoute(<ReportsPage />) },
           { path: 'tedarikcilerim', element: lazyRoute(<RetailerTedarikcilerPage />) },
           { path: 'urun-yonetimi', element: lazyRoute(<RetailerProductManagementPage />) },
-          { path: 'stok', element: lazyRoute(<RetailerStockPage />) },
+          {
+            // Stok tutmak ÜYE hakkıdır: misafir perakendeci yalnız tedarikçisinin
+            // stoğunu görür. Menüden gizlemek yetmez — adres çubuğuna yazan da
+            // girememeli (kilitli kural 15, birinci katman).
+            path: 'stok',
+            element: <RequireSubscriber>{lazyRoute(<RetailerStockPage />)}</RequireSubscriber>,
+          },
           { path: 'ekip', element: lazyRoute(<RetailerTeamPage />) },
         ],
       },

@@ -89,7 +89,12 @@ export const RETAILER_NAV: readonly NavItem[] = [
  * Org'un görebileceği menü.
  *
  * Misafir perakendeciler (isSubscriber = false) için Finans, Raporlar,
- * Tedarikçilerim ve Ekip Yönetimi menüleri gizlenir.
+ * Tedarikçilerim, Ekip Yönetimi ve Stok Yönetimi menüleri gizlenir.
+ *
+ * STOK NEDEN GİZLİ: stok tutma hakkı ÜYE tarafındır. Misafir perakendeci
+ * yalnız tedarikçisinin stoğunu GÖRÜR, kendi deposunu tutmaz. Bu yalnız
+ * birinci katmandır — `set_retailer_stock` RPC'si de aboneliği doğrular
+ * (kilitli kural 15).
  */
 export function navFor(
   kind: OrgKind,
@@ -107,7 +112,8 @@ export function navFor(
         i.label !== 'Finans' &&
         i.label !== 'Raporlar' &&
         i.label !== 'Tedarikçilerim' &&
-        i.label !== 'Ekip Yönetimi',
+        i.label !== 'Ekip Yönetimi' &&
+        i.label !== 'Stok Yönetimi',
     );
   }
 

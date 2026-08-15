@@ -13,11 +13,12 @@ interface Props {
   groupName: string | null;
   categoryBadgeColor: string;
   busy: boolean;
-  onSave: (productId: string, quantity: number) => void;
+  /** Satır YAZMAZ; yalnız değişikliği önerir. Onayı tablo alır. */
+  onRequestSave: (quantity: number) => void;
 }
 
 /** Stok tablosunun tek satırı — miktar hücresi yerinde düzenlenebilir. */
-export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onSave }: Props) {
+export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onRequestSave }: Props) {
   const [value, setValue] = useState<string>(row.quantity === null ? '' : String(row.quantity));
 
   useEffect(() => {
@@ -29,7 +30,10 @@ export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onSave
 
   const handleBlur = () => {
     if (changed && parsed !== null && !busy) {
-      onSave(row.productId, parsed);
+      onRequestSave(parsed);
+      // Onay diyaloğu açılır. Kullanıcı vazgeçerse alan eski değere döner:
+      // `row.quantity` değişmediği için useEffect bunu geri yazar.
+      setValue(row.quantity === null ? '' : String(row.quantity));
     } else if (value.trim() === '') {
       setValue(row.quantity === null ? '' : String(row.quantity));
     }

@@ -3,6 +3,7 @@
 export { useStockList } from './api/useStockList';
 export type { StockRow } from './api/useStockList';
 export { useSetProductStock, useBulkUpdateStock } from './api/useStockMutations';
+export type { BulkStockResult } from './api/useStockMutations';
 
 export { useRetailerStockList } from './api/useRetailerStockList';
 export type { RetailerStockRow } from './api/useRetailerStockList';

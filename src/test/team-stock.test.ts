@@ -111,14 +111,87 @@ describe('toplu stok güncelleme', () => {
     expect(body).toMatch(/v_qty < 0/);
   });
 
-  test('işlenen satır sayısı döner', () => {
-    // Kullanıcıya "gönderdiğin satır" değil "işlenen satır" gösterilir.
-    expect(body).toMatch(/v_count := v_count \+ 1/);
-    expect(body).toMatch(/return v_count/);
+  test('güncellenen ve oluşturulan sayısı AYRI döner', () => {
+    // Kullanıcıya "gönderdiğin satır" değil, sunucunun gerçekten yaptığı iş
+    // gösterilir; yeni ürün açılması ayrıca görünmek zorunda.
+    expect(body).toMatch(/jsonb_build_object\('updated', v_updated, 'created', v_created\)/i);
   });
 
   test('dizi olmayan yük reddedilir', () => {
     expect(body).toMatch(/INVALID_PAYLOAD/);
+  });
+});
+
+describe('Excel tanınmayan satırdan PASİF ürün doğurur', () => {
+  const body = functionBody('bulk_update_stock');
+
+  test('kimliksiz satır için ürün oluşturulur', () => {
+    expect(body).toMatch(/if v_product_id is null then[\s\S]*?insert into public\.products/i);
+  });
+
+  test('ürün PASİF ve fiyatı SIFIR doğar', () => {
+    // supplier_price KATMAN 2'dir; sıfır fiyatlı ürün sipariş edilebilseydi
+    // cari bozulurdu. Pasiflik bu yüzden güvenlik kilidi.
+    expect(body).toMatch(/values\s*\([\s\S]*?0,\s*false\s*\)/i);
+    expect(body).toMatch(/is_active\s*\)/i);
+  });
+
+  test('adı olmayan satırdan ürün DOĞMAZ', () => {
+    expect(body).toMatch(/if v_name is null then[\s\S]*?continue;/i);
+  });
+
+  test('dolu ama yabancı kimlik ürün DOĞURMAZ — atlanır', () => {
+    // Başkasının kimliğiyle ürün doğurmak, o kimliğin varlığını da doğrulardı.
+    const elseBranch = body.slice(body.indexOf('else'));
+    expect(elseBranch).toMatch(/owner_org_id = v_me[\s\S]*?continue;/i);
+    expect(elseBranch).not.toMatch(/insert into public\.products/i);
+  });
+
+  test('pasif ürün sipariş edilemez — sunucu tarafı hâlâ şart koşuyor', () => {
+    // Bayat bir sepetten bile geçmemeli.
+    expect(functionBody('place_order_atomic')).toMatch(/and is_active/i);
+  });
+});
+
+describe('stok tutma hakkı ÜYE tarafındır', () => {
+  test('misafir perakendeci kendi deposunu tutamaz', () => {
+    // Yalnız tedarikçisinin stoğunu GÖRÜR. Menüyü gizlemek birinci katman;
+    // bu ikinci katman (kilitli kural 15).
+    for (const fn of ['set_retailer_stock', 'bulk_update_retailer_stock']) {
+      const body = functionBody(fn);
+      expect(body, `${fn} boş`).not.toBe('');
+      expect(body).toMatch(/not public\.get_my_org_is_subscriber\(\)/i);
+      expect(body).toMatch(/STOCK_NOT_ALLOWED/);
+    }
+  });
+
+  test('misafir üretici yalnız ÜRÜN YÖNETİMİ izniyle stok tutar', () => {
+    for (const fn of ['set_product_stock', 'bulk_update_stock']) {
+      const body = functionBody(fn);
+      expect(body).toMatch(/not public\.manufacturer_may_write_stock\(\)/i);
+      expect(body).toMatch(/STOCK_NOT_ALLOWED/);
+    }
+  });
+
+  test('izin anahtarı aktif ilişkide can_edit_catalog üzerinden okunur', () => {
+    const body = functionBody('manufacturer_may_write_stock');
+    expect(body).toMatch(/get_my_org_is_subscriber\(\)/i);
+    expect(body).toMatch(/r\.can_edit_catalog/i);
+    expect(body).toMatch(/r\.status = 'active'/i);
+    // A9: denormalize kolon üzerinden eşitlik; alt sorguyla ilişki kimliği toplanmaz.
+    expect(body).toMatch(/r\.manufacturer_org_id = public\.get_my_org_id\(\)/i);
+    expect(body).not.toMatch(/relationship_id in \(/i);
+  });
+
+  test('perakendecinin kendi deposu hiçbir üreticiye görünmez', () => {
+    // retailer_stock yalnız sahibine açık; ne üye ne misafir üretici okuyabilir.
+    const policies = policiesFor('retailer_stock');
+    for (const p of policies) {
+      expect(p).not.toMatch(/manufacturer_org_id/i);
+    }
+    expect(policies.join('\n')).toMatch(
+      /retailer_org_id = \(select public\.get_my_org_id\(\)\)/i,
+    );
   });
 });
 

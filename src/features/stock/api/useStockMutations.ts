@@ -9,6 +9,8 @@ function useInvalidate() {
     void queryClient.invalidateQueries({ queryKey: ['stock'] });
     // Katalog listesi de stok gösteriyor; bayat kalmasın.
     void queryClient.invalidateQueries({ queryKey: ['catalog'] });
+    // Toplu yükleme yeni PASİF ürün doğurmuş olabilir.
+    void queryClient.invalidateQueries({ queryKey: ['products'] });
   };
 }
 
@@ -33,21 +35,38 @@ export function useSetProductStock() {
   });
 }
 
+/** Sunucunun gerçekten yaptığı iş — gönderilen satır sayısı değil. */
+export interface BulkStockResult {
+  updated: number;
+  /** Kimliksiz satırlardan doğan PASİF ürünler. */
+  created: number;
+}
+
 /**
  * CSV ile toplu güncelleme.
  *
- * Sunucu tek transaction'da işler; yarım güncelleme olmaz. Yabancı ürün
- * kimlikleri sessizce atlanır — dönen sayı GERÇEKTEN işlenen satır sayısıdır
- * ve kullanıcıya o gösterilir, "gönderdiğim satır sayısı" değil.
+ * Sunucu tek transaction'da işler; yarım güncelleme olmaz. Kimliği olmayan ama
+ * adı olan satırdan PASİF ürün doğar; kimliği dolu ama bize ait olmayan satır
+ * atlanır ve ürün doğurmaz.
  */
 export function useBulkUpdateStock() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (rows: StockCsvRow[]): Promise<number> => {
-      const payload = rows.map((r) => ({ product_id: r.productId, quantity: r.quantity }));
+    mutationFn: async (rows: StockCsvRow[]): Promise<BulkStockResult> => {
+      const payload = rows.map((r) => ({
+        product_id: r.productId,
+        quantity: r.quantity,
+        name: r.productName,
+        code: r.productCode,
+        category: r.category,
+      }));
       const { data, error } = await supabase.rpc('bulk_update_stock', rpcArgs({ p_rows: payload }));
       if (error) throw error;
-      return Number(data ?? 0);
+      // NOT: `database.generated.ts` bu RPC için hâlâ `Returns: number` diyor;
+      // migration uygulanıp `npm run gen:types` çalıştırılınca jsonb olacak
+      // (kilitli kural 13). Çift dönüşüm o güne kadar geçici.
+      const raw = data as unknown as { updated?: number; created?: number } | null;
+      return { updated: Number(raw?.updated ?? 0), created: Number(raw?.created ?? 0) };
     },
     onSuccess: invalidate,
   });
