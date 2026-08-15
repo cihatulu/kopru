@@ -35,6 +35,7 @@ export {
   counterpartyTitle,
   counterpartyNoun,
   pendingExplanation,
+  catalogEditableSuppliers,
 } from './domain/counterparty';
 export type { Edge, Party } from './domain/counterparty';
 

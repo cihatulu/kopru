@@ -60,6 +60,29 @@ export function counterpartyNoun(myKind: OrgKind): string {
 }
 
 /**
+ * Perakendecinin KATALOĞUNU DÜZENLEYEBİLDİĞİ tedarikçiler.
+ *
+ * Üç koşul da `save_product` ve `bulk_update_retailer_stock` RPC'lerindekiyle
+ * birebir aynıdır — liste sunucunun kabul edeceğinden geniş olursa kullanıcı
+ * üreticiyi seçer, sonra "yetkiniz yok" hatası alır.
+ *
+ * Üye üreticinin kataloğuna perakendeci ürün ekleyemez: o üretici kendi
+ * ürününü kendi yönetir.
+ */
+export function catalogEditableSuppliers(
+  edges: readonly Edge[],
+): { id: string; name: string }[] {
+  const byId = new Map<string, { id: string; name: string }>();
+  for (const e of edges) {
+    if (e.status !== RELATIONSHIP_STATUS.active) continue;
+    if (!e.canEditCatalog) continue;
+    if (e.manufacturer.isSubscriber) continue;
+    byId.set(e.manufacturer.id, { id: e.manufacturer.id, name: e.manufacturer.companyName });
+  }
+  return [...byId.values()];
+}
+
+/**
  * Bekleyen bir isteğin açıklaması. Kullanıcı neden bekletildiğini bilmeli:
  * karşı taraf da abone olduğu için tek taraflı bağlanılamıyor.
  */

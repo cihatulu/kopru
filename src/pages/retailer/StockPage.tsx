@@ -10,19 +10,28 @@ import {
   useBulkUpdateRetailerStock,
   useRetailerStockList,
   useSetRetailerStock,
+  type BulkStockResult,
   type StockFilters,
 } from '@/features/stock';
+import { catalogEditableSuppliers, useCounterparties } from '@/features/counterparties';
 
 /** Perakendeci Stok Yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export default function RetailerStockPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<StockFilters>(EMPTY_STOCK_FILTERS);
   const [importing, setImporting] = useState(false);
-  const [applied, setApplied] = useState<number | null>(null);
+  const [applied, setApplied] = useState<BulkStockResult | null>(null);
 
   const list = useRetailerStockList(search);
   const setStock = useSetRetailerStock();
   const bulk = useBulkUpdateRetailerStock();
+  const counterparties = useCounterparties();
+
+  // Yeni ürün YALNIZ izin verilmiş misafir üreticinin kataloğuna açılabilir.
+  const suppliers = useMemo(
+    () => catalogEditableSuppliers(counterparties.data?.pages.flat() ?? []),
+    [counterparties.data],
+  );
 
   const all = useMemo(() => list.data ?? [], [list.data]);
   const rows = useMemo(() => filterStockRows(all, filters), [all, filters]);
@@ -104,10 +113,13 @@ export default function RetailerStockPage() {
       {importing && (
         <CsvImportDialog
           pending={bulk.isPending}
-          appliedCount={applied}
+          appliedCount={applied?.updated ?? null}
+          createdCount={applied?.created ?? null}
+          canCreateProducts
+          manufacturers={suppliers}
           onClose={() => setImporting(false)}
-          onApply={(csvRows) =>
-            bulk.mutate(csvRows, { onSuccess: (count) => setApplied(count) })
+          onApply={(csvRows, manufacturerOrgId) =>
+            bulk.mutate({ rows: csvRows, manufacturerOrgId }, { onSuccess: setApplied })
           }
         />
       )}

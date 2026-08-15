@@ -204,6 +204,40 @@ describe('stok tutma hakkı ÜYE tarafındır', () => {
   });
 });
 
+describe('perakendeci Excel ile yeni üreticinin ürünlerini açar', () => {
+  const body = functionBody('bulk_update_retailer_stock');
+
+  test('yeni ürünler SEÇİLEN üreticinin kataloğuna yazılır', () => {
+    expect(body).toMatch(/insert into public\.products[\s\S]*?p_manufacturer_org_id/i);
+  });
+
+  test('yetki save_product ile aynı üç koşulu arar', () => {
+    // Liste sunucunun kabul edeceğinden geniş olursa kullanıcı üreticiyi seçer,
+    // sonra "yetkiniz yok" hatası alır.
+    expect(body).toMatch(/r\.status = 'active'/i);
+    expect(body).toMatch(/r\.can_edit_catalog/i);
+    expect(body).toMatch(/o\.is_subscriber = false/i);
+  });
+
+  test('üretici seçilmeden yeni ürün açılamaz — sessizce atlanmaz', () => {
+    expect(body).toMatch(/MANUFACTURER_REQUIRED/);
+  });
+
+  test('yetkisiz üretici seçilirse reddedilir', () => {
+    expect(body).toMatch(/CATALOG_NOT_ALLOWED/);
+  });
+
+  test('ÜRETİLMİŞ kolona yazılmaz', () => {
+    // `retailer_stock.retailer_kind` GENERATED ALWAYS'tir. Eski sürüm ona elle
+    // yazdığı için perakendeci stok yazma yolu HİÇ çalışmamıştı.
+    for (const fn of ['set_retailer_stock', 'bulk_update_retailer_stock']) {
+      const insert = /insert into public\.retailer_stock[^)]*\)/i.exec(functionBody(fn))?.[0] ?? '';
+      expect(insert, `${fn} INSERT bulunamadı`).not.toBe('');
+      expect(insert).not.toMatch(/retailer_kind/i);
+    }
+  });
+});
+
 describe('search_path sabitlenmiş (kilitli kural 4)', () => {
   for (const fn of ['set_staff_role', 'set_staff_active', 'set_product_stock']) {
     test(`${fn}`, () => {

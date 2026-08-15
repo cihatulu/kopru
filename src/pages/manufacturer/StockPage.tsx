@@ -124,6 +124,7 @@ export default function StockPage() {
           canCreateProducts
           onClose={() => setImporting(false)}
           onApply={(csvRows) => bulk.mutate(csvRows, { onSuccess: setApplied })}
+          // Üretici seçici YOK: ürünler zaten kendisinindir.
         />
       )}
     </div>
