@@ -62,12 +62,22 @@ describe('menüden gizlenen her bölüm ROTADA da kilitli', () => {
    * Sabit karakter penceresi kullanılamaz: pencere bir sonraki rotanın
    * korumasına taşıp korumasız bir rotayı korumalı gösteriyordu.
    */
-  const guarded = (panel: 'm' | 'r', path: string) => {
+  const routeText = (panel: 'm' | 'r', path: string) => {
     const text = sections[panel];
     const start = text.indexOf(`path: '${path}'`);
     if (start === -1) throw new Error(`/${panel}/${path} rotası yok`);
     const next = text.indexOf('path:', start + 8);
-    return text.slice(start, next === -1 ? undefined : next).includes('RequireSubscriber');
+    return text.slice(start, next === -1 ? undefined : next);
+  };
+
+  const guarded = (panel: 'm' | 'r', path: string) =>
+    /RequireSubscriber|subscriber: true/.test(routeText(panel, path));
+
+  const roleLock = (panel: 'm' | 'r', path: string): string | null => {
+    const t = routeText(panel, path);
+    if (t.includes('OWNER_ONLY')) return 'owner';
+    if (t.includes('MONEY_ROLES')) return 'money';
+    return null;
   };
 
   test('misafir perakendeciden gizlenenler', () => {
@@ -86,6 +96,38 @@ describe('menüden gizlenen her bölüm ROTADA da kilitli', () => {
     // Misafir üretici, izin anahtarı açıksa stok tutabilir; karar org
     // düzeyinde değil İLİŞKİ düzeyindedir, RPC verir.
     expect(guarded('m', 'stok')).toBe(false);
+  });
+
+  test('personelden gizlenen bölümler ROL kilidiyle de kapalı', () => {
+    // `navFor` bunları `staff` rolünden gizliyordu ama rotalar açıktı:
+    // personel adres çubuğuna yazarak cari ve finans ekranlarına girebiliyordu.
+    expect(roleLock('m', 'cari'), '/m/cari rol kilidi yok').not.toBeNull();
+    expect(roleLock('r', 'cari'), '/r/cari rol kilidi yok').not.toBeNull();
+    expect(roleLock('r', 'finans'), '/r/finans rol kilidi yok').not.toBeNull();
+    expect(roleLock('m', 'musteriler')).not.toBeNull();
+    expect(roleLock('r', 'tedarikcilerim')).not.toBeNull();
+  });
+
+  test('rol kilidi MENÜDEKİ gizleme ile birebir aynı', () => {
+    // Muhasebeciden yalnız Ekip ve Raporlar gizli; cari/finans onun asıl işi.
+    // Liste menüden dar olursa muhasebeci gördüğü sayfadan geri atılır.
+    expect(roleLock('m', 'ekip')).toBe('owner');
+    expect(roleLock('r', 'ekip')).toBe('owner');
+    expect(roleLock('m', 'raporlar')).toBe('owner');
+    expect(roleLock('r', 'raporlar')).toBe('owner');
+
+    expect(roleLock('m', 'cari')).toBe('money');
+    expect(roleLock('r', 'cari')).toBe('money');
+    expect(roleLock('r', 'finans')).toBe('money');
+    expect(roleLock('m', 'musteriler')).toBe('money');
+    expect(roleLock('r', 'tedarikcilerim')).toBe('money');
+  });
+
+  test('sipariş ve katalog her role açık kalır', () => {
+    // Personelin işi bunlar; rol kilidi eklemek onu işinden ederdi.
+    for (const path of ['katalog', 'siparisler', 'iade', 'ssh', 'duyurular']) {
+      expect(roleLock('r', path), `/r/${path} gereksiz rol kilidi`).toBeNull();
+    }
   });
 
   test('herkese açık bölümler kilitlenmez', () => {

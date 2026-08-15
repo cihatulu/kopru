@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthSession } from '@/features/auth';
 import { PageLoader } from '@/components/ui/PageLoader';
-import { ROUTES, type OrgKind } from '@/constants';
+import { ROUTES, type OrgKind, type OrgRole } from '@/constants';
 import { isAdminHost } from '@/lib/tenant';
 import { roleHomePath } from './roleHome';
 
@@ -52,5 +52,23 @@ export function RequireSubscriber({ children }: { children?: ReactNode }) {
 
   if (isLoading) return <PageLoader />;
   if (!user?.org?.isSubscriber) return <Navigate to={roleHomePath(user)} replace />;
+  return <>{children ?? <Outlet />}</>;
+}
+
+/**
+ * Rol kilidi. `navFor` bazı bölümleri personelden (ve kimini muhasebeciden)
+ * GİZLİYOR ama rotalar açıktı: personel adres çubuğuna yazarak cari ve finans
+ * ekranlarına girebiliyordu.
+ *
+ * İzin listesi menüdeki gizleme ile BİREBİR aynı tutulur; ayrışırsa kullanıcı
+ * menüde görmediği bir sayfaya girer ya da gördüğü sayfadan geri atılır.
+ */
+export function RequireOrgRole({ roles, children }: { roles: OrgRole[]; children?: ReactNode }) {
+  const { data: user, isLoading } = useAuthSession();
+
+  if (isLoading) return <PageLoader />;
+  if (!user?.orgRole || !roles.includes(user.orgRole)) {
+    return <Navigate to={roleHomePath(user)} replace />;
+  }
   return <>{children ?? <Outlet />}</>;
 }

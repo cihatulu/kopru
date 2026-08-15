@@ -1,9 +1,14 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { ORG_KIND, ROUTES } from '@/constants';
+import { ORG_KIND, ROUTES, type OrgRole } from '@/constants';
 import { TRACK_PATH } from '@/features/orders';
 import { PageLoader } from '@/components/ui/PageLoader';
-import { RequireOrgKind, RequirePlatformAdmin, RequireSubscriber } from './guards';
+import {
+  RequireOrgKind,
+  RequireOrgRole,
+  RequirePlatformAdmin,
+  RequireSubscriber,
+} from './guards';
 
 // PLAN §17.2 — panel bazlı kod bölme. Her panel ayrı chunk.
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -45,6 +50,25 @@ function lazyRoute(element: ReactNode) {
   return <Suspense fallback={<PageLoader />}>{element}</Suspense>;
 }
 
+/** Sahip + muhasebeci: cari ve finans muhasebecinin asıl işidir. */
+const MONEY_ROLES: OrgRole[] = ['owner', 'accountant'];
+/** Yalnız sahip. */
+const OWNER_ONLY: OrgRole[] = ['owner'];
+
+/**
+ * Rotayı abonelik ve/veya rol kilidiyle sarar.
+ *
+ * İki guard'ı iç içe yazmak rota tanımını okunmaz hale getiriyordu; kilit
+ * burada tek satırda bildirilir. İzin listeleri `navFor`'daki gizleme ile
+ * BİREBİR aynı tutulur (test bunu doğrular).
+ */
+function locked(element: ReactNode, opts: { subscriber?: boolean; roles?: OrgRole[] }) {
+  let node = lazyRoute(element);
+  if (opts.roles) node = <RequireOrgRole roles={opts.roles}>{node}</RequireOrgRole>;
+  if (opts.subscriber) node = <RequireSubscriber>{node}</RequireSubscriber>;
+  return node;
+}
+
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to={ROUTES.login} replace /> },
   { path: ROUTES.login, element: lazyRoute(<LoginPage />) },
@@ -66,23 +90,20 @@ export const router = createBrowserRouter([
           { path: 'stok', element: lazyRoute(<StockPage />) },
           // Misafir üreticiden GİZLENEN üç bölüm. Menüden çıkarmak birinci
           // katmandır; adres çubuğuna yazan da girememeli (kilitli kural 15).
-          {
-            path: 'ekip',
-            element: <RequireSubscriber>{lazyRoute(<TeamPage />)}</RequireSubscriber>,
-          },
+          { path: 'ekip', element: locked(<TeamPage />, { subscriber: true, roles: OWNER_ONLY }) },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
-          { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'cari', element: locked(<AccountsPage />, { roles: MONEY_ROLES }) },
           { path: 'iade', element: lazyRoute(<ReturnsPage />) },
           { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
           {
             path: 'raporlar',
-            element: <RequireSubscriber>{lazyRoute(<ReportsPage />)}</RequireSubscriber>,
+            element: locked(<ReportsPage />, { subscriber: true, roles: OWNER_ONLY }),
           },
           {
             path: 'musteriler',
-            element: <RequireSubscriber>{lazyRoute(<CustomersPage />)}</RequireSubscriber>,
+            element: locked(<CustomersPage />, { subscriber: true, roles: MONEY_ROLES }),
           },
         ],
       },
@@ -100,23 +121,24 @@ export const router = createBrowserRouter([
           { path: 'sepetim', element: lazyRoute(<CartPage />) },
           {
             path: 'finans',
-            element: <RequireSubscriber>{lazyRoute(<FinancePage />)}</RequireSubscriber>,
+            element: locked(<FinancePage />, { subscriber: true, roles: MONEY_ROLES }),
           },
           { path: 'siparisler', element: lazyRoute(<OrdersPage />) },
-          { path: 'cari', element: lazyRoute(<AccountsPage />) },
+          { path: 'cari', element: locked(<AccountsPage />, { roles: MONEY_ROLES }) },
           { path: 'iade', element: lazyRoute(<ReturnsPage />) },
           { path: 'ssh', element: lazyRoute(<SshPage />) },
           { path: 'servis', element: lazyRoute(<ServicePage />) },
           { path: 'duyurular', element: lazyRoute(<AnnouncementsPage />) },
           {
             path: 'raporlar',
-            element: <RequireSubscriber>{lazyRoute(<ReportsPage />)}</RequireSubscriber>,
+            element: locked(<ReportsPage />, { subscriber: true, roles: OWNER_ONLY }),
           },
           {
             path: 'tedarikcilerim',
-            element: (
-              <RequireSubscriber>{lazyRoute(<RetailerTedarikcilerPage />)}</RequireSubscriber>
-            ),
+            element: locked(<RetailerTedarikcilerPage />, {
+              subscriber: true,
+              roles: MONEY_ROLES,
+            }),
           },
           { path: 'urun-yonetimi', element: lazyRoute(<RetailerProductManagementPage />) },
           {
@@ -124,11 +146,11 @@ export const router = createBrowserRouter([
             // stoğunu görür. Menüden gizlemek yetmez — adres çubuğuna yazan da
             // girememeli (kilitli kural 15, birinci katman).
             path: 'stok',
-            element: <RequireSubscriber>{lazyRoute(<RetailerStockPage />)}</RequireSubscriber>,
+            element: locked(<RetailerStockPage />, { subscriber: true }),
           },
           {
             path: 'ekip',
-            element: <RequireSubscriber>{lazyRoute(<RetailerTeamPage />)}</RequireSubscriber>,
+            element: locked(<RetailerTeamPage />, { subscriber: true, roles: OWNER_ONLY }),
           },
         ],
       },
