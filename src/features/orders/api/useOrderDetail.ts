@@ -10,8 +10,8 @@ import {
   toRow,
   type ChildShipment,
   type OrderDetail,
-  type OrderStatusLogItem,
 } from '../domain/orderMapping';
+import { buildHistory } from '../domain/orderHistory';
 
 // Açık kolon listesi (kilitli kural 19). Gizli fiyat katmanları yok (A4).
 const ORDER_DETAIL_COLUMNS =
@@ -27,17 +27,12 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
     enabled: !!orderId,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<OrderDetail | null> => {
-      const [orderRes, logsRes, childrenRes] = await Promise.all([
+      const [orderRes, childrenRes] = await Promise.all([
         supabase
           .from('orders')
           .select(ORDER_DETAIL_COLUMNS)
           .eq('id', orderId ?? '')
           .maybeSingle(),
-        supabase
-          .from('order_status_logs')
-          .select('id, from_status, to_status, note, created_at')
-          .eq('order_id', orderId ?? '')
-          .order('created_at', { ascending: true }),
         supabase
           .from('orders')
           .select('id, order_no, status, total_amount, created_at')
@@ -60,7 +55,23 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         status: c.status ?? 'shipped',
       }));
 
-      const history = buildHistory(logsRes.data ?? [], shipments);
+      /*
+       * Tarihçe ÇOCUK siparişlerin kayıtlarını da içerir.
+       *
+       * NEDEN: sevkiyatın OLUŞTURULMASI köke yazılıyor ama İPTALİ çocuğa.
+       * Yalnız kökü sorgulayınca aynı sevkiyatın doğuşu görünüyor, ölümü
+       * görünmüyordu — kullanıcı iptal ettiği sevkiyatı kök detayda hâlâ
+       * "Sevk Edildi" olarak görüyordu.
+       *
+       * Sorgu çocuklardan SONRA çalışır; bu yüzden paralel değil.
+       */
+      const logsRes = await supabase
+        .from('order_status_logs')
+        .select('id, order_id, from_status, to_status, note, created_at')
+        .in('order_id', [orderId ?? '', ...shipments.map((s) => s.id)])
+        .order('created_at', { ascending: true });
+
+      const history = buildHistory(logsRes.data ?? [], shipments, orderId ?? '');
       if (history.length === 0 && r.created_at) {
         history.push({
           id: 'initial',
@@ -91,33 +102,3 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
   });
 }
 
-interface LogRow {
-  id: string;
-  from_status: OrderStatus | null;
-  to_status: OrderStatus | null;
-  note: string | null;
-  created_at: string;
-}
-
-/** Sevkiyat içeren durum kayıtlarına sırasıyla "Sevk-N" rozeti takılır. */
-function buildHistory(logs: LogRow[], shipments: ChildShipment[]): OrderStatusLogItem[] {
-  let counter = 0;
-  return logs.map((l) => {
-    const toStatus = l.to_status ?? 'pending';
-    let shipmentBadge: string | null = null;
-
-    if (toStatus === 'shipped' || toStatus === 'partially_shipped' || str(l.note).includes('sevkiyat')) {
-      counter++;
-      shipmentBadge = shipments[counter - 1]?.shipmentNo ?? `Sevk-${counter}`;
-    }
-
-    return {
-      id: str(l.id),
-      fromStatus: l.from_status ?? null,
-      toStatus,
-      note: nullable(l.note),
-      createdAt: str(l.created_at),
-      shipmentBadge,
-    };
-  });
-}

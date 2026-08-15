@@ -85,9 +85,12 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-extrabold text-xs text-slate-900">{formatMoney(s.totalAmount)}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-                      Sevk Edildi
-                    </span>
+                    {/*
+                      Rozet SABİT "Sevk Edildi" yazıyordu; iptal edilmiş sevkiyat
+                      da sevk edilmiş görünüyordu. Veri zaten doğruydu, ekran
+                      onu okumuyordu.
+                    */}
+                    <OrderStatusBadge status={s.status} />
                   </div>
                 </div>
               ))}
