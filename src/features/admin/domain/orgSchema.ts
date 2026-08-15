@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { isValidVknTc, normalizeVknTc } from '@/lib/tckn';
+import type { OrgKind } from '@/constants';
 
 const optional = z
   .string()
@@ -30,3 +31,20 @@ export const createOrgSchema = z.object({
 });
 
 export type CreateOrgForm = z.input<typeof createOrgSchema>;
+
+/**
+ * Form değerlerini org açma girdisine çevirir — SAF.
+ *
+ * Boş isteğe bağlı alanlar OKUNMAZ: `exactOptionalPropertyTypes` altında
+ * `undefined` atamak ile alanı hiç göndermemek aynı şey değildir.
+ */
+export function toCreateOrgInput(kind: OrgKind, v: CreateOrgForm) {
+  return {
+    kind,
+    companyName: v.companyName,
+    vknTc: v.vknTc,
+    ...(v.authorizedName ? { authorizedName: v.authorizedName } : {}),
+    ...(v.phone ? { phone: v.phone } : {}),
+    ...(v.email ? { email: v.email } : {}),
+  };
+}

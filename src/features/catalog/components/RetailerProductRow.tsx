@@ -1,28 +1,16 @@
-import { useState } from 'react';
+import { IconButton } from '@/components/ui/IconButton';
 import { formatMoney } from '@/lib/format';
-import {
-  MARGIN_LABEL,
-  marginBand,
-  netProfit,
-  stockLevel,
-  type StockLevel,
-} from '../domain/productStats';
+import { netProfit } from '../domain/productStats';
 import { marginPercent } from '../domain/productSchema';
 import type { CatalogProduct } from '../api/useProducts';
-
-const STOCK_STYLE: Record<StockLevel, { chip: string; dot: string }> = {
-  out: { chip: 'bg-red-50 text-red-700 border-red-100', dot: 'bg-red-500' },
-  low: { chip: 'bg-amber-50 text-amber-700 border-amber-100', dot: 'bg-amber-500' },
-  ok: { chip: 'bg-emerald-50 text-emerald-700 border-emerald-100', dot: 'bg-emerald-500' },
-  unknown: { chip: 'bg-slate-100 text-slate-500 border-slate-200', dot: 'bg-slate-400' },
-};
-
-const BAND_STYLE = {
-  high: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  mid: 'bg-amber-50 text-amber-700 border-amber-100',
-  low: 'bg-red-50 text-red-700 border-red-100',
-  unknown: 'bg-slate-100 text-slate-500 border-slate-200',
-} as const;
+import { RetailPriceCell } from './RetailPriceCell';
+import {
+  MarginCell,
+  ProductIdentityCell,
+  ProfitCell,
+  SelectCell,
+  StockCell,
+} from './ProductRowCells';
 
 interface Props {
   product: CatalogProduct;
@@ -39,6 +27,12 @@ interface Props {
   onUpdateRetailPrice: (productId: string, price: number) => void;
 }
 
+/**
+ * Perakendecinin katalog satırı.
+ *
+ * Marj ve kâr KATMAN 2 (tedarikçi fiyatı) ile KATMAN 3 (kendi satış fiyatı)
+ * arasından hesaplanır; üreticinin maliyeti bu tarafta hiç bulunmaz (A4).
+ */
 export function RetailerProductRow({
   product: p,
   quantity,
@@ -53,76 +47,14 @@ export function RetailerProductRow({
   onDelete,
   onUpdateRetailPrice,
 }: Props) {
-  const [editingPrice, setEditingPrice] = useState(false);
-  const [tempPrice, setTempPrice] = useState(retailPrice?.toString() ?? '');
-
-  const level = stockLevel(quantity);
   const margin = marginPercent(retailPrice ?? 0, p.supplierPrice);
-  const band = marginBand(margin);
   const profit = netProfit(retailPrice ?? 0, p.supplierPrice);
-
-  const handlePriceSave = () => {
-    const val = parseFloat(tempPrice);
-    if (!isNaN(val)) {
-      onUpdateRetailPrice(p.id, val);
-    }
-    setEditingPrice(false);
-  };
 
   return (
     <tr className={`transition-colors hover:bg-slate-50/45 ${selected ? 'bg-indigo-50/30' : ''}`}>
-      {canEdit && (
-        <td className="whitespace-nowrap px-4 py-4">
-          <input
-            type="checkbox"
-            aria-label={`${p.name} seç`}
-            checked={selected}
-            onChange={() => onToggle(p.id)}
-            className="size-4 cursor-pointer rounded border-slate-300 text-slate-900"
-          />
-        </td>
-      )}
+      {canEdit && <SelectCell product={p} selected={selected} onToggle={onToggle} />}
 
-      <td className="whitespace-nowrap px-4 py-4">
-        <div className="flex items-center">
-          <div className="size-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
-            {p.images[0] ? (
-              <img src={p.images[0]} alt="" className="size-11 object-cover" />
-            ) : (
-              <div className="flex size-11 items-center justify-center text-slate-300">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  className="size-5"
-                  aria-hidden="true"
-                >
-                  <path d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6" strokeLinejoin="round" />
-                </svg>
-              </div>
-            )}
-          </div>
-          <div className="ml-3.5">
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
-              {p.name}
-              {p.type === 'set' && (
-                <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-                  SET
-                </span>
-              )}
-              {!p.isActive && (
-                <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-600">
-                  PASİF
-                </span>
-              )}
-            </div>
-            <div className="mt-0.5 text-xs font-semibold text-slate-400">
-              Model: {p.code || '—'}
-            </div>
-          </div>
-        </div>
-      </td>
+      <ProductIdentityCell product={p} />
 
       <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-600">
         {groupName ?? '—'}
@@ -130,88 +62,20 @@ export function RetailerProductRow({
 
       <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">{p.category ?? '—'}</td>
 
-      <td className="whitespace-nowrap px-4 py-4">
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold ${STOCK_STYLE[level].chip}`}
-        >
-          <span className={`size-1.5 rounded-full ${STOCK_STYLE[level].dot}`} />
-          {quantity === null ? 'Kayıt yok' : `${quantity} Adet`}
-        </span>
-      </td>
+      <StockCell quantity={quantity} />
 
       <td className="whitespace-nowrap px-4 py-4 text-sm font-extrabold text-slate-800">
         {formatMoney(p.supplierPrice)}
       </td>
-      <td className="whitespace-nowrap px-4 py-4 text-sm font-extrabold text-indigo-600">
-        {editingPrice ? (
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              className="w-24 rounded border-slate-300 px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
-              value={tempPrice}
-              onChange={(e) => setTempPrice(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handlePriceSave();
-                if (e.key === 'Escape') {
-                  setEditingPrice(false);
-                  setTempPrice(retailPrice?.toString() ?? '');
-                }
-              }}
-              autoFocus
-            />
-            <button onClick={handlePriceSave} className="text-emerald-600 hover:text-emerald-700">
-              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </button>
-            <button onClick={() => {
-              setEditingPrice(false);
-              setTempPrice(retailPrice?.toString() ?? '');
-            }} className="text-slate-400 hover:text-slate-500">
-              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        ) : (
-          <div className="group flex items-center gap-2">
-            <span>{retailPrice === undefined ? 'Belirlenmedi' : formatMoney(retailPrice)}</span>
-            <button
-              onClick={() => {
-                setTempPrice(retailPrice?.toString() ?? '');
-                setEditingPrice(true);
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600"
-            >
-              <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
-          </div>
-        )}
-      </td>
-      <td
-        className={`whitespace-nowrap px-4 py-4 text-sm font-extrabold ${
-          profit !== null && profit < 0 ? 'text-red-600' : 'text-emerald-600'
-        }`}
-      >
-        {profit === null ? '—' : formatMoney(profit)}
-      </td>
 
-      <td className="whitespace-nowrap px-3 py-4 text-sm">
-        <div className="flex items-center gap-2">
-          {margin !== null && (
-            <span className={`font-extrabold ${margin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-              {margin.toFixed(1)}%
-            </span>
-          )}
-          <span
-            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${BAND_STYLE[band]}`}
-          >
-            {MARGIN_LABEL[band]}
-          </span>
-        </div>
-      </td>
+      <RetailPriceCell
+        productId={p.id}
+        retailPrice={retailPrice}
+        onSave={onUpdateRetailPrice}
+      />
+
+      <ProfitCell profit={profit} />
+      <MarginCell margin={margin} />
 
       {canEdit && (
         <td className="whitespace-nowrap px-3 py-4 text-center">
@@ -237,42 +101,5 @@ export function RetailerProductRow({
         </td>
       )}
     </tr>
-  );
-}
-
-function IconButton({
-  label,
-  danger,
-  onClick,
-  children,
-}: {
-  label: string;
-  danger?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      onClick={onClick}
-      className={`rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 ${
-        danger ? 'hover:text-red-500' : 'hover:text-indigo-600'
-      }`}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-4"
-        aria-hidden="true"
-      >
-        {children}
-      </svg>
-    </button>
   );
 }

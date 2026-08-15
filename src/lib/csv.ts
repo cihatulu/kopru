@@ -13,9 +13,18 @@ export function downloadCSV(
 ): void {
   const escape = (cell: string | number) => `"${String(cell).replace(/"/g, '""')}"`;
   const content = [headers.join(';'), ...rows.map((r) => r.map(escape).join(';'))].join('\r\n');
+  downloadCsvText(content, fileName);
+}
 
-  const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
+/**
+ * Hazır CSV metnini indirtir.
+ *
+ * Metni kendi üreten çağıranlar için (ör. stok şablonu). BOM ve mime tipi
+ * burada tek yerde verilir; her sayfanın kendi `Blob` + `<a>` kopyasını
+ * taşıması Türkçe karakter hatasının tekrar tekrar geri gelmesi demekti.
+ */
+export function downloadCsvText(content: string, fileName: string): void {
+  const url = URL.createObjectURL(new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' }));
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;

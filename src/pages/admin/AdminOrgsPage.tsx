@@ -1,203 +1,90 @@
-import { useState } from 'react';
 import {
+  DeleteOrgDialog,
   OrgDialogs,
   OrgTable,
   OrgToolbar,
   ResetPasswordError,
-  normalizeSubdomain,
-  toSubscriberFilter,
-  useCreateOrg,
-  useDowngradeOrg,
-  useOrgList,
-  useResetOrgPassword,
-  useSetOrgActive,
-  useUpgradeOrg,
-  useDeleteOrg,
-  type AdminOrg,
-  type CreateOrgForm,
-  type ResetPasswordResult,
-  type SubscriberFilter,
-  type UpgradeResult,
+  useAdminOrgs,
 } from '@/features/admin';
-import { Button } from '@/components/ui/Button';
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
+import { ListFooter } from '@/components/ui/ListFooter';
 import { Spinner } from '@/components/ui/Spinner';
 import type { OrgKind } from '@/constants';
 
 /** Üretici/perakendeci yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export function AdminOrgsPage({ kind }: { kind: OrgKind }) {
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<SubscriberFilter>('all');
-  const [target, setTarget] = useState<AdminOrg | null>(null);
-  const [deletingOrg, setDeletingOrg] = useState<AdminOrg | null>(null);
-  const [result, setResult] = useState<UpgradeResult | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [credentials, setCredentials] = useState<
-    (ResetPasswordResult & { companyName: string }) | null
-  >(null);
-  const [busyId, setBusyId] = useState<string | undefined>(undefined);
-
-  const list = useOrgList({ kind, search, ...toSubscriberFilter(filter) });
-  const create = useCreateOrg();
-  const upgrade = useUpgradeOrg();
-  const downgrade = useDowngradeOrg();
-  const setActive = useSetOrgActive();
-  const resetPassword = useResetOrgPassword();
-  const deleteOrg = useDeleteOrg();
-
-  const orgs = list.data?.pages.flat() ?? [];
-
-  const submitCreate = (v: CreateOrgForm) => {
-    create.mutate(
-      {
-        kind,
-        companyName: v.companyName,
-        vknTc: v.vknTc,
-        ...(v.authorizedName ? { authorizedName: v.authorizedName } : {}),
-        ...(v.phone ? { phone: v.phone } : {}),
-        ...(v.email ? { email: v.email } : {}),
-      },
-      {
-        onSuccess: () => {
-          setCreating(false);
-          create.reset();
-        },
-      },
-    );
-  };
-
-  const doReset = (org: AdminOrg) => {
-    setBusyId(org.id);
-    resetPassword.mutate(org.id, {
-      onSuccess: (r) => setCredentials({ ...r, companyName: org.companyName }),
-      onSettled: () => setBusyId(undefined),
-    });
-  };
-
-  const doDelete = (org: AdminOrg) => {
-    setBusyId(org.id);
-    deleteOrg.mutate(org.id, {
-      onSuccess: () => setDeletingOrg(null),
-      onSettled: () => setBusyId(undefined),
-    });
-  };
+  const a = useAdminOrgs(kind);
 
   return (
     <div className="space-y-5">
       <OrgToolbar
         kind={kind}
-        search={search}
-        onSearchChange={setSearch}
-        filter={filter}
-        onFilterChange={setFilter}
-        total={orgs.length}
-        onCreate={() => setCreating(true)}
+        search={a.search}
+        onSearchChange={a.setSearch}
+        filter={a.filter}
+        onFilterChange={a.setFilter}
+        total={a.orgs.length}
+        onCreate={() => a.setCreating(true)}
       />
 
-      {list.isError && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          Liste yüklenemedi.
-        </p>
-      )}
+      {a.list.isError && <ErrorAlert>Liste yüklenemedi.</ErrorAlert>}
 
-      {resetPassword.isError && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {resetPassword.error instanceof ResetPasswordError
-            ? resetPassword.error.message
+      {a.resetPassword.isError && (
+        <ErrorAlert>
+          {a.resetPassword.error instanceof ResetPasswordError
+            ? a.resetPassword.error.message
             : 'Şifre yenilenemedi.'}
-        </p>
+        </ErrorAlert>
       )}
 
-      {deleteOrg.isError && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          Firma silinirken bir hata oluştu.
-        </p>
-      )}
+      {a.deleteOrg.isError && <ErrorAlert>Firma silinirken bir hata oluştu.</ErrorAlert>}
 
-      {list.isPending ? (
+      {a.list.isPending ? (
         <div className="flex justify-center py-12">
           <Spinner />
         </div>
       ) : (
         <OrgTable
-          orgs={orgs}
-          busyId={busyId ?? (upgrade.isPending || downgrade.isPending ? target?.id : undefined)}
-          onUpgrade={setTarget}
-          onDowngrade={(org) => downgrade.mutate(org.id)}
-          onToggleActive={(org) => setActive.mutate({ orgId: org.id, isActive: !org.isActive })}
-          onResetPassword={doReset}
-          onDelete={setDeletingOrg}
+          orgs={a.orgs}
+          busyId={a.busyId}
+          onUpgrade={a.setUpgradeTarget}
+          onDowngrade={a.downgradeOrg}
+          onToggleActive={a.toggleActive}
+          onResetPassword={a.resetOrgPassword}
+          onDelete={a.setDeletingOrg}
         />
       )}
 
-      {list.hasNextPage && (
-        <div className="flex justify-center">
-          <Button
-            variant="secondary"
-            loading={list.isFetchingNextPage}
-            onClick={() => void list.fetchNextPage()}
-          >
-            Daha fazla yükle
-          </Button>
-        </div>
-      )}
+      <ListFooter
+        label={`Toplam ${a.orgs.length} kayıt`}
+        hasMore={a.list.hasNextPage}
+        loading={a.list.isFetchingNextPage}
+        onLoadMore={() => void a.list.fetchNextPage()}
+      />
 
-      {deletingOrg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">Firmayı Sil</h3>
-            <p className="text-sm text-slate-600">
-              <strong className="text-slate-900">{deletingOrg.companyName}</strong> firmasını ve bu firmaya ait tüm verileri kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                variant="secondary"
-                disabled={deleteOrg.isPending}
-                onClick={() => setDeletingOrg(null)}
-              >
-                Vazgeç
-              </Button>
-              <Button
-                variant="danger"
-                loading={deleteOrg.isPending}
-                onClick={() => doDelete(deletingOrg)}
-              >
-                Evet, Sil
-              </Button>
-            </div>
-          </div>
-        </div>
+      {a.deletingOrg && (
+        <DeleteOrgDialog
+          org={a.deletingOrg}
+          pending={a.deleteOrg.isPending}
+          onClose={() => a.setDeletingOrg(null)}
+          onConfirm={() => a.deletingOrg && a.confirmDelete(a.deletingOrg)}
+        />
       )}
 
       <OrgDialogs
         kind={kind}
-        creating={creating}
-        createPending={create.isPending}
-        createFailed={create.isError}
-        onCreateClose={() => {
-          setCreating(false);
-          create.reset();
-        }}
-        onCreateSubmit={submitCreate}
-        upgradeTarget={target}
-        upgradePending={upgrade.isPending}
-        upgradeResult={result}
-        onUpgradeClose={() => {
-          setTarget(null);
-          setResult(null);
-          upgrade.reset();
-        }}
-        onUpgradeConfirm={(subdomain: string) =>
-          target &&
-          upgrade.mutate(
-            { orgId: target.id, subdomain: normalizeSubdomain(subdomain) },
-            { onSuccess: setResult },
-          )
-        }
-        credentials={credentials}
-        onCredentialsClose={() => {
-          setCredentials(null);
-          resetPassword.reset();
-        }}
+        creating={a.creating}
+        createPending={a.create.isPending}
+        createFailed={a.create.isError}
+        onCreateClose={a.closeCreate}
+        onCreateSubmit={a.submitCreate}
+        upgradeTarget={a.upgradeTarget}
+        upgradePending={a.upgrade.isPending}
+        upgradeResult={a.upgradeResult}
+        onUpgradeClose={a.closeUpgrade}
+        onUpgradeConfirm={a.confirmUpgrade}
+        credentials={a.credentials}
+        onCredentialsClose={a.closeCredentials}
       />
     </div>
   );

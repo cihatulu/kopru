@@ -4,6 +4,19 @@ import { useAnnouncements } from './useAnnouncements';
 
 const READ_EVENT = 'kopru_announcements_read';
 
+/**
+ * localStorage'daki okundu listesini güvenle çözer.
+ *
+ * `JSON.parse` `any` döner; doğrudan kullanmak tip güvenliğini deler. Kullanıcı
+ * elle kurcalayabildiği için içerik dizi ve string olmayabilir — süzülür.
+ */
+function parseReadIds(raw: string | null): string[] {
+  if (!raw) return [];
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter((v): v is string => typeof v === 'string');
+}
+
 export function useUnreadAnnouncements() {
   const { data: user } = useAuthSession();
   const orgId = user?.org?.id;
@@ -12,8 +25,7 @@ export function useUnreadAnnouncements() {
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     if (!orgId) return new Set();
     try {
-      const stored = localStorage.getItem(`kopru_read_announcements_${orgId}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      return new Set(parseReadIds(localStorage.getItem(`kopru_read_announcements_${orgId}`)));
     } catch {
       return new Set();
     }
@@ -22,8 +34,7 @@ export function useUnreadAnnouncements() {
   const syncFromStorage = useCallback(() => {
     if (!orgId) return;
     try {
-      const stored = localStorage.getItem(`kopru_read_announcements_${orgId}`);
-      const ids: string[] = stored ? JSON.parse(stored) : [];
+      const ids = parseReadIds(localStorage.getItem(`kopru_read_announcements_${orgId}`));
       setReadIds((prev) => {
         if (prev.size === ids.length && ids.every((id) => prev.has(id))) {
           return prev;

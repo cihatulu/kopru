@@ -15,3 +15,5 @@ export type {
 } from './api/useAnnouncementMutations';
 export { AnnouncementList } from './components/AnnouncementList';
 export { AnnouncementDialog } from './components/AnnouncementDialog';
+export { AnnouncementTable } from './components/AnnouncementTable';
+export { AnnouncementsHeader } from './components/AnnouncementsHeader';

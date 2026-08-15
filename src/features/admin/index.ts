@@ -2,6 +2,9 @@
 
 export { useOrgList } from './api/useOrgList';
 export type { AdminOrg, OrgListFilters } from './api/useOrgList';
+export { DeleteOrgDialog } from './components/DeleteOrgDialog';
+export { toCreateOrgInput } from './domain/orgSchema';
+export { useAdminOrgs } from './api/useAdminOrgs';
 
 export { useCreateOrg } from './api/useCreateOrg';
 export type { CreateOrgInput } from './api/useCreateOrg';

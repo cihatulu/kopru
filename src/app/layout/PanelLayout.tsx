@@ -66,9 +66,9 @@ function RetailerPanel() {
                 : 'Misafir'
           }
           cartCount={totals.itemCount}
-          onCartClick={() => navigate(`${ROUTES.retailer}/sepetim`)}
+          onCartClick={() => void navigate(`${ROUTES.retailer}/sepetim`)}
           unreadAnnouncementsCount={unreadCount}
-          onAnnouncementsClick={() => navigate(`${ROUTES.retailer}/duyurular`)}
+          onAnnouncementsClick={() => void navigate(`${ROUTES.retailer}/duyurular`)}
           loggingOut={logout.isPending}
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}
@@ -118,7 +118,7 @@ function ManufacturerPanel() {
                 : 'Misafir'
           }
           unreadAnnouncementsCount={unreadCount}
-          onAnnouncementsClick={() => navigate(`${ROUTES.manufacturer}/duyurular`)}
+          onAnnouncementsClick={() => void navigate(`${ROUTES.manufacturer}/duyurular`)}
           loggingOut={logout.isPending}
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}
