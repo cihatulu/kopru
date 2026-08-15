@@ -62,10 +62,10 @@ export function useBulkUpdateStock() {
       }));
       const { data, error } = await supabase.rpc('bulk_update_stock', rpcArgs({ p_rows: payload }));
       if (error) throw error;
-      // NOT: `database.generated.ts` bu RPC için hâlâ `Returns: number` diyor;
-      // migration uygulanıp `npm run gen:types` çalıştırılınca jsonb olacak
-      // (kilitli kural 13). Çift dönüşüm o güne kadar geçici.
-      const raw = data as unknown as { updated?: number; created?: number } | null;
+      // RPC `jsonb` döner; `Json` tipi geniş olduğu için alanlar burada
+      // daraltılır. Eksik alan 0 sayılır — sayı göstermek yerine patlamak
+      // kullanıcıya "kaç satır işlendi" bilgisini tümden kaybettirirdi.
+      const raw = data as { updated?: number; created?: number } | null;
       return { updated: Number(raw?.updated ?? 0), created: Number(raw?.created ?? 0) };
     },
     onSuccess: invalidate,

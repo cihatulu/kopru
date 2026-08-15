@@ -1845,7 +1845,7 @@ export type Database = {
         Returns: number
       }
       bulk_update_retailer_stock: { Args: { p_rows: Json }; Returns: number }
-      bulk_update_stock: { Args: { p_rows: Json }; Returns: number }
+      bulk_update_stock: { Args: { p_rows: Json }; Returns: Json }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -2036,6 +2036,7 @@ export type Database = {
       }
       ensure_log_partition: { Args: { p_month: string }; Returns: undefined }
       get_my_org_id: { Args: never; Returns: string }
+      get_my_org_is_subscriber: { Args: never; Returns: boolean }
       get_my_org_kind: {
         Args: never
         Returns: Database["public"]["Enums"]["org_kind"]
@@ -2084,6 +2085,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      manufacturer_may_write_stock: { Args: never; Returns: boolean }
       manufacturer_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json

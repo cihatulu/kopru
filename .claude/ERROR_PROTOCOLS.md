@@ -237,3 +237,23 @@ değiştiren her migration'da, o kolonu yazan istemci kodunu aynı commit'te gö
 **Ders:** Bir alanın "dahil mi değil mi" olduğu tutara bakarak anlaşılamaz. Geçmiş veriyi
 onarırken bu yüzden genel `UPDATE` yazma — farkı zaten içeren kayıtları ikinci kez şişirir;
 etkilenen kayıtları kimlikle hedefle.
+
+### 32. `supabase db push` — "failed to create migration table: wsarecv / connection forcibly closed"
+**Sebep:** Supabase'in **doğrudan** veritabanı bağlantısı (`db.<ref>.supabase.co:5432`)
+IPv4 eklentisi yoksa **yalnız IPv6**'dır. CLI IPv6 ile bağlanır, ağ (ISP/modem/güvenlik
+duvarı) oturumu düşürür. Hata mesajındaki adreslerin `[2a02:...]` biçiminde olması
+ayırt edici belirtidir — bu bir yetki hatası DEĞİL, ağ hatasıdır. `supabase login`
+başarılı olduğu halde `db push` bu noktada patlar.
+**Çözüm:** IPv4 üzerinden çalışan **session pooler**'a bağlan:
+```
+npx supabase db push --db-url "postgresql://postgres.<PROJECT_REF>:<SIFRE>@aws-0-<BOLGE>.pooler.supabase.com:5432/postgres"
+```
+Bağlantı dizesi: Dashboard → **Connect** → **Session pooler** (port 5432, IPv4).
+Şifrede `@ : / ?` gibi karakter varsa URL-encode et (`@` → `%40`).
+Alternatifler: `test-ipv6.com` ile ağını sına; kalıcı çözüm için IPv4 eklentisi (ücretli).
+Ard arda iki yanlış şifre denemesi IP yasağı doğurur → Dashboard → Database Settings →
+**Unban IP**.
+
+**Ders:** `db push` iki ayrı kimlik ister — hesap jetonu (`supabase login`) ve **veritabanı
+şifresi**. Biri çözülünce diğeri karşına çıkar; "login başarılı" bağlantının kurulacağı
+anlamına gelmez.
