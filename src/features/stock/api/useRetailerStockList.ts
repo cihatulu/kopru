@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { managedManufacturerIds, type CatalogEdge } from '../domain/managedCatalogs';
 
 export interface RetailerStockRow {
   productId: string;
@@ -47,19 +48,27 @@ export function useRetailerStockList(search: string) {
     queryFn: async (): Promise<RetailerStockRow[]> => {
       const { data: edges, error: edgeError } = await supabase
         .from('relationships')
-        .select('manufacturer_org_id, can_edit_catalog, manufacturer:organizations!relationships_manufacturer_org_id_manufacturer_kind_fkey(company_name)')
+        .select('manufacturer_org_id, can_edit_catalog, manufacturer:organizations!relationships_manufacturer_org_id_manufacturer_kind_fkey(company_name, is_subscriber)')
         .eq('status', 'active');
       if (edgeError) throw edgeError;
 
       const nameByOrg = new Map<string, string>();
-      // Kataloğunu perakendecinin yönettiği (misafir) üreticiler.
-      const managedOrgs = new Set<string>();
+      const catalogEdges: CatalogEdge[] = [];
       for (const e of edges ?? []) {
-        const org = e.manufacturer as { company_name?: string | null } | null;
+        const org = e.manufacturer as {
+          company_name?: string | null;
+          is_subscriber?: boolean | null;
+        } | null;
         const id = String(e.manufacturer_org_id);
         nameByOrg.set(id, org?.company_name ?? '—');
-        if (e.can_edit_catalog) managedOrgs.add(id);
+        catalogEdges.push({
+          manufacturerOrgId: id,
+          canEditCatalog: e.can_edit_catalog === true,
+          manufacturerIsSubscriber: org?.is_subscriber !== false,
+        });
       }
+      // Kataloğunu perakendecinin yönettiği üreticiler — kural domain'de.
+      const managedOrgs = managedManufacturerIds(catalogEdges);
       if (nameByOrg.size === 0) return [];
 
       let q = supabase
