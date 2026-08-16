@@ -25,9 +25,6 @@ const TONES: Record<CardTone, { icon: string; value: string }> = {
   negative: { icon: 'bg-red-50 text-red-600', value: 'text-red-700' },
 };
 
-/** Sıfır değerli "bekliyor" kartı dikkat çekmemeli — yapılacak iş yok. */
-const IDLE = { icon: 'bg-slate-100 text-slate-400', value: 'text-slate-400' };
-
 interface Props {
   title: string;
   value: string;
@@ -38,10 +35,9 @@ interface Props {
 }
 
 export function SummaryCard({ title, value, hint, icon, tone }: Props) {
-  // "0", "₺0,00" gibi değerlerde rakamların hepsi sıfırdır. Bekleyen iş
-  // sayısı sıfırken kartı kehribara boyamak yanlış alarm üretiyordu.
-  const isZero = !/[1-9]/.test(value);
-  const t = tone === 'attention' && isZero ? IDLE : TONES[tone];
+  // Sıfır değerin sönük çizilmesi `StatCard`'ın işi — kural orada, tek
+  // yerde durur. Burada yalnız anlam → renk eşlemesi var.
+  const t = TONES[tone];
 
   return (
     <StatCard

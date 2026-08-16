@@ -11,6 +11,15 @@ export default defineConfig({
     // bu gerçekten yaşandı ve testler eski projenin giriş ekranını gördü.
     port: 5180,
     strictPort: true,
+    watch: {
+      /*
+        `tsc -b` derleme önbelleğini bu dosyalara yazar. Vite bunları da
+        izlediği için `npm run lint` her çalıştığında dev sunucusu TAM
+        SAYFA YENİLEME yapıyordu; açık oturum ve form durumu uçuyordu.
+        Kaynak dosya değiller — izlemeye girmemeleri gerekir.
+      */
+      ignored: ['**/*.tsbuildinfo'],
+    },
   },
   resolve: {
     alias: {

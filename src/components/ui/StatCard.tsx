@@ -32,6 +32,20 @@ interface Props {
 }
 
 /**
+ * SIFIR DEĞER SÖNÜK ÇİZİLİR.
+ *
+ * "Bekleyen sipariş: 0" kartını kehribara boyamak yanlış alarm üretir —
+ * ortada yapılacak iş yokken kart dikkat çeker. Kural kartın kendisinde
+ * durur, yoksa gösterge panelinde uygulanıp SSH ekranında unutuluyordu:
+ * aynı "0 bekliyor" bilgisi bir ekranda gri, diğerinde kehribardı.
+ */
+const IDLE_ICON = 'bg-slate-100 text-slate-400';
+const IDLE_VALUE = 'text-slate-400';
+
+/** "0", "₺0,00", "%0,0" — hiç sıfırdan farklı rakam içermiyorsa sönük. */
+const isZero = (v: string | number) => !/[1-9]/.test(String(v));
+
+/**
  * Kartın iç düzeni.
  *
  * Ayrı bileşen: sipariş sayaçları aynı zamanda süzgeç olduğu için `div`
@@ -46,13 +60,19 @@ export function StatCardContent({
   valueClass = 'text-slate-900',
   icon,
 }: Props) {
+  const idle = isZero(value);
+
   return (
     <>
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0 pt-0.5 text-[11px] font-bold uppercase leading-tight tracking-wider text-slate-500">
           {label}
         </span>
-        <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${iconClass}`}>
+        <span
+          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+            idle ? IDLE_ICON : iconClass
+          }`}
+        >
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -68,7 +88,11 @@ export function StatCardContent({
         </span>
       </div>
 
-      <span className={`mt-2 truncate text-2xl font-bold tabular-nums tracking-tight ${valueClass}`}>
+      <span
+        className={`mt-2 truncate text-2xl font-bold tabular-nums tracking-tight ${
+          idle ? IDLE_VALUE : valueClass
+        }`}
+      >
         {value}
       </span>
 
