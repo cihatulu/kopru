@@ -69,7 +69,17 @@ const P = ['49000000012','49000000013','49000000014','49000000015','49000000016'
            '49000000017','49000000018','49000000019','49000000020','49000000021'];
 const MISAFIR_U = '49000000022';
 const MISAFIR_P = '49000000023';
-const HEPSI = [...U, ...P, MISAFIR_U, MISAFIR_P];
+
+/**
+ * Temizlikte kapsanacak ek numaralar.
+ *
+ * `49000000001`, betik yazılmadan önce arayüzden elle açılan bir deneme
+ * kaydıydı. Temizlik listesi yalnız betiğin kendi açtıklarını kapsasaydı
+ * o kayıt sessizce kalıcı olurdu — `49` öneki bu projede "test" demektir,
+ * hepsi buradan silinir.
+ */
+const EK_TEMIZLIK = ['49000000001'];
+const HEPSI = [...U, ...P, MISAFIR_U, MISAFIR_P, ...EK_TEMIZLIK];
 
 const SIFRE = 'test1234';
 const MODULLER = ['dashboard','catalog','orders','accounts','counterparties','stock','reports',
