@@ -177,7 +177,7 @@ export function InviteCounterpartyModal({ noun, pending, errorMessage, onClose, 
             <Button
               type="submit"
               disabled={pending}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+              
             >
               {pending ? 'Oluşturuluyor...' : 'Davet Oluştur ve Gönder'}
             </Button>

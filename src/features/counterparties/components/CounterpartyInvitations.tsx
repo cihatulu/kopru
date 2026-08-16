@@ -63,7 +63,7 @@ export function CounterpartyInvitations({
   return (
     <div className="space-y-3 pt-6 border-t border-slate-100">
       <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+        <span className="w-2.5 h-2.5 rounded-full bg-brand-600" />
         WhatsApp {noun} Davetleri
       </h2>
 

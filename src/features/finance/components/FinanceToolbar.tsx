@@ -32,11 +32,10 @@ export function FinanceToolbar({ tab, onCustomerPayment, onIncome, onExpense }: 
 
       <Button
         size="sm"
-        className={
-          tab === 'cash'
-            ? 'bg-blue-600 hover:bg-blue-700 text-white font-bold'
-            : 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold'
-        }
+        // Nakit tahsilat marka rengiyle, POS tahsilatı onay yeşiliyle:
+        // ikisi ayrı para akışı ve kullanıcı hangisine bastığını renkten de
+        // ayırt ediyor.
+        {...(tab === 'cash' ? {} : { variant: 'success' as const })}
         onClick={() => onCustomerPayment({ method: tab, mode: 'payment' })}
       >
         + {posLabel}

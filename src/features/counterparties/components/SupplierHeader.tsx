@@ -27,9 +27,8 @@ export function SupplierHeader({ onInvite, onAdd }: Props) {
         <Button
           size="sm"
           onClick={onAdd}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
         >
-          + Yeni Üretici Ekle
+          Yeni Üretici
         </Button>
       </div>
     </div>

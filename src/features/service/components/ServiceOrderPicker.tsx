@@ -96,7 +96,7 @@ export function ServiceOrderPicker({
         <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed space-y-3">
           <p className="text-xs text-slate-500 font-medium">{emptyText}</p>
           {manual && (
-            <Button onClick={manual.onSelect} size="sm" className="bg-blue-600 text-white font-bold">
+            <Button onClick={manual.onSelect} size="sm" >
               {manual.label}
             </Button>
           )}

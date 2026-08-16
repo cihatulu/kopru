@@ -8,7 +8,7 @@ const ACCENT = {
   blue: {
     hover: 'hover:border-blue-400 hover:bg-blue-50/30',
     text: 'group-hover:text-blue-600',
-    pill: 'group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600',
+    pill: 'group-hover:bg-brand-600 group-hover:text-white group-hover:border-brand-600',
   },
   rose: {
     hover: 'hover:border-rose-400 hover:bg-rose-50/30',

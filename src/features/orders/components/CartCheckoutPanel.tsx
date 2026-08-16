@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import { formatMoney } from '@/lib/format';
 import { CartSummaryCard } from './CartSummaryCard';
 import { CheckoutFields } from './CheckoutFields';
@@ -47,16 +48,18 @@ export function CartCheckoutPanel({
         </p>
       )}
 
-      <button
-        type="button"
+      {/* Sepetin tek ve son eylemi — bu yüzden `lg` ve tam genişlik. */}
+      <Button
+        size="lg"
+        className="w-full"
         disabled={!checkout.canSubmit}
+        loading={checkout.pending}
         onClick={onSubmit}
-        className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-lg shadow-indigo-200"
       >
         {checkout.pending
-          ? 'Gönderiliyor...'
+          ? 'Gönderiliyor…'
           : `Siparişi Tamamla · ${formatMoney(totals.supplierTotal)}`}
-      </button>
+      </Button>
     </div>
   );
 }

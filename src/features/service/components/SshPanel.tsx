@@ -64,16 +64,7 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
         </div>
 
         {isRetailer && (
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            SSH Talebi Başlat
-          </button>
+          <Button onClick={() => setShowCreateModal(true)}>SSH Talebi Başlat</Button>
         )}
       </div>
 

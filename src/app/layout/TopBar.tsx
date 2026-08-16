@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SubscriptionRequestAction } from '@/features/counterparties';
-import { TopBarIconButton } from './TopBarIconButton';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface Props {
   panelLabel: string;
@@ -46,9 +46,9 @@ export function TopBar({
   return (
     <header className="flex h-14 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 md:px-6">
       <div className="flex items-center gap-2.5">
-        <TopBarIconButton label="Menü" onClick={onMenu} className="md:hidden">
+        <IconButton label="Menü" size="md" onClick={onMenu} className="md:hidden">
           <path d="M4 6h16M4 12h16M4 18h16" />
-        </TopBarIconButton>
+        </IconButton>
 
         {/*
           İki etiket de `Badge` — eskiden biri `py-1.5` siyah pill, diğeri
@@ -62,19 +62,20 @@ export function TopBar({
 
       <div className="flex items-center gap-2">
         {onAnnouncementsClick !== undefined && (
-          <TopBarIconButton
+          <IconButton
             label="Duyurular ve Bildirimler"
+            size="md"
             count={unreadAnnouncementsCount}
             onClick={onAnnouncementsClick}
           >
             <path d={BELL} />
-          </TopBarIconButton>
+          </IconButton>
         )}
 
         {onCartClick !== undefined && (
-          <TopBarIconButton label="Sepetim" count={cartCount} onClick={onCartClick}>
+          <IconButton label="Sepetim" size="md" count={cartCount} onClick={onCartClick}>
             <path d={CART} />
-          </TopBarIconButton>
+          </IconButton>
         )}
 
         <span className="ml-1 hidden truncate text-sm font-semibold text-slate-700 sm:inline">

@@ -40,10 +40,10 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
         <div>
           <h3 className="text-base font-extrabold text-slate-800">{title}</h3>
           <div className="flex items-center gap-2 mt-1">
-            <div className="w-8 h-1.5 rounded-full bg-blue-600" />
+            <div className="w-8 h-1.5 rounded-full bg-brand-600" />
             <div
               className={`w-8 h-1.5 rounded-full transition-all ${
-                form.step >= 2 ? 'bg-blue-600' : 'bg-slate-200'
+                form.step >= 2 ? 'bg-brand-600' : 'bg-slate-200'
               }`}
             />
           </div>
@@ -88,7 +88,7 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
           <Button
             loading={form.submitting}
             onClick={() => void form.submit()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            
           >
             Talebi Gönder
           </Button>

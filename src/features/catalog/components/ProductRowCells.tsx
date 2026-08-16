@@ -43,7 +43,7 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
           <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
             {p.name}
             {p.type === 'set' && (
-              <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
+              <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
                 SET
               </span>
             )}

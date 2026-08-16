@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import { otherParty, type Edge } from '../domain/counterparty';
 
 interface Props {
@@ -59,7 +60,7 @@ export function CustomerTable({
                 key={edge.id}
                 className={`transition-colors hover:bg-slate-50/40 ${active ? '' : 'bg-slate-50/40 opacity-70'}`}
               >
-                <td className="whitespace-nowrap px-6 py-5">
+                <td className="whitespace-nowrap px-6 py-3">
                   <div className="flex items-center gap-4">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 text-xs font-extrabold text-blue-600 shadow-sm">
                       {initials(p.companyName)}
@@ -83,22 +84,22 @@ export function CustomerTable({
                   </div>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-5 text-sm font-bold text-slate-700">
+                <td className="whitespace-nowrap px-6 py-3 text-sm font-bold text-slate-700">
                   {p.authorizedName ?? '—'}
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-5 text-sm">
+                <td className="whitespace-nowrap px-6 py-3 text-sm">
                   <p className="text-slate-600">{p.email ?? '—'}</p>
                   <p className="mt-0.5 text-slate-500">{p.phone ?? '—'}</p>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-5 text-center">
+                <td className="whitespace-nowrap px-6 py-3 text-center">
                   <span className="inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
                     % {edge.discountRate}
                   </span>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-5">
+                <td className="whitespace-nowrap px-6 py-3">
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     <Action
                       label="Düzenle"
@@ -139,6 +140,14 @@ export function CustomerTable({
   );
 }
 
+/**
+ * Satır eylemi.
+ *
+ * Üç ton vardı — kehribar ("Düzenle", "Şifre Sıfırla"), düz beyaz ve
+ * kırmızı — ve üçü de dolu zeminliydi. İki satırlık listede altı renkli
+ * düğme yan yana geliyor, satırın kendisi okunmuyordu. Şimdi olağan
+ * eylemler ikincil, yıkıcı olan zeminsiz kırmızı.
+ */
 function Action({
   label,
   tone,
@@ -152,18 +161,15 @@ function Action({
   title?: string | undefined;
   onClick: () => void;
 }) {
-  const base =
-    'rounded-lg border px-3 py-1.5 text-xs font-bold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40';
-  const skin =
-    tone === 'amber'
-      ? 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'
-      : tone === 'red'
-      ? 'border-red-200 bg-red-50 text-red-800 hover:bg-red-100'
-      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50';
-
   return (
-    <button type="button" disabled={disabled} title={title} onClick={onClick} className={`${base} ${skin}`}>
+    <Button
+      variant={tone === 'red' ? 'dangerGhost' : 'secondary'}
+      size="sm"
+      disabled={disabled ?? false}
+      {...(title ? { title } : {})}
+      onClick={onClick}
+    >
       {label}
-    </button>
+    </Button>
   );
 }
