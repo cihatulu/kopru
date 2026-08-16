@@ -3,6 +3,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { RetailerStockRow } from './RetailerStockRow';
 import { StockChangeMessage, type PendingStockChange } from './StockChangeMessage';
+import { StockDeleteDialog, type PendingProductDelete } from './StockDeleteDialog';
 import {
   EMPTY_STOCK_FILTERS,
   isStockFilterActive,
@@ -39,6 +40,7 @@ export function RetailerStockTable({
 }: Props) {
   // Onay tabloda tutulur: satır yalnız önerir, yazmayı kullanıcı onaylar.
   const [pending, setPending] = useState<PendingStockChange | null>(null);
+  const [toDelete, setToDelete] = useState<PendingProductDelete | null>(null);
 
   if (loading) {
     return (
@@ -102,6 +104,13 @@ export function RetailerStockTable({
                 key={row.productId}
                 row={row}
                 busy={busy}
+                onDelete={() =>
+                  setToDelete({
+                    productId: row.productId,
+                    productName: row.name,
+                    ownerOrgId: row.ownerOrgId,
+                  })
+                }
                 onRequestSave={(quantity) =>
                   setPending({
                     productId: row.productId,
@@ -129,6 +138,8 @@ export function RetailerStockTable({
           }}
         />
       )}
+
+      {toDelete && <StockDeleteDialog target={toDelete} onClose={() => setToDelete(null)} />}
     </div>
   );
 }

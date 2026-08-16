@@ -15,6 +15,12 @@ export interface RetailerStockRow {
   widthCm: number | null;
   depthCm: number | null;
   heightCm: number | null;
+  /** Pasif ürün yalnız kataloğunu perakendecinin yönettiği üreticide görünür. */
+  isActive: boolean;
+  /** Silme için gerekli: ürün perakendecinin değil, üreticinin kaydıdır. */
+  ownerOrgId: string;
+  /** İlişkide `can_edit_catalog` açık — perakendeci bu kataloğu yönetir. */
+  managed: boolean;
 }
 
 // Açık kolon listeleri (kilitli kural 19). Gizli fiyat katmanları YOK (A4):
@@ -122,6 +128,9 @@ export function useRetailerStockList(search: string) {
           widthCm: p.width_cm != null ? Number(p.width_cm) : null,
           depthCm: p.depth_cm != null ? Number(p.depth_cm) : null,
           heightCm: p.height_cm != null ? Number(p.height_cm) : null,
+          isActive: p.is_active !== false,
+          ownerOrgId: String(p.owner_org_id),
+          managed: managedOrgs.has(String(p.owner_org_id)),
         };
       });
     },

@@ -8,6 +8,8 @@ interface Props {
   busy: boolean;
   /** Satır YAZMAZ; yalnız değişikliği önerir. Onayı tablo alır. */
   onRequestSave: (quantity: number) => void;
+  /** Yalnız pasif + yönetilen katalog satırında gösterilir. */
+  onDelete: () => void;
 }
 
 /**
@@ -17,7 +19,7 @@ interface Props {
  * düğmesi yok. Elli satırlık bir sayımda her satır için düğmeye basmak
  * gereksiz sürtünme yaratırdı.
  */
-export function RetailerStockRow({ row, busy, onRequestSave }: Props) {
+export function RetailerStockRow({ row, busy, onRequestSave, onDelete }: Props) {
   const [value, setValue] = useState<string>(row.quantity === null ? '' : String(row.quantity));
 
   useEffect(() => {
@@ -58,7 +60,30 @@ export function RetailerStockRow({ row, busy, onRequestSave }: Props) {
       <td className="px-5 py-3.5 whitespace-nowrap font-mono text-sm text-slate-500">
         {row.code || '—'}
       </td>
-      <td className="px-5 py-3.5 text-sm font-extrabold text-slate-900">{row.name}</td>
+      <td className="px-5 py-3.5 text-sm font-extrabold text-slate-900">
+        <div className="flex items-center gap-2">
+          <span>{row.name}</span>
+          {/*
+            Pasif satır burada YALNIZ kataloğunu yönettiğin misafir üreticide
+            görünür; üye üreticinin pasif ürünü karşı tarafa hiç açılmaz.
+          */}
+          {!row.isActive && (
+            <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-600">
+              Pasif
+            </span>
+          )}
+          {!row.isActive && row.managed && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={busy}
+              className="rounded-lg px-2 py-0.5 text-[10px] font-extrabold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+            >
+              Sil
+            </button>
+          )}
+        </div>
+      </td>
       <td className="px-5 py-3.5 whitespace-nowrap font-mono text-xs font-bold text-slate-600">
         {dims}
       </td>
