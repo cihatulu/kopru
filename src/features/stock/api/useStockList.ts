@@ -34,14 +34,22 @@ export interface StockRow {
   depthCm: number | null;
   heightCm: number | null;
   variants: StockVariant[];
+  /** Pasif ürün katalogda görünmez ama stoğu olabilir. */
+  isActive: boolean;
 }
 
 // Açık kolon listeleri (kilitli kural 19). Gizli fiyat katmanları burada yok (A4).
-const PRODUCT_COLUMNS = 'id, name, code, category, group_id, images, width_cm, depth_cm, height_cm, variants';
+const PRODUCT_COLUMNS =
+  'id, name, code, category, group_id, images, width_cm, depth_cm, height_cm, variants, is_active';
 const STOCK_COLUMNS = 'product_id, quantity, unit, updated_at';
 
 /**
- * Stok listesi: aktif ürünler + varsa stok kaydı.
+ * Stok listesi: TÜM ürünler + varsa stok kaydı.
+ *
+ * PASİF ÜRÜNLER DE LİSTELENİR. Stok Yönetimi katalog değildir: Excel'den
+ * gelen tanınmayan satır stok kaydı oluşturur ama ürünü pasif bırakır —
+ * "stoğu olup katalogda görünmeyen ürün" olağandır. Liste `is_active` süzseydi
+ * kullanıcı yüklediği stoğu hiçbir yerde göremezdi (gerçekten yaşandı).
  *
  * İki sorgu, tek gömme değil. Sebep: gömme yapıldığında stok kaydı OLMAYAN
  * ürünler de dönmeli (dış birleşim) ama asıl mesele şu — "kaydı yok" ile
@@ -56,7 +64,6 @@ export function useStockList(search: string) {
       let q = supabase
         .from('products')
         .select(PRODUCT_COLUMNS)
-        .eq('is_active', true)
         .order('name', { ascending: true })
         .limit(500);
 
@@ -105,6 +112,7 @@ export function useStockList(search: string) {
           depthCm: p.depth_cm != null ? Number(p.depth_cm) : null,
           heightCm: p.height_cm != null ? Number(p.height_cm) : null,
           variants: toVariants(p.variants),
+          isActive: p.is_active !== false,
         };
       });
     },

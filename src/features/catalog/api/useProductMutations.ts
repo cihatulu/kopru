@@ -1,9 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database.generated';
 import type { SetLine, Variant } from '../domain/variants';
 import { toProductError } from '../domain/productErrors';
+import { useInvalidateCatalog } from './invalidateCatalog';
 
 export interface SaveProductInput {
   id?: string | undefined;
@@ -32,17 +33,12 @@ export interface SaveProductInput {
   ownerOrgId?: string | undefined;
 }
 
-function useInvalidate() {
-  const queryClient = useQueryClient();
-  return () => void queryClient.invalidateQueries({ queryKey: ['catalog'] });
-}
-
 /**
  * Ürünü kaydeder. Üç fiyat katmanı ve stok ayrı tablolarda (A4) olduğu için
  * yazma tek RPC içinde atomiktir — yarım kayıt oluşmaz.
  */
 export function useSaveProduct() {
-  const invalidate = useInvalidate();
+  const invalidate = useInvalidateCatalog();
   return useMutation({
     mutationFn: async (input: SaveProductInput) => {
       const { data, error } = await supabase.rpc('save_product', rpcArgs({
@@ -76,7 +72,7 @@ export function useSaveProduct() {
 }
 
 export function useSetProductActive() {
-  const invalidate = useInvalidate();
+  const invalidate = useInvalidateCatalog();
   return useMutation({
     mutationFn: async ({ id, isActive, ownerOrgId }: { id: string; isActive: boolean; ownerOrgId?: string }) => {
       // Soft delete (kilitli kural 16); gerçek DELETE yok.
@@ -100,7 +96,7 @@ export function useSetProductActive() {
  * bağlantısını kaybeder.
  */
 export function useDeleteProductPermanently() {
-  const invalidate = useInvalidate();
+  const invalidate = useInvalidateCatalog();
   return useMutation({
     mutationFn: async ({ id, ownerOrgId }: { id: string; ownerOrgId?: string }) => {
       const { error } = await supabase.rpc('delete_product_permanently', rpcArgs({
@@ -121,7 +117,7 @@ export function useDeleteProductPermanently() {
  * kolondan çözülür — yalnız `product_id` verilirse upsert tutmaz.
  */
 export function useSaveProductCost() {
-  const invalidate = useInvalidate();
+  const invalidate = useInvalidateCatalog();
   return useMutation({
     mutationFn: async ({
       productId,

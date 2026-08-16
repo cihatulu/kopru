@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StockTableRow } from './StockTableRow';
 import { StockChangeMessage, type PendingStockChange } from './StockChangeMessage';
+import { StockDeleteDialog, type PendingProductDelete } from './StockDeleteDialog';
 import type { StockRow } from '../api/useStockList';
 
 interface Props {
@@ -29,6 +30,7 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
   // Onay tabloda tutulur: satır yalnız "şunu yapmak istiyorum" der, kaydı
   // kullanıcı onaylayınca üst katman yazar. Tek tık kazayla stok bozmasın.
   const [pending, setPending] = useState<PendingStockChange | null>(null);
+  const [toDelete, setToDelete] = useState<PendingProductDelete | null>(null);
 
   if (rows.length === 0) {
     return (
@@ -55,6 +57,7 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
               <th className={TH}>Kategori</th>
               <th className={TH}>Ölçüler (E x B x Y)</th>
               <th className={TH}>Özellikler</th>
+              <th className={`${TH} text-center`}>İşlem</th>
               <th className={`${TH} text-center w-[120px]`}>Stok</th>
             </tr>
           </thead>
@@ -66,6 +69,7 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
                 groupName={groups.find((g) => g.id === r.groupId)?.name ?? null}
                 categoryBadgeColor={categoryColor(idx)}
                 busy={busyId === r.productId}
+                onDelete={() => setToDelete({ productId: r.productId, productName: r.name })}
                 onRequestSave={(quantity) =>
                   setPending({
                     productId: r.productId,
@@ -92,6 +96,10 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
             setPending(null);
           }}
         />
+      )}
+
+      {toDelete && (
+        <StockDeleteDialog target={toDelete} onClose={() => setToDelete(null)} />
       )}
     </div>
   );

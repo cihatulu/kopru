@@ -20,7 +20,7 @@ export interface RetailerStockRow {
 // Açık kolon listeleri (kilitli kural 19). Gizli fiyat katmanları YOK (A4):
 // bu ekran adet yönetir, fiyat göstermez.
 const PRODUCT_COLUMNS =
-  'id, name, code, category, width_cm, depth_cm, height_cm, owner_org_id';
+  'id, name, code, category, width_cm, depth_cm, height_cm, owner_org_id, is_active';
 const STOCK_COLUMNS = 'product_id, quantity, unit, updated_at';
 
 /**
@@ -41,24 +41,46 @@ export function useRetailerStockList(search: string) {
     queryFn: async (): Promise<RetailerStockRow[]> => {
       const { data: edges, error: edgeError } = await supabase
         .from('relationships')
-        .select('manufacturer_org_id, manufacturer:organizations!relationships_manufacturer_org_id_manufacturer_kind_fkey(company_name)')
+        .select('manufacturer_org_id, can_edit_catalog, manufacturer:organizations!relationships_manufacturer_org_id_manufacturer_kind_fkey(company_name)')
         .eq('status', 'active');
       if (edgeError) throw edgeError;
 
       const nameByOrg = new Map<string, string>();
+      // Kataloğunu perakendecinin yönettiği (misafir) üreticiler.
+      const managedOrgs = new Set<string>();
       for (const e of edges ?? []) {
         const org = e.manufacturer as { company_name?: string | null } | null;
-        nameByOrg.set(String(e.manufacturer_org_id), org?.company_name ?? '—');
+        const id = String(e.manufacturer_org_id);
+        nameByOrg.set(id, org?.company_name ?? '—');
+        if (e.can_edit_catalog) managedOrgs.add(id);
       }
       if (nameByOrg.size === 0) return [];
 
       let q = supabase
         .from('products')
         .select(PRODUCT_COLUMNS)
-        .eq('is_active', true)
         .in('owner_org_id', [...nameByOrg.keys()])
         .order('name', { ascending: true })
         .limit(500);
+
+      /*
+        PASİF ÜRÜN PERAKENDECİYE GÖSTERİLMEZ.
+
+        Üretici stok dosyası yüklediğinde tanınmayan satırlar pasif ürün
+        oluşturur; bunlar üreticinin kendi ekranında görünür ama karşı tarafa
+        AÇILMAZ — perakendecinin stoğunda ve kataloğunda ancak üretici ürünü
+        AKTİVE ettiğinde belirir.
+
+        İstisna: kataloğunu perakendecinin yönettiği misafir üretici. Orada
+        pasif ürünü oluşturan da aktive edecek olan da perakendecidir;
+        süzülseydi kendi yüklediği stoğu göremezdi.
+
+        Süzgeç sunucuda: istemcide süzmek pasif satırların 500'lük limiti
+        yemesine ve listenin sessizce eksilmesine yol açardı.
+      */
+      q = managedOrgs.size
+        ? q.or(`is_active.eq.true,owner_org_id.in.(${[...managedOrgs].join(',')})`)
+        : q.eq('is_active', true);
 
       const term = search.trim();
       if (term) q = q.or(`name.ilike.%${term}%,code.ilike.%${term}%`);

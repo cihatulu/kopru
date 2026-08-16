@@ -15,10 +15,19 @@ interface Props {
   busy: boolean;
   /** Satır YAZMAZ; yalnız değişikliği önerir. Onayı tablo alır. */
   onRequestSave: (quantity: number) => void;
+  /** Yalnız PASİF satırda gösterilir. */
+  onDelete: () => void;
 }
 
 /** Stok tablosunun tek satırı — miktar hücresi yerinde düzenlenebilir. */
-export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onRequestSave }: Props) {
+export function StockTableRow({
+  row,
+  groupName,
+  categoryBadgeColor,
+  busy,
+  onRequestSave,
+  onDelete,
+}: Props) {
   const [value, setValue] = useState<string>(row.quantity === null ? '' : String(row.quantity));
 
   useEffect(() => {
@@ -62,6 +71,16 @@ export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onRequ
           <span className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors cursor-default">
             {row.name}
           </span>
+          {/*
+            Pasif ürünün stoğu olabilir ama katalogda görünmez ve sipariş
+            edilemez. Rozet olmasaydı kullanıcı listede gördüğü ürünün
+            satışta olduğunu sanardı.
+          */}
+          {!row.isActive && (
+            <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-600">
+              Pasif
+            </span>
+          )}
         </div>
       </td>
 
@@ -100,6 +119,24 @@ export function StockTableRow({ row, groupName, categoryBadgeColor, busy, onRequ
       {/* Özellikler */}
       <td className="px-5 py-3.5 text-xs text-slate-550 max-w-xs truncate whitespace-nowrap" title={features}>
         {features}
+      </td>
+
+      {/*
+        Silme YALNIZ pasif satırda görünür (kilitli kural 16). Hatalı bir
+        Excel yüklemesinden doğan ürünü temizlemenin yolu budur; aktif ürün
+        buradan silinemez.
+      */}
+      <td className="px-5 py-3.5 whitespace-nowrap text-center">
+        {!row.isActive && (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={busy}
+            className="rounded-lg px-2 py-1 text-[10px] font-extrabold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+          >
+            Sil
+          </button>
+        )}
       </td>
 
       {/* Stok Miktarı (yerinde düzenleme) */}
