@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 import { formatMoney } from '@/lib/format';
 import type { CatalogProduct } from '../api/useProducts';
@@ -89,9 +90,9 @@ export function RetailerProductCard({ product, unitPrice, stock, ownStock, onOpe
           </span>
 
           {ownStock !== undefined && (
-            <span className="flex items-center gap-1.5 rounded-full border border-indigo-100 bg-white/95 px-2.5 py-1 shadow-md backdrop-blur-md">
-              <span className="size-1.5 rounded-full bg-indigo-500" />
-              <span className="text-[10px] font-extrabold uppercase text-indigo-600">
+            <span className="flex items-center gap-1.5 rounded-full border border-brand-100 bg-white/95 px-2.5 py-1 shadow-md backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-brand-500" />
+              <span className="text-[10px] font-extrabold uppercase text-brand-600">
                 Bende: {ownStock ?? 0}
               </span>
             </span>
@@ -112,7 +113,7 @@ export function RetailerProductCard({ product, unitPrice, stock, ownStock, onOpe
           type="button"
           onClick={() => onOpen(product)}
           title={product.name}
-          className="line-clamp-1 text-left text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
+          className="line-clamp-1 text-left text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-brand-600"
         >
           {product.name}
         </button>
@@ -127,21 +128,19 @@ export function RetailerProductCard({ product, unitPrice, stock, ownStock, onOpe
             {formatMoney(unitPrice)}
           </span>
 
-          <button
-            type="button"
-            onClick={add}
+          {/*
+            Eklendikten sonra düğme `success` olur ve iki saniye sonra
+            geri döner — sepete gitmeden de eylemin işlediği görülüyor.
+          */}
+          <Button
+            size="sm"
+            variant={added ? 'success' : 'primary'}
             disabled={outOfStock}
             title={outOfStock ? 'Bu ürün tükendi' : undefined}
-            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-sm transition-all active:scale-95 ${
-              outOfStock
-                ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                : added
-                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-            }`}
+            onClick={add}
           >
             {added ? 'Eklendi' : outOfStock ? 'Tükendi' : 'Sepete Ekle'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

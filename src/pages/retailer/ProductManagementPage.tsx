@@ -34,7 +34,7 @@ export default function ProductManagementPage() {
               id="manufacturer-select"
               value={selected?.id ?? ''}
               onChange={(e) => setSupplierId(e.target.value)}
-              className="w-full sm:w-64 cursor-pointer rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-bold text-slate-800 shadow-sm transition-colors hover:border-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full sm:w-64 cursor-pointer rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-bold text-slate-800 shadow-sm transition-colors hover:border-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {edges.map((e) => (
                 <option key={e.id} value={e.id}>

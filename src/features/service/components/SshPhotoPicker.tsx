@@ -30,7 +30,7 @@ export function SshPhotoPicker({ files, onAdd, onRemove }: Props) {
             <button
               type="button"
               onClick={() => onRemove(idx)}
-              className="absolute top-1 right-1 bg-slate-900/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-rose-600 transition-colors shadow-xs"
+              className="absolute top-1 right-1 bg-slate-900/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-xs"
             >
               ×
             </button>

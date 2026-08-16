@@ -70,7 +70,7 @@ export function ReportOverview({ page, onOpenReport }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ReportCard
           title="SSH & Arıza Yoğunluk Analizi"
-          accent="bg-rose-500"
+          accent="bg-red-500"
           actionLabel="Tümünü Gör"
           onAction={() => onOpenReport('ssh')}
         >
@@ -99,7 +99,7 @@ export function ReportOverview({ page, onOpenReport }: Props) {
                 <div>
                   <span className="text-[10px] text-slate-400 block font-semibold">Tavsiye</span>
                   <span
-                    className={`text-[10px] font-extrabold ${item.count > 2 ? 'text-rose-600' : 'text-slate-450'}`}
+                    className={`text-[10px] font-extrabold ${item.count > 2 ? 'text-red-600' : 'text-slate-450'}`}
                   >
                     {item.count > 2 ? 'Kontrol Edin' : 'Normal Limit'}
                   </span>
@@ -107,7 +107,7 @@ export function ReportOverview({ page, onOpenReport }: Props) {
                 <span
                   className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-black ${
                     item.count > 2
-                      ? 'bg-rose-50 border border-rose-100 text-rose-700'
+                      ? 'bg-red-50 border border-red-100 text-red-700'
                       : 'bg-slate-100 text-slate-550'
                   }`}
                 >
@@ -146,9 +146,9 @@ export function ReportOverview({ page, onOpenReport }: Props) {
 
           <ReportCard
             title="En Çok İade Edilen Ürünler"
-            accent="bg-rose-400"
+            accent="bg-red-400"
             actionLabel="Tümünü Gör"
-            actionTone="text-rose-600 hover:text-rose-800"
+            actionTone="text-red-600 hover:text-red-800"
             onAction={() => onOpenReport('returned_products')}
           >
             {page.returned.length === 0 && (
@@ -157,14 +157,14 @@ export function ReportOverview({ page, onOpenReport }: Props) {
             {page.returned.slice(0, 2).map((item, i) => (
               <RowShell key={item.id}>
                 <div className="flex items-center gap-3">
-                  <RankBadge index={i} tone="bg-rose-50 text-rose-600 border border-rose-100" />
+                  <RankBadge index={i} tone="bg-red-50 text-red-600 border border-red-100" />
                   <ProductThumb product={item.product} />
                   <div>
                     <p className="font-bold text-slate-800 text-sm">{item.product.name}</p>
                     <p className="text-xs text-slate-450 mt-0.5">{item.product.code}</p>
                   </div>
                 </div>
-                <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap">
+                <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap">
                   {item.quantity} Adet İade
                 </span>
               </RowShell>

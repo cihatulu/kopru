@@ -1,3 +1,4 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import React, { useState } from 'react';
 import { formatDate, formatMoney } from '@/lib/format';
 import { columnLabels } from '../domain/accountView';
@@ -5,7 +6,6 @@ import type { LedgerEntry } from '../domain/ledgerEntry';
 import { EditManualTransactionDialog } from './EditManualTransactionDialog';
 import { LedgerEntryDetail } from './LedgerEntryDetail';
 
-const TH = 'px-4 py-3 text-xs font-semibold whitespace-nowrap';
 const TD = 'px-4 py-3 align-middle';
 
 interface Props {
@@ -50,7 +50,7 @@ export function LedgerTable({
     <>
       <div className="max-h-[62vh] overflow-y-auto overflow-x-auto rounded-xl bg-white ring-1 ring-inset ring-slate-200">
         <table className="w-full min-w-[700px] border-collapse text-sm">
-          <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 shadow-xs">
+          <thead className={`sticky top-0 z-10 ${THEAD}`}>
             <tr>
               <th className={`${TH} text-left text-slate-500`}>Tarih</th>
               <th className={`${TH} text-left text-slate-500`}>Açıklama</th>

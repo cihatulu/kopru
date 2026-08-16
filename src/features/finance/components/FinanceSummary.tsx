@@ -7,8 +7,8 @@ import type { FinanceTab } from '../api/useFinancePage';
 const TONE = {
   blue: { box: 'bg-blue-50/50 border-blue-100/50', label: 'text-blue-600' },
   emerald: { box: 'bg-emerald-50/50 border-emerald-100/50', label: 'text-emerald-600' },
-  rose: { box: 'bg-rose-50/50 border-rose-100/50', label: 'text-rose-600' },
-  indigo: { box: 'bg-indigo-50/50 border-indigo-100/50', label: 'text-indigo-600' },
+  red: { box: 'bg-red-50/50 border-red-100/50', label: 'text-red-600' },
+  neutral: { box: 'bg-slate-50 border-slate-200', label: 'text-slate-500' },
   orange: { box: 'bg-orange-50/50 border-orange-100/50', label: 'text-orange-600' },
 } as const;
 
@@ -42,7 +42,7 @@ export function FinanceSummary({ tab, stats }: { tab: FinanceTab; stats: Finance
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card tone="blue" label="Güncel Nakit Kasa" value={stats.cash_balance} big />
         <Card tone="emerald" label="Nakit Girişi" value={stats.total_cash_income} />
-        <Card tone="rose" label="Nakit Çıkışı" value={stats.total_cash_expense} />
+        <Card tone="red" label="Nakit Çıkışı" value={stats.total_cash_expense} />
       </div>
     );
   }
@@ -51,7 +51,7 @@ export function FinanceSummary({ tab, stats }: { tab: FinanceTab; stats: Finance
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card
-          tone="indigo"
+          tone="neutral"
           label="Bizim POS Toplam"
           value={stats.total_pos_own}
           hint="Sizin banka hesabınıza geçen tutarlar"

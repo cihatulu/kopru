@@ -80,11 +80,11 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
         {/* Model kodu başlığın üstünde YAZILMAZ: ürün adı zaten modeli içeriyor. */}
         <h3
           title={product.name}
-          className="line-clamp-1 text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
+          className="line-clamp-1 text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-brand-600"
         >
           {product.name}
         </h3>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-blue-600">
+        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-brand-600">
           {groupName ?? 'Gruplanmamış'}
         </p>
 

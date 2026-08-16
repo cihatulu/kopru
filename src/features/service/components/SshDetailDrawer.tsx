@@ -29,7 +29,7 @@ export function SshDetailDrawer({ sshId, onClose }: Props) {
       )}
 
       {detail.isError && (
-        <div className="p-6 text-center text-xs text-rose-600 font-bold">
+        <div className="p-6 text-center text-xs text-red-600 font-bold">
           SSH talebi detayları yüklenemedi.
         </div>
       )}

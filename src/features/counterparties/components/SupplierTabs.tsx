@@ -9,7 +9,7 @@ interface Props {
 
 const TABS: { key: SupplierTab; label: string; dot: string }[] = [
   { key: 'active', label: 'Aktif Üreticiler', dot: 'bg-emerald-500' },
-  { key: 'passive', label: 'Pasif Üreticiler', dot: 'bg-rose-500' },
+  { key: 'passive', label: 'Pasif Üreticiler', dot: 'bg-red-500' },
 ];
 
 /** Aktif / pasif üretici sekmeleri. */

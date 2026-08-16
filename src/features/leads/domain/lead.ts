@@ -5,7 +5,7 @@ export type LeadStatus = 'new' | 'contacted' | 'interested' | 'converted' | 'rej
 export const LEAD_STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   new: { label: 'Yeni', className: 'bg-blue-50 text-blue-700' },
   contacted: { label: 'Arandı', className: 'bg-amber-50 text-amber-700' },
-  interested: { label: 'İlgileniyor', className: 'bg-indigo-50 text-indigo-700' },
+  interested: { label: 'İlgileniyor', className: 'bg-brand-50 text-brand-700' },
   converted: { label: 'Müşteri oldu', className: 'bg-emerald-50 text-emerald-700' },
   rejected: { label: 'Olumsuz', className: 'bg-slate-100 text-slate-600' },
 };

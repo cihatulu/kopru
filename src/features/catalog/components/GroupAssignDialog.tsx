@@ -99,11 +99,11 @@ function Option({
     <div
       onClick={onSelect}
       className={`cursor-pointer rounded-2xl border p-4 transition-all ${
-        active ? 'border-indigo-500 bg-indigo-50/30' : 'border-slate-200 hover:border-slate-300'
+        active ? 'border-brand-500 bg-brand-50/30' : 'border-slate-200 hover:border-slate-300'
       }`}
     >
       <div className="flex items-center gap-2">
-        <input type="radio" checked={active} readOnly className="size-4 text-indigo-600" />
+        <input type="radio" checked={active} readOnly className="size-4 text-brand-600" />
         <span className="text-sm font-bold text-slate-800">{label}</span>
       </div>
       {children}

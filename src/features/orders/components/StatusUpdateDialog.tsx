@@ -60,7 +60,7 @@ export function StatusUpdateDialog({
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
               Yeni Durum
             </span>
-            <span className="font-semibold text-sm text-indigo-600">
+            <span className="font-semibold text-sm text-brand-600">
               {ORDER_STATUS_META[targetStatus].label}
             </span>
           </div>
@@ -71,7 +71,7 @@ export function StatusUpdateDialog({
             Açıklama / Not <span className="font-normal normal-case text-slate-400">(Opsiyonel)</span>
           </label>
           <textarea
-            className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent resize-none transition-all outline-none min-h-[100px]"
+            className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none transition-all outline-none min-h-[100px]"
             rows={4}
             placeholder="Durum değişikliği notu..."
             value={note}
@@ -92,7 +92,7 @@ export function StatusUpdateDialog({
         <Button
           loading={pending}
           onClick={onConfirm}
-          className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm cursor-pointer"
+          className="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors shadow-sm cursor-pointer"
         >
           Onayla ve Güncelle
         </Button>

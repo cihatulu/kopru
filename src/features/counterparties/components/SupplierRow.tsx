@@ -36,7 +36,7 @@ export function SupplierRow({ edge, party, catalogPending, ...on }: Props) {
                 {party.companyName}
               </span>
               {party.isSubscriber && (
-                <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 uppercase tracking-wide">
+                <span className="inline-flex items-center rounded-full bg-brand-50 border border-brand-200 px-1.5 py-0.5 text-[9px] font-bold text-brand-600 uppercase tracking-wide">
                   Üye
                 </span>
               )}
@@ -77,7 +77,7 @@ export function SupplierRow({ edge, party, catalogPending, ...on }: Props) {
               disabled={catalogPending}
               aria-label={canEdit ? 'Ürün yönetimini kapat' : 'Ürün yönetimini aç'}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
-                canEdit ? 'bg-emerald-500' : 'bg-rose-500'
+                canEdit ? 'bg-emerald-500' : 'bg-red-500'
               }`}
             >
               <span
@@ -87,7 +87,7 @@ export function SupplierRow({ edge, party, catalogPending, ...on }: Props) {
               />
             </button>
             <span
-              className={`text-[10px] font-bold ${canEdit ? 'text-emerald-600' : 'text-rose-500'}`}
+              className={`text-[10px] font-bold ${canEdit ? 'text-emerald-600' : 'text-red-500'}`}
             >
               {canEdit ? 'Açık' : 'Kapalı'}
             </span>
@@ -119,7 +119,7 @@ export function SupplierRow({ edge, party, catalogPending, ...on }: Props) {
             onClick={() => on.onToggleStatus(edge.id, edge.status)}
             className={
               edge.status === 'active'
-                ? 'border-rose-200 text-rose-600 hover:bg-rose-50 font-bold'
+                ? 'border-red-200 text-red-600 hover:bg-red-50 font-bold'
                 : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold'
             }
           >

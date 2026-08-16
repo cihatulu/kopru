@@ -1,7 +1,7 @@
 import type { CustomerFields } from '../domain/checkout';
 
 const FIELD =
-  'w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all';
+  'w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all';
 const LABEL = 'flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1.5';
 const OPT = <span className="text-slate-300 font-normal">(Opsiyonel)</span>;
 
@@ -104,7 +104,7 @@ export function CheckoutFields({
                 type="checkbox"
                 checked={allowNoPayment}
                 onChange={(e) => onAllowNoPaymentChange(e.target.checked)}
-                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer size-4"
+                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer size-4"
               />
               Şu an tahsilat almadan siparişi tamamlamak istiyorum.
             </label>
@@ -113,7 +113,7 @@ export function CheckoutFields({
                 type="checkbox"
                 checked={marketingConsent}
                 onChange={(e) => onMarketingConsentChange(e.target.checked)}
-                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer size-4"
+                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer size-4"
               />
               Kampanya e-postalarını almak istiyorum.
             </label>

@@ -60,7 +60,7 @@ export default function ReportsPage() {
       )}
 
       {page.query.isError && (
-        <p role="alert" className="bg-rose-50 text-rose-700 p-4 rounded-xl text-xs font-bold border border-rose-100 shadow-sm">
+        <p role="alert" className="bg-red-50 text-red-700 p-4 rounded-xl text-xs font-bold border border-red-100 shadow-sm">
           ❌ Rapor verileri yüklenirken bir hata oluştu.
         </p>
       )}

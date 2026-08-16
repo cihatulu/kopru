@@ -30,7 +30,7 @@ export function AnnouncementImageField({ previewUrl, disabled, onPick, onClear }
             aria-label="Görseli kaldır"
             disabled={disabled}
             onClick={onClear}
-            className="absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm transition-colors cursor-pointer"
+            className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm transition-colors cursor-pointer"
           >
             ×
           </button>

@@ -18,7 +18,7 @@ export function CartLinesTable({ lines, onQuantityChange }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-50">
-        <div className="w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-indigo-500" />
+        <div className="w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-brand-500" />
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
           Sepet İçeriği
         </span>
@@ -53,7 +53,7 @@ export function CartLinesTable({ lines, onQuantityChange }: Props) {
                         </p>
                         {/* Model kodu yazılmaz — ürün adının içinde zaten var. */}
                         {l.customDescription && (
-                          <span className="mt-1.5 inline-block text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg font-semibold border border-indigo-100/50">
+                          <span className="mt-1.5 inline-block text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-lg font-semibold border border-brand-100/50">
                             Değişiklik: {l.customDescription}
                           </span>
                         )}
@@ -92,7 +92,7 @@ export function CartLinesTable({ lines, onQuantityChange }: Props) {
                     <button
                       type="button"
                       onClick={() => onQuantityChange(l, 0)}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all ml-auto"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-auto"
                       title="Sepetten çıkar"
                     >
                       <svg viewBox="0 0 20 20" fill="currentColor" className="size-4">

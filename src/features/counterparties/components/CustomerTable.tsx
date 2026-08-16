@@ -1,3 +1,4 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { otherParty, type Edge } from '../domain/counterparty';
 
@@ -10,8 +11,6 @@ interface Props {
   onToggleActive: (e: Edge) => void;
   onDelete?: (e: Edge) => void;
 }
-
-const TH = 'px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500';
 
 /** Baş harflerden avatar — firma adı yoksa yer tutucu. */
 function initials(name: string): string {
@@ -30,7 +29,7 @@ export function CustomerTable({
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-xl">
       <table className="min-w-[980px] divide-y divide-slate-100 lg:w-full">
-        <thead className="bg-slate-50">
+        <thead className={THEAD}>
           <tr>
             <th className={TH}>Firma Bilgisi</th>
             <th className={TH}>Yetkili</th>
@@ -62,7 +61,7 @@ export function CustomerTable({
               >
                 <td className="whitespace-nowrap px-6 py-3">
                   <div className="flex items-center gap-4">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 text-xs font-extrabold text-blue-600 shadow-sm">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-brand-50 text-xs font-extrabold text-blue-600 shadow-sm">
                       {initials(p.companyName)}
                     </div>
                     <div className="min-w-0">

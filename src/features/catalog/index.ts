@@ -86,6 +86,7 @@ export type { SetSubmit } from './components/SetBuilderDialog';
 export { GroupAssignDialog } from './components/GroupAssignDialog';
 export { GroupManagerDialog } from './components/GroupManagerDialog';
 export { DeleteProductDialog } from './components/DeleteProductDialog';
+export { ManufacturerPicker } from './components/ManufacturerPicker';
 export { RetailerCatalogGrid } from './components/RetailerCatalogGrid';
 export { RetailerProductCard } from './components/RetailerProductCard';
 export { TreeBranch } from './components/TreeBranch';

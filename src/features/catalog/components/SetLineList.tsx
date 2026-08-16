@@ -9,7 +9,7 @@ interface Props {
 /** Takım içeriği: kalemler ve miktar ayarı. */
 export function SetLineList({ lines, onQuantityChange }: Props) {
   return (
-    <div className="space-y-1 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
+    <div className="space-y-1 rounded-xl border border-brand-100 bg-brand-50/40 p-3">
       {lines.map((l) => (
         <div key={l.productId} className="flex items-center gap-3 py-1">
           <span className="flex-1 truncate text-sm text-slate-700">{l.name}</span>

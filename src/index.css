@@ -27,6 +27,11 @@
   --color-brand-50: oklch(0.97 0.014 254);
   --color-brand-100: oklch(0.93 0.032 255);
   --color-brand-200: oklch(0.87 0.055 256);
+  /* 300 ve 400 sonradan eklendi: indigo'dan geçişte bu tonlar da
+     kullanılıyordu ve tanımsız bir ton Tailwind'de sessizce hiçbir şey
+     üretmez — sınıf yazılır, renk gelmez. */
+  --color-brand-300: oklch(0.8 0.09 257);
+  --color-brand-400: oklch(0.71 0.14 258);
   --color-brand-500: oklch(0.62 0.19 259);
   --color-brand-600: oklch(0.55 0.2 262);
   --color-brand-700: oklch(0.49 0.19 264);

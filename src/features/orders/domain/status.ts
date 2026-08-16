@@ -25,12 +25,12 @@ export const ORDER_STATUS_META: Record<OrderStatus, StatusMeta> = {
   pending: { label: 'Bekliyor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
   confirmed: { label: 'Bekliyor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
   in_production: { label: 'Üretiliyor', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
-  partially_shipped: { label: 'Kısmi Sevk', className: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+  partially_shipped: { label: 'Kısmi Sevk', className: 'bg-brand-50 text-brand-700 border border-brand-200' },
   shipped: { label: 'Sevkiyatta', className: 'bg-purple-50 text-purple-700 border border-purple-200' },
   delivered: { label: 'Teslim Edildi', className: 'bg-green-50 text-green-700 border border-green-200' },
   cancelled: { label: 'İptal Edildi', className: 'bg-red-50 text-red-700 border border-red-200' },
   return_requested: { label: 'İade Sürecinde', className: 'bg-orange-50 text-orange-700 border border-orange-200' },
-  returned: { label: 'İade Edildi', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
+  returned: { label: 'İade Edildi', className: 'bg-red-50 text-red-700 border border-red-200' },
 };
 
 const CLOSED: OrderStatus[] = ['cancelled', 'returned', 'delivered'];

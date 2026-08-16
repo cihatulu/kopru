@@ -1,3 +1,4 @@
+import { Segmented } from '@/components/ui/Segmented';
 import { useState } from 'react';
 import {
   LEAD_STATUS_META,
@@ -51,23 +52,15 @@ export default function AdminLeadsPage() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex flex-wrap rounded-lg bg-slate-100 p-1">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              aria-pressed={filter === f}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                filter === f
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              {f === 'all' ? 'Tümü' : LEAD_STATUS_META[f].label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label="Lead durumu"
+          options={FILTERS.map((f) => ({
+            value: f,
+            label: f === 'all' ? 'Tümü' : LEAD_STATUS_META[f].label,
+          }))}
+          value={filter}
+          onChange={setFilter}
+        />
         <input
           type="search"
           value={search}

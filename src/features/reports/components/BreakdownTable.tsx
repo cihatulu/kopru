@@ -1,7 +1,7 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import { formatMoney } from '@/lib/format';
 import type { BreakdownRow } from '../domain/retailerReport';
 
-const TH = 'px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest';
 const TD = 'px-5 py-3.5 text-sm';
 
 interface Props {
@@ -21,7 +21,7 @@ export function BreakdownTable({ title, keyLabel, rows }: Props) {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead>
+          <thead className={THEAD}>
             <tr className="border-b border-slate-100">
               <th className={`${TH} text-left`}>{keyLabel}</th>
               <th className={`${TH} text-right`}>Sipariş</th>

@@ -79,11 +79,11 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   return (
     <div className="space-y-6">
       {activeIndex === -1 ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50/60 p-4 text-center">
-          <p className="font-bold text-rose-900 text-sm">
+        <div className="rounded-xl border border-red-200 bg-red-50/60 p-4 text-center">
+          <p className="font-bold text-red-900 text-sm">
             {ORDER_STATUS_META[order.status].label}
           </p>
-          <p className="text-xs text-rose-600 mt-0.5">
+          <p className="text-xs text-red-600 mt-0.5">
             Bu sipariş {order.status === 'cancelled' ? 'iptal edilmiştir' : 'iade edilmiştir'}.
           </p>
         </div>

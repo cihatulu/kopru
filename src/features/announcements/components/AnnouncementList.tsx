@@ -33,7 +33,7 @@ export function AnnouncementList({ announcements, isOwnerView, busyId, onToggleA
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium text-slate-900">{a.title}</p>
                 {a.targetRetailerOrgId && (
-                  <span className="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                  <span className="inline-flex rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
                     Özel
                   </span>
                 )}

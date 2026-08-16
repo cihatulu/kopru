@@ -64,7 +64,7 @@ export function RetailerPeriodReport() {
           <Spinner />
         </div>
       ) : report.isError ? (
-        <p role="alert" className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+        <p role="alert" className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           Rapor verileri yüklenemedi.
         </p>
       ) : (

@@ -113,10 +113,10 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
               {request.status === 'rejected' && (
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 mt-1" />
                   </div>
                   <div>
-                    <p className="font-bold text-rose-700">Reddedildi</p>
+                    <p className="font-bold text-red-700">Reddedildi</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       {formatDateTime(request.decidedAt || request.createdAt)}
                     </p>
@@ -135,7 +135,7 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
                 variant="danger"
                 disabled={busyId === request.id}
                 onClick={() => onDecide(request, false)}
-                className="bg-rose-600 hover:bg-rose-700 text-white font-bold"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
                 Reddet
               </Button>

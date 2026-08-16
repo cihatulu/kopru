@@ -64,7 +64,7 @@ export function CustomerLedgerDetail({ ledger, orders, transactions }: CustomerL
               <tr>
                 <th className="pb-2 font-bold text-slate-500">Tarih</th>
                 <th className="pb-2 font-bold text-slate-500">İşlem</th>
-                <th className="pb-2 font-bold text-right text-rose-600">Borç (Sipariş)</th>
+                <th className="pb-2 font-bold text-right text-red-600">Borç (Sipariş)</th>
                 <th className="pb-2 font-bold text-right text-emerald-600">Alacak (Ödeme)</th>
                 <th className="pb-2 font-bold text-right text-slate-900">Bakiye</th>
               </tr>
@@ -76,7 +76,7 @@ export function CustomerLedgerDetail({ ledger, orders, transactions }: CustomerL
                   <tr key={item.id} className="hover:bg-slate-100/30">
                     <td className="py-2.5 font-medium text-slate-500">{formatDate(item.date)}</td>
                     <td className="py-2.5 text-slate-700 font-medium">{item.label}</td>
-                    <td className="py-2.5 text-right font-semibold text-rose-600">{item.debt > 0 ? formatMoney(item.debt) : '—'}</td>
+                    <td className="py-2.5 text-right font-semibold text-red-600">{item.debt > 0 ? formatMoney(item.debt) : '—'}</td>
                     <td className="py-2.5 text-right font-semibold text-emerald-600">{item.credit !== 0 ? formatMoney(item.credit) : '—'}</td>
                     <td className="py-2.5 text-right font-bold text-slate-900">{formatMoney(runningBalance)}</td>
                   </tr>

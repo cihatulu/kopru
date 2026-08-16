@@ -87,7 +87,7 @@ export function GroupManager({ groups, pending, onSave, onDelete, onClose }: Pro
                 <button
                   type="button"
                   onClick={() => onDelete(g.id)}
-                  className="rounded px-2 py-1 text-xs text-rose-600 hover:bg-rose-50"
+                  className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50"
                 >
                   Sil
                 </button>

@@ -1,3 +1,4 @@
+import { Segmented } from '@/components/ui/Segmented';
 import { Button } from '@/components/ui/Button';
 import { ORG_KIND, type OrgKind } from '@/constants';
 import { SUBSCRIBER_FILTERS, type SubscriberFilter } from '../domain/filters';
@@ -35,23 +36,12 @@ export function OrgToolbar(props: Props) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg bg-slate-100 p-1">
-          {SUBSCRIBER_FILTERS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onFilterChange(tab.id)}
-              aria-pressed={filter === tab.id}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                filter === tab.id
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label="Abonelik durumu"
+          options={SUBSCRIBER_FILTERS.map((t) => ({ value: t.id, label: t.label }))}
+          value={filter}
+          onChange={onFilterChange}
+        />
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">{total} kayıt yüklendi</span>

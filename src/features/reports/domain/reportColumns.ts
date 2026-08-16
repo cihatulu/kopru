@@ -103,7 +103,7 @@ export function buildDetailReport(kind: ReportKind, src: ReportSources): DetailR
         title: r.product.name,
         subtitle: r.product.code,
         cells: [
-          { raw: r.count, text: String(r.count), align: 'center', badge: 'bg-rose-50 text-rose-700 border-rose-100' },
+          { raw: r.count, text: String(r.count), align: 'center', badge: 'bg-red-50 text-red-700 border-red-100' },
         ],
       })),
     };
@@ -131,7 +131,7 @@ export function buildDetailReport(kind: ReportKind, src: ReportSources): DetailR
           align: 'center',
           badge: isCancelled
             ? 'bg-slate-100 text-slate-700 border-slate-200'
-            : 'bg-rose-50 text-rose-700 border-rose-200',
+            : 'bg-red-50 text-red-700 border-red-200',
         },
       ],
     })),

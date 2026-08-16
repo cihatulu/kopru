@@ -22,7 +22,7 @@ export function SshItemPicker({
   return (
     <div className="space-y-2">
       <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-        PROBLEMLİ ÜRÜNLERİ SEÇİN <span className="text-rose-500">*</span>
+        PROBLEMLİ ÜRÜNLERİ SEÇİN <span className="text-red-500">*</span>
       </label>
 
       {items.length === 0 ? (

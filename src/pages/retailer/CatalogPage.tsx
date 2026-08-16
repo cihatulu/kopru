@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { RetailerCatalogGrid, useProducts } from '@/features/catalog';
+import { ManufacturerPicker, RetailerCatalogGrid, useProducts } from '@/features/catalog';
 import { useCounterparties, type Edge } from '@/features/counterparties';
 import { useCart } from '@/features/orders';
 import { useAuthSession } from '@/features/auth';
 import { ROUTES } from '@/constants';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 /** Perakendecinin katalog ekranı — YALNIZ KOMPOZİSYON (A20). */
 export default function CatalogPage() {
@@ -23,9 +24,7 @@ export default function CatalogPage() {
   const paramProductId = params.get('productId') ?? params.get('urun');
 
   const selected = paramManufacturerId
-    ? edges.find(
-        (e) => e.manufacturerOrgId === paramManufacturerId || e.id === paramManufacturerId,
-      )
+    ? edges.find((e) => e.manufacturerOrgId === paramManufacturerId || e.id === paramManufacturerId)
     : undefined;
 
   const list = useProducts({
@@ -61,54 +60,38 @@ export default function CatalogPage() {
 
   return (
     <div className="space-y-6">
-      {/* Üst Başlık, Üretici Seçimi ve Sepet Butonu */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Ürün Kataloğu</h1>
-          <p className="mt-1 text-xs font-medium text-slate-500">
-            Tedarikçinizi seçin, ürünleri sepete ekleyin. Fiyatlar perakende satış fiyatlarınızdır.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
-          {edges.length > 0 && (
-            <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 shadow-2xs">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">ÜRETİCİ:</span>
-              <select
+      <PageHeader
+        title="Ürün Kataloğu"
+        description="Tedarikçinizi seçin, ürünleri sepete ekleyin. Fiyatlar perakende satış fiyatlarınızdır."
+        actions={
+          <>
+            {edges.length > 0 && (
+              <ManufacturerPicker
+                options={edges.map((e) => ({
+                  id: e.id,
+                  manufacturerOrgId: e.manufacturerOrgId,
+                  companyName: e.manufacturer.companyName,
+                }))}
                 value={selected?.manufacturerOrgId ?? ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (!val) {
-                    setParams({});
-                  } else {
-                    const next = edges.find((edge) => edge.manufacturerOrgId === val);
-                    if (next) {
-                      setParams({ manufacturerId: next.manufacturerOrgId });
-                    }
-                  }
+                onChange={(val) => {
+                  setParams(val ? { manufacturerId: val } : {});
+                  // Tedarikçi değişince sepet boşalır: iki üreticinin
+                  // ürünü aynı siparişte olamaz.
                   clearCart();
                 }}
-                className="cursor-pointer bg-transparent py-1 text-xs font-bold text-slate-800 focus:outline-none"
-              >
-                <option value="">Tüm Üreticiler</option>
-                {edges.map((e) => (
-                  <option key={e.id} value={e.manufacturerOrgId}>
-                    {e.manufacturer.companyName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+              />
+            )}
 
-          <Button
-            variant="primary"
-            onClick={() => void navigate(`${ROUTES.retailer}/sepetim`)}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 rounded-xl shadow-sm text-xs"
-          >
-            Sepetim ({totals.lineCount})
-          </Button>
-        </div>
-      </div>
+            {/* Sepet, katalogda ANA eylem değil — ürün eklemek asıl iş.
+              Marka rengi kart içindeki "Sepete Ekle"ye ayrıldı; ikisi de
+              birincil olunca kullanıcı hangisinin ana eylem olduğunu
+              renkten ayırt edemiyordu. */}
+            <Button variant="secondary" onClick={() => void navigate(`${ROUTES.retailer}/sepetim`)}>
+              Sepetim ({totals.lineCount})
+            </Button>
+          </>
+        }
+      />
 
       {/* Ürün Listesi Izgarası */}
       <RetailerCatalogGrid

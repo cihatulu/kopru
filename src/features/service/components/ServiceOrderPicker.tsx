@@ -50,7 +50,7 @@ export function ServiceOrderPicker({
     );
   }
 
-  const ring = accent === 'blue' ? 'focus:ring-blue-500/20 focus:border-blue-400' : 'focus:ring-rose-500/20 focus:border-rose-400';
+  const ring = accent === 'blue' ? 'focus:ring-blue-500/20 focus:border-blue-400' : 'focus:ring-red-500/20 focus:border-red-400';
 
   return (
     <div className="space-y-4">

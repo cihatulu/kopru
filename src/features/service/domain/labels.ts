@@ -17,7 +17,7 @@ export const SSH_STATUS_META: Record<SshStatus, Meta> = {
 export const RETURN_STATUS_META: Record<ReturnStatus, Meta> = {
   pending: { label: 'Karar bekliyor', className: 'bg-amber-50 text-amber-700' },
   approved: { label: 'Onaylandı', className: 'bg-emerald-50 text-emerald-700' },
-  rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700' },
+  rejected: { label: 'Reddedildi', className: 'bg-red-50 text-red-700' },
 };
 
 /** Üreticinin SSH akışında ilerletebileceği bir sonraki adım. */

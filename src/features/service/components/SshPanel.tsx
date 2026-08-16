@@ -78,7 +78,7 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
       />
 
       {list.isError && (
-        <p role="alert" className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-bold">
+        <p role="alert" className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-bold">
           ⚠️ Talepler yüklenirken bir hata oluştu:{' '}
           {list.error instanceof Error ? list.error.message : String(list.error)}
         </p>

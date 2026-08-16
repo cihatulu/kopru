@@ -1,3 +1,4 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { formatDate } from '@/lib/format';
 import { LEAD_STATUS_META, isClosedLead, nextLeadStatus } from '../domain/lead';
@@ -10,7 +11,6 @@ interface Props {
   onReject: (l: Lead) => void;
 }
 
-const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-500';
 const TD = 'px-4 py-3 align-middle';
 
 export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
@@ -25,7 +25,7 @@ export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
   return (
     <div className="overflow-x-auto rounded-xl bg-white ring-1 ring-inset ring-slate-200">
       <table className="w-full min-w-[720px] border-collapse text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50">
+        <thead className={THEAD}>
           <tr>
             <th className={TH}>Firma</th>
             <th className={TH}>İletişim</th>

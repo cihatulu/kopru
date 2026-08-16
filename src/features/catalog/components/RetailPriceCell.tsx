@@ -28,14 +28,14 @@ export function RetailPriceCell({ productId, retailPrice, onSave }: Props) {
   };
 
   return (
-    <td className="whitespace-nowrap px-4 py-4 text-sm font-extrabold text-indigo-600">
+    <td className="whitespace-nowrap px-4 py-4 text-sm font-extrabold text-brand-600">
       {editing ? (
         <div className="flex items-center gap-2">
           <input
             type="text"
             inputMode="decimal"
             aria-label="Perakende satış fiyatı"
-            className="w-24 rounded border-slate-300 px-2 py-1 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+            className="w-24 rounded border-slate-300 px-2 py-1 text-sm text-slate-900 focus:border-brand-500 focus:ring-brand-500"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -75,7 +75,7 @@ export function RetailPriceCell({ productId, retailPrice, onSave }: Props) {
               setDraft(retailPrice?.toString() ?? '');
               setEditing(true);
             }}
-            className="text-slate-400 opacity-0 transition-opacity hover:text-indigo-600 group-hover:opacity-100"
+            className="text-slate-400 opacity-0 transition-opacity hover:text-brand-600 group-hover:opacity-100"
           >
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

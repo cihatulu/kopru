@@ -43,7 +43,7 @@ export function SshDetailStep({ form, edges, myOrgId }: Props) {
       {!order && edges.length > 0 && (
         <div className="space-y-1.5">
           <label className={LABEL}>
-            TEDARİKÇİ FİRMA <span className="text-rose-500">*</span>
+            TEDARİKÇİ FİRMA <span className="text-red-500">*</span>
           </label>
           <select
             value={form.relId}
@@ -79,7 +79,7 @@ export function SshDetailStep({ form, edges, myOrgId }: Props) {
 
       <div className="space-y-1.5">
         <label className={LABEL}>
-          AÇIKLAMA / SORUN DETAYI <span className="text-rose-500">*</span>
+          AÇIKLAMA / SORUN DETAYI <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={3}

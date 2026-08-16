@@ -11,7 +11,7 @@ interface Props {
 }
 
 const INPUT =
-  'w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all outline-none';
+  'w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all outline-none';
 
 /**
  * Müşteri değişiklik talebi ve fiyat farkı.
@@ -87,7 +87,7 @@ export function CustomRequestFields({
             )}
           </div>
           <div className="text-right">
-            <span className="font-black text-indigo-600 text-base">{formatMoney(final)}</span>
+            <span className="font-black text-brand-600 text-base">{formatMoney(final)}</span>
             {diff !== 0 && (
               <span
                 className={`block text-[10px] font-semibold ${diff > 0 ? 'text-slate-500' : 'text-emerald-600'}`}

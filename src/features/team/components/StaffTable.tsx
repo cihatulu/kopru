@@ -39,7 +39,7 @@ export function StaffTable({ members, myUserId, onEdit, onResetPassword, onDelet
                 {/* Ad Soyad */}
                 <td className="px-6 py-4.5 whitespace-nowrap align-middle">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 flex items-center justify-center font-extrabold text-xs border border-blue-100 shadow-sm shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-brand-50 text-blue-600 flex items-center justify-center font-extrabold text-xs border border-blue-100 shadow-sm shrink-0">
                       {getInitials(m.fullName || '')}
                     </div>
                     <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5">

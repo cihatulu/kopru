@@ -11,9 +11,9 @@ const ACCENT = {
     pill: 'group-hover:bg-brand-600 group-hover:text-white group-hover:border-brand-600',
   },
   rose: {
-    hover: 'hover:border-rose-400 hover:bg-rose-50/30',
-    text: 'group-hover:text-rose-600',
-    pill: 'group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-500',
+    hover: 'hover:border-red-400 hover:bg-red-50/30',
+    text: 'group-hover:text-red-600',
+    pill: 'group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500',
   },
 } as const;
 
@@ -55,7 +55,7 @@ export function ServiceOrderCard({ order, accent, showQuota, onSelect }: Props) 
             </span>
           )}
           {!openBlocked && limitBlocked && (
-            <span className={`${CHIP} bg-rose-100 text-rose-800 border-rose-200`}>
+            <span className={`${CHIP} bg-red-100 text-red-800 border-red-200`}>
               🚫 Max SSH Limitine Ulaşıldı ({MAX_SSH_PER_ORDER}/{MAX_SSH_PER_ORDER})
             </span>
           )}
@@ -83,7 +83,7 @@ export function ServiceOrderCard({ order, accent, showQuota, onSelect }: Props) 
           openBlocked
             ? 'opacity-60 bg-amber-50 text-amber-700 border-amber-200'
             : limitBlocked
-              ? 'opacity-60 bg-rose-50 text-rose-700 border-rose-200'
+              ? 'opacity-60 bg-red-50 text-red-700 border-red-200'
               : `bg-white text-slate-700 border-slate-200 ${tone.pill}`
         }`}
       >

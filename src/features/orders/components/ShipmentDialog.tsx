@@ -79,7 +79,7 @@ export function ShipmentDialog({ order, pending, errorMessage, onClose, onShip }
           Açıklama / Not <span className="font-normal normal-case text-slate-400">(Opsiyonel)</span>
         </label>
         <textarea
-          className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent resize-none transition-all outline-none min-h-[80px]"
+          className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none transition-all outline-none min-h-[80px]"
           rows={3}
           placeholder="Sevkiyat ile ilgili açıklama yazın..."
           value={note}

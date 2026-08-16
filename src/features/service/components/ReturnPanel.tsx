@@ -51,7 +51,7 @@ export function ReturnPanel({ myOrgId, myKind, partyOptions }: Props) {
         {isRetailer && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
@@ -97,12 +97,12 @@ export function ReturnPanel({ myOrgId, myKind, partyOptions }: Props) {
         </div>
 
         {/* Card 4: REDDEDİLEN */}
-        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-rose-50/90 to-rose-100/60 border border-rose-200/80 shadow-[0_4px_12px_rgba(244,63,94,0.06)] hover:shadow-[0_8px_20px_rgba(244,63,94,0.12)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
+        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-red-50/90 to-red-100/60 border border-red-200/80 shadow-[0_4px_12px_rgba(244,63,94,0.06)] hover:shadow-[0_8px_20px_rgba(244,63,94,0.12)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-rose-700 uppercase tracking-widest">REDDEDİLEN</p>
-            <p className="text-2xl font-black text-rose-800 mt-1.5">{stats.rejected}</p>
+            <p className="text-[11px] font-extrabold text-red-700 uppercase tracking-widest">REDDEDİLEN</p>
+            <p className="text-2xl font-black text-red-800 mt-1.5">{stats.rejected}</p>
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-rose-100/80 shadow-sm border border-rose-200/80 flex items-center justify-center text-rose-700 group-hover:scale-110 transition-transform font-bold text-sm">
+          <div className="w-11 h-11 rounded-2xl bg-red-100/80 shadow-sm border border-red-200/80 flex items-center justify-center text-red-700 group-hover:scale-110 transition-transform font-bold text-sm">
             ❌
           </div>
         </div>

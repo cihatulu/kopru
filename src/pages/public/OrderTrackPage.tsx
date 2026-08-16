@@ -40,7 +40,7 @@ export default function OrderTrackPage() {
 
           {message && (
             <div className="py-10 text-center space-y-2">
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto text-rose-500 text-xl">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500 text-xl">
                 !
               </div>
               <h2 className="font-bold text-slate-900 text-sm">Sipariş Sorgulanamadı</h2>

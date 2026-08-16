@@ -77,7 +77,7 @@ export function RetailerStockRow({ row, busy, onRequestSave, onDelete }: Props) 
               type="button"
               onClick={onDelete}
               disabled={busy}
-              className="rounded-lg px-2 py-0.5 text-[10px] font-extrabold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+              className="rounded-lg px-2 py-0.5 text-[10px] font-extrabold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 cursor-pointer"
             >
               Sil
             </button>
@@ -106,7 +106,7 @@ export function RetailerStockRow({ row, busy, onRequestSave, onDelete }: Props) 
             busy ? 'cursor-not-allowed opacity-50' : ''
           } ${
             qty === 0
-              ? 'border-rose-200 bg-rose-50 text-rose-700'
+              ? 'border-red-200 bg-red-50 text-red-700'
               : qty !== null && qty < 10
                 ? 'border-amber-200 bg-amber-50 text-amber-700'
                 : 'border-slate-200 bg-slate-50 text-slate-700'

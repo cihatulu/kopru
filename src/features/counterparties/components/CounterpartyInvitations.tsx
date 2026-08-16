@@ -18,8 +18,8 @@ interface Props {
 const TH = 'px-5 py-3.5';
 const STATE_STYLE: Record<string, string> = {
   used: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
-  revoked: 'bg-rose-50 text-rose-700 border border-rose-100',
-  expired: 'bg-rose-50 text-rose-700 border border-rose-100',
+  revoked: 'bg-red-50 text-red-700 border border-red-100',
+  expired: 'bg-red-50 text-red-700 border border-red-100',
   pending: 'bg-amber-50 text-amber-700 border border-amber-100',
 };
 const STATE_LABEL: Record<string, string> = {
@@ -124,7 +124,7 @@ export function CounterpartyInvitations({
                             size="sm"
                             variant="secondary"
                             onClick={() => onRevoke(inv.id)}
-                            className="border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold"
+                            className="border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold"
                             disabled={revoking}
                           >
                             İptal Et
@@ -143,7 +143,7 @@ export function CounterpartyInvitations({
                             className={
                               confirmId === inv.id
                                 ? 'text-xs font-bold'
-                                : 'border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold'
+                                : 'border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold'
                             }
                             disabled={deleting}
                           >

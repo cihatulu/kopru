@@ -16,7 +16,9 @@ interface Props {
 // `as const` demet yapar: sabit indeksle okunduğunda tip `string`, `string |
 // undefined` değil (noUncheckedIndexedAccess).
 const CATEGORY_COLORS = [
-  'bg-indigo-50 border-indigo-200 text-indigo-700',
+  // Marka rengi kategori paletine GİRMEZ: birincil eyleme ayrılmıştır,
+  // rastgele bir kategoriyi onunla boyamak anlamı bulandırırdı.
+  'bg-teal-50 border-teal-200 text-teal-700',
   'bg-purple-50 border-purple-200 text-purple-700',
   'bg-pink-50 border-pink-200 text-pink-700',
   'bg-blue-50 border-blue-200 text-blue-700',

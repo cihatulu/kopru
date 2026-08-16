@@ -1,10 +1,10 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import React from 'react';
 import { formatMoney } from '@/lib/format';
 import { CustomerLedgerDetail } from './CustomerLedgerDetail';
 import { customerLedgerKey, type CustomerLedger } from '../domain/customerLedger';
 import type { FinanceTransaction, MinimalOrder } from '../domain/finance';
 
-const TH = 'px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50';
 const TD = 'px-5 py-3.5 text-sm';
 
 interface Props {
@@ -29,13 +29,13 @@ export function CustomerLedgerTable({
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-100">
       <table className="w-full min-w-[900px] border-collapse text-sm">
-        <thead>
+        <thead className={THEAD}>
           <tr className="border-b border-slate-100">
             <th className={TH}>Müşteri Adı</th>
             <th className={TH}>Müşteri Telefonu</th>
             <th className={TH}>Üretici Adı</th>
             <th className={TH}>Sipariş No</th>
-            <th className={`${TH} text-right text-rose-600`}>Borç (Sipariş)</th>
+            <th className={`${TH} text-right text-red-600`}>Borç (Sipariş)</th>
             <th className={`${TH} text-right text-emerald-600`}>Alacak (Ödeme)</th>
             <th className={`${TH} text-right`}>Bakiye</th>
             <th className={`${TH} w-[150px] text-right pr-6`}>İşlemler</th>
@@ -57,7 +57,7 @@ export function CustomerLedgerTable({
                   <td className={`${TD} text-slate-500`}>{l.customer_phone || '—'}</td>
                   <td className={`${TD} text-slate-600`}>{l.manufacturer_names.join(', ') || '—'}</td>
                   <td className={`${TD} font-mono font-bold text-slate-800`}>{orderNos || '—'}</td>
-                  <td className={`${TD} text-right font-semibold text-rose-600`}>
+                  <td className={`${TD} text-right font-semibold text-red-600`}>
                     {l.total_order_amount > 0 ? formatMoney(l.total_order_amount) : '—'}
                   </td>
                   <td className={`${TD} text-right font-semibold text-emerald-600`}>
@@ -78,7 +78,7 @@ export function CustomerLedgerTable({
                       <button
                         type="button"
                         onClick={() => onToggle(key)}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                        className="text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors cursor-pointer"
                       >
                         {isExpanded ? 'Detay Kapat' : 'Detay Aç'}
                       </button>

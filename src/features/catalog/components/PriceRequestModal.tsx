@@ -117,7 +117,7 @@ export function PriceRequestModal({ product, onClose }: Props) {
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value)}
                 placeholder="Örn: 12000"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-bold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-bold text-slate-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
@@ -130,7 +130,7 @@ export function PriceRequestModal({ product, onClose }: Props) {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Neden fiyat güncellemesi talep edildiğini yazabilirsiniz..."
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs text-slate-800 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
@@ -151,7 +151,7 @@ export function PriceRequestModal({ product, onClose }: Props) {
               <button
                 type="submit"
                 disabled={publish.isPending || isResolving}
-                className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                className="rounded-xl bg-brand-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50 transition-colors"
               >
                 {publish.isPending || isResolving ? 'Gönderiliyor...' : 'Talebi Perakendeciye İlet'}
               </button>

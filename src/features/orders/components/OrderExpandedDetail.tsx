@@ -121,7 +121,7 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
                     </span>
                     <OrderStatusBadge status={h.toStatus} />
                     {h.shipmentBadge && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 border border-indigo-200">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-700 border border-brand-200">
                         {h.shipmentBadge}
                       </span>
                     )}

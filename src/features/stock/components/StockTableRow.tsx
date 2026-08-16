@@ -132,7 +132,7 @@ export function StockTableRow({
             type="button"
             onClick={onDelete}
             disabled={busy}
-            className="rounded-lg px-2 py-1 text-[10px] font-extrabold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 cursor-pointer"
+            className="rounded-lg px-2 py-1 text-[10px] font-extrabold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 cursor-pointer"
           >
             Sil
           </button>
@@ -159,7 +159,7 @@ export function StockTableRow({
               busy ? 'opacity-50 cursor-not-allowed' : ''
             } ${
               row.quantity === 0 || parsed === 0
-                ? 'bg-rose-50 border-rose-200 text-rose-700 focus:bg-white'
+                ? 'bg-red-50 border-red-200 text-red-700 focus:bg-white'
                 : row.quantity !== null && (row.quantity < 10 || (parsed !== null && parsed < 10))
                 ? 'bg-amber-50 border-amber-250 text-amber-700 focus:bg-white'
                 : 'bg-slate-50 border-slate-200 text-slate-700 focus:bg-white'

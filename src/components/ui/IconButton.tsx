@@ -31,9 +31,10 @@ interface Props {
  * İkon eylem düğmesi — tablo satırı, üst çubuk, araç çubuğu.
  *
  * Üç ayrı yerde ayrı ayrı yazılmıştı: biri `p-1.5`, biri `p-2 rounded-lg`,
- * diğerleri `p-2 rounded-xl`; sayaç rozetlerinden biri `bg-red-600`,
- * diğeri `bg-rose-500` idi. Ölçüsü `Button`'ın kare karşılığıdır, böylece
- * aynı satırda metin düğmesiyle yan yana geldiğinde hizası bozulmaz.
+ * diğerleri `p-2 rounded-xl`; sayaç rozetlerinden biri kırmızının bir
+ * tonunu, diğeri başka bir tonunu kullanıyordu. Ölçüsü `Button`'ın kare
+ * karşılığıdır, böylece aynı satırda metin düğmesiyle yan yana geldiğinde
+ * hizası bozulmaz.
  *
  * Hover rengi marka tokenından gelir — org kendi rengini verdiğinde ikon
  * düğmeleri de döner (eskiden sabit `indigo-600` idi ve dönmüyordu).

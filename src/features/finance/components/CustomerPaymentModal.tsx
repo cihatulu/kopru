@@ -82,8 +82,8 @@ export function CustomerPaymentModal({
 
   const isRefund = mode === 'refund';
   const title = isRefund ? 'Müşteri Tahsilat İadesi' : 'Müşteri Tahsilatı Al';
-  const accentColor = isRefund ? 'focus:ring-rose-500 border-rose-300' : 'focus:ring-indigo-500 border-indigo-300';
-  const accentBg = isRefund ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-indigo-50 text-indigo-700 border-indigo-100';
+  const accentColor = isRefund ? 'focus:ring-red-500 border-red-300' : 'focus:ring-brand-500 border-brand-300';
+  const accentBg = isRefund ? 'bg-red-50 text-red-700 border-red-100' : 'bg-brand-50 text-brand-700 border-brand-100';
 
   const availableCustomers = isRefund
     ? ledgers.filter((l) => l.total_paid_amount > 0)
@@ -95,7 +95,7 @@ export function CustomerPaymentModal({
     <Modal label={title} onClose={onClose} panelClassName="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
       <div className="flex flex-col">
         {/* Header */}
-        <div className={`px-6 py-5 text-white ${isRefund ? 'bg-gradient-to-r from-red-600 to-rose-600' : 'bg-gradient-to-r from-indigo-600 to-blue-600'}`}>
+        <div className={`px-6 py-5 text-white ${isRefund ? 'bg-gradient-to-r from-red-600 to-red-600' : 'bg-gradient-to-r from-brand-600 to-blue-600'}`}>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold">{title}</h3>
             <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">

@@ -42,7 +42,7 @@ export function CartCheckoutPanel({
       {message && (
         <p
           role="alert"
-          className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-xs font-semibold text-rose-700"
+          className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-xs font-semibold text-red-700"
         >
           {message}
         </p>

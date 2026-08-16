@@ -36,7 +36,7 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
       onClose={onClose}
       closeDisabled={form.submitting}
     >
-      <div className="flex justify-between items-center px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50/60 flex-shrink-0">
+      <div className="flex justify-between items-center px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-brand-50/60 flex-shrink-0">
         <div>
           <h3 className="text-base font-extrabold text-slate-800">{title}</h3>
           <div className="flex items-center gap-2 mt-1">
@@ -59,7 +59,7 @@ export function SshCreationModal({ myOrgId, onClose, onSuccess }: Props) {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
         {form.error && (
-          <p role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-bold">
+          <p role="alert" className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-bold">
             ⚠️ {form.error}
           </p>
         )}

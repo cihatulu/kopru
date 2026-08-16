@@ -1,8 +1,8 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { getManufacturerName } from '../domain/finance';
 import type { FinanceTxRow } from '../domain/financeFilters';
 
-const TH = 'px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50';
 const TD = 'px-5 py-3.5 text-sm';
 
 interface Props {
@@ -22,14 +22,14 @@ export function FinanceTxTable({ rows, emptyText, isEmpty }: Props) {
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-100">
       <table className="w-full min-w-[800px] border-collapse text-sm">
-        <thead>
+        <thead className={THEAD}>
           <tr className="border-b border-slate-100">
             <th className={TH}>Tarih</th>
             <th className={TH}>Müşteri Adı</th>
             <th className={TH}>Üretici Adı</th>
             <th className={TH}>Açıklama</th>
             <th className={`${TH} text-right text-emerald-600`}>Borç (Giriş)</th>
-            <th className={`${TH} text-right text-rose-600`}>Alacak (Çıkış)</th>
+            <th className={`${TH} text-right text-red-600`}>Alacak (Çıkış)</th>
             <th className={`${TH} text-right`}>Bakiye</th>
           </tr>
         </thead>
@@ -45,7 +45,7 @@ export function FinanceTxTable({ rows, emptyText, isEmpty }: Props) {
               <td className={`${TD} text-right font-semibold text-emerald-600`}>
                 {t.type === 'income' ? formatMoney(t.amount) : '—'}
               </td>
-              <td className={`${TD} text-right font-semibold text-rose-600`}>
+              <td className={`${TD} text-right font-semibold text-red-600`}>
                 {t.type === 'expense' ? formatMoney(t.amount) : '—'}
               </td>
               <td className={`${TD} text-right font-bold text-slate-900`}>

@@ -56,12 +56,12 @@ export function ReturnCreationModal({ myOrgId, onClose, onSuccess }: Props) {
       onClose={onClose}
       closeDisabled={createReturn.isPending}
     >
-      <div className="flex justify-between items-center px-6 py-4 border-b bg-gradient-to-r from-rose-50 to-pink-50/60 flex-shrink-0">
+      <div className="flex justify-between items-center px-6 py-4 border-b bg-gradient-to-r from-red-50 to-pink-50/60 flex-shrink-0">
         <div>
           <h3 className="text-base font-bold text-slate-800">{title}</h3>
           <div className="flex items-center gap-2 mt-1">
-            <div className="w-8 h-1.5 rounded-full bg-rose-500" />
-            <div className={`w-8 h-1.5 rounded-full transition-all ${order ? 'bg-rose-500' : 'bg-slate-200'}`} />
+            <div className="w-8 h-1.5 rounded-full bg-red-500" />
+            <div className={`w-8 h-1.5 rounded-full transition-all ${order ? 'bg-red-500' : 'bg-slate-200'}`} />
           </div>
         </div>
         <button
@@ -75,7 +75,7 @@ export function ReturnCreationModal({ myOrgId, onClose, onSuccess }: Props) {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {error && (
-          <p role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+          <p role="alert" className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
             ⚠️ {error}
           </p>
         )}
@@ -104,7 +104,7 @@ export function ReturnCreationModal({ myOrgId, onClose, onSuccess }: Props) {
               <button
                 type="button"
                 onClick={() => setOrder(null)}
-                className="text-rose-600 hover:underline font-bold text-[11px] cursor-pointer"
+                className="text-red-600 hover:underline font-bold text-[11px] cursor-pointer"
               >
                 ← Değiştir
               </button>
@@ -120,14 +120,14 @@ export function ReturnCreationModal({ myOrgId, onClose, onSuccess }: Props) {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                İade Nedeni <span className="text-rose-500">*</span>
+                İade Nedeni <span className="text-red-500">*</span>
               </label>
               <textarea
                 rows={3}
                 placeholder="Lütfen iade talebinizin nedenini detaylıca açıklayınız..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 outline-none"
+                className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-red-500/20 focus:border-red-400 outline-none"
               />
             </div>
           </div>
@@ -142,7 +142,7 @@ export function ReturnCreationModal({ myOrgId, onClose, onSuccess }: Props) {
           <Button
             loading={createReturn.isPending}
             onClick={submit}
-            className="bg-rose-600 hover:bg-rose-700 text-white"
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
             İade Talebi Gönder
           </Button>

@@ -24,7 +24,7 @@ export function FinanceToolbar({ tab, onCustomerPayment, onIncome, onExpense }: 
       <Button
         size="sm"
         variant="secondary"
-        className="border-rose-200 text-rose-600 hover:bg-rose-50"
+        className="border-red-200 text-red-600 hover:bg-red-50"
         onClick={() => onCustomerPayment({ method: tab, mode: 'refund' })}
       >
         {tab === 'cash' ? 'Müşteri Tahsilat İade' : '- Müşteri POS İade'}
@@ -46,7 +46,7 @@ export function FinanceToolbar({ tab, onCustomerPayment, onIncome, onExpense }: 
           <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold" onClick={onIncome}>
             + Nakit Giriş
           </Button>
-          <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white font-bold" onClick={onExpense}>
+          <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white font-bold" onClick={onExpense}>
             Nakit Çıkış
           </Button>
         </>

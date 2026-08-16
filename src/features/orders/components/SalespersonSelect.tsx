@@ -22,15 +22,15 @@ export function SalespersonSelect({ options, value, onChange }: Props) {
         htmlFor="cart-salesperson"
         className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5"
       >
-        Satışçı <span className="text-rose-500">*</span>
+        Satışçı <span className="text-red-500">*</span>
       </label>
       <select
         id="cart-salesperson"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required
-        className={`w-full text-sm px-3.5 py-2.5 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all ${
-          value ? 'border-slate-200 text-slate-800' : 'border-rose-300 text-slate-500'
+        className={`w-full text-sm px-3.5 py-2.5 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all ${
+          value ? 'border-slate-200 text-slate-800' : 'border-red-300 text-slate-500'
         }`}
       >
         <option value="">— Satışı yapan personeli seçin —</option>
@@ -42,7 +42,7 @@ export function SalespersonSelect({ options, value, onChange }: Props) {
       </select>
 
       {options.length === 0 && (
-        <p className="mt-1 text-[11px] text-rose-600 font-semibold">
+        <p className="mt-1 text-[11px] text-red-600 font-semibold">
           Aktif personel bulunamadı. Ekip Yönetimi'nden personel ekleyin.
         </p>
       )}
