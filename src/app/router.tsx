@@ -7,6 +7,7 @@ import {
   RequireOrgKind,
   RequireOrgRole,
   RequirePlatformAdmin,
+  RequireProductAccess,
   RequireSubscriber,
 } from './guards';
 
@@ -85,9 +86,14 @@ export const router = createBrowserRouter([
         element: lazyRoute(<PanelLayout />),
         children: [
           { index: true, element: lazyRoute(<ManufacturerHome />) },
-          { path: 'urunler', element: lazyRoute(<ProductsPage />) },
+          // Misafir üreticide ürün yönetimi anahtara, stok yönetimi ise
+          // tümüyle kapalıdır (kilitli kural 15 — sunucu da reddeder).
+          {
+            path: 'urunler',
+            element: <RequireProductAccess>{lazyRoute(<ProductsPage />)}</RequireProductAccess>,
+          },
           { path: 'katalog', element: lazyRoute(<ManufacturerCatalogPage />) },
-          { path: 'stok', element: lazyRoute(<StockPage />) },
+          { path: 'stok', element: locked(<StockPage />, { subscriber: true }) },
           // Misafir üreticiden GİZLENEN üç bölüm. Menüden çıkarmak birinci
           // katmandır; adres çubuğuna yazan da girememeli (kilitli kural 15).
           { path: 'ekip', element: locked(<TeamPage />, { subscriber: true, roles: OWNER_ONLY }) },

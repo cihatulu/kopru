@@ -4,6 +4,7 @@ import { useAuthSession, useLogout } from '@/features/auth';
 import { CatalogTree, RetailerCatalogTree } from '@/features/catalog';
 import { CartProvider, useCart } from '@/features/orders';
 import { useUnreadAnnouncements } from '@/features/announcements';
+import { useMyProductPermission } from '@/features/counterparties';
 import { ORG_KIND, ROUTES } from '@/constants';
 import { navFor } from './navigation';
 import { Sidebar } from './Sidebar';
@@ -88,11 +89,19 @@ function ManufacturerPanel() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { unreadCount } = useUnreadAnnouncements();
+  // Misafir üreticide Ürün Yönetimi anahtara bağlıdır.
+  const canManageProducts = useMyProductPermission();
 
   const org = user?.org;
   if (!org) return null;
 
-  const items = navFor(org.kind, org.enabledModules, user.orgRole, org.isSubscriber);
+  const items = navFor(
+    org.kind,
+    org.enabledModules,
+    user.orgRole,
+    org.isSubscriber,
+    canManageProducts,
+  );
 
   return (
     <div className="flex min-h-screen bg-slate-50">

@@ -101,6 +101,8 @@ export function navFor(
   _enabledModules: string[],
   role: OrgRole,
   isSubscriber: boolean = true,
+  /** Misafir üreticinin ürün yönetimi izni; üye üreticide her zaman true. */
+  canManageProducts: boolean = true,
 ): NavItem[] {
   let items = kind === ORG_KIND.manufacturer
     ? [...MANUFACTURER_NAV]
@@ -118,12 +120,21 @@ export function navFor(
   }
 
   if (kind === ORG_KIND.manufacturer && !isSubscriber) {
+    // MİSAFİR ÜRETİCİDE STOK YÖNETİMİ HEP KAPALIDIR. Stok rakamı ne tek tek
+    // ne toplu güncellenebilir; `manufacturer_may_write_stock()` de bunu
+    // sunucuda reddeder (kilitli kural 15).
     items = items.filter(
       (i) =>
         i.label !== 'Müşteri Yönetimi' &&
         i.label !== 'Raporlar' &&
-        i.label !== 'Ekip Yönetimi',
+        i.label !== 'Ekip Yönetimi' &&
+        i.label !== 'Stok Yönetimi',
     );
+
+    // ÜRÜN YÖNETİMİ yalnız üye perakendeci anahtarı açtıysa görünür.
+    if (!canManageProducts) {
+      items = items.filter((i) => i.label !== 'Ürün Yönetimi');
+    }
   }
 
   if (role === 'staff') {

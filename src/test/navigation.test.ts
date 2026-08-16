@@ -92,10 +92,10 @@ describe('menüden gizlenen her bölüm ROTADA da kilitli', () => {
     }
   });
 
-  test('üreticinin stok rotası kilitlenmez', () => {
-    // Misafir üretici, izin anahtarı açıksa stok tutabilir; karar org
-    // düzeyinde değil İLİŞKİ düzeyindedir, RPC verir.
-    expect(guarded('m', 'stok')).toBe(false);
+  test('misafir üreticide stok rotası da kilitli', () => {
+    // Misafir üreticide STOK YÖNETİMİ hep kapalıdır; anahtar ürün yönetimini
+    // açar, stok yönetimini değil.
+    expect(guarded('m', 'stok')).toBe(true);
   });
 
   test('personelden gizlenen bölümler ROL kilidiyle de kapalı', () => {
@@ -143,9 +143,20 @@ describe('üretici menüsü', () => {
     expect(labels(ORG_KIND.manufacturer, true)).toContain('Stok Yönetimi');
   });
 
-  test('misafir üreticide menü kalır — izin ilişkiye bağlıdır, org tipine değil', () => {
-    // `can_edit_catalog` ilişki başına açılır; org düzeyinde karar verilemez.
-    // Bu yüzden gizleme yapılmaz, yazma girişimini RPC reddeder.
-    expect(labels(ORG_KIND.manufacturer, false)).toContain('Stok Yönetimi');
+  test('misafir üreticide Stok Yönetimi GİZLİ', () => {
+    expect(labels(ORG_KIND.manufacturer, false)).not.toContain('Stok Yönetimi');
+  });
+
+  test('misafir üreticide Ürün Yönetimi anahtara bağlı', () => {
+    const kapali = navFor(ORG_KIND.manufacturer, [], 'owner', false, false).map((i) => i.label);
+    const acik = navFor(ORG_KIND.manufacturer, [], 'owner', false, true).map((i) => i.label);
+    expect(kapali).not.toContain('Ürün Yönetimi');
+    expect(acik).toContain('Ürün Yönetimi');
+  });
+
+  test('üye üreticide anahtar sorulmaz — her ikisi de açık', () => {
+    const labels2 = navFor(ORG_KIND.manufacturer, [], 'owner', true, false).map((i) => i.label);
+    expect(labels2).toContain('Ürün Yönetimi');
+    expect(labels2).toContain('Stok Yönetimi');
   });
 });

@@ -22,6 +22,7 @@ export { useCounterpartyInvites } from './api/useCounterpartyInvites';
 export type { InviteSent } from './api/useCounterpartyInvites';
 export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
 export { useToggleCatalogPermission } from './api/useCatalogPermission';
+export { useMyProductPermission } from './api/useMyProductPermission';
 export type {
   AddCounterpartyInput,
   AddCounterpartyResult,

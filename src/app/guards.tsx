@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthSession } from '@/features/auth';
+import { useMyProductPermission } from '@/features/counterparties';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { ROUTES, type OrgKind, type OrgRole } from '@/constants';
 import { isAdminHost } from '@/lib/tenant';
@@ -52,6 +53,22 @@ export function RequireSubscriber({ children }: { children?: ReactNode }) {
 
   if (isLoading) return <PageLoader />;
   if (!user?.org?.isSubscriber) return <Navigate to={roleHomePath(user)} replace />;
+  return <>{children ?? <Outlet />}</>;
+}
+
+/**
+ * Misafir üreticinin ÜRÜN YÖNETİMİ kilidi.
+ *
+ * Anahtarı üye perakendeci açar; kapalıyken misafir üretici kendi kataloğunu
+ * da yönetemez. Menüden gizlemek birinci katman, bu ikinci; sunucuda
+ * `manufacturer_may_manage_products()` üçüncüdür.
+ */
+export function RequireProductAccess({ children }: { children?: ReactNode }) {
+  const { data: user, isLoading } = useAuthSession();
+  const allowed = useMyProductPermission();
+
+  if (isLoading) return <PageLoader />;
+  if (!allowed) return <Navigate to={roleHomePath(user)} replace />;
   return <>{children ?? <Outlet />}</>;
 }
 
