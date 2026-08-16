@@ -40,8 +40,8 @@ export function OrderItemsCard({
             {items.map((i) => (
               <tr key={i.id} className="text-slate-700 align-top">
                 <td className="py-3 pr-2">
+                  {/* Model kodu ayrıca yazılmaz — ürün adının içinde zaten var. */}
                   <p className="font-bold text-slate-800">{i.name}</p>
-                  <p className="font-mono text-[10px] text-slate-400">{i.code}</p>
                   {/* Üretim talimatı: üretici bunu görmezse iş yapılamaz.
                       Tutar burada YAZILMAZ; kırılım sağdaki sütunda durur. */}
                   {i.customDescription && (

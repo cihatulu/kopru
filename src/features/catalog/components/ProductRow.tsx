@@ -7,6 +7,7 @@ import type { CatalogProduct } from '../api/useProducts';
 import { PriceRequestModal } from './PriceRequestModal';
 import {
   MarginCell,
+  ModelCell,
   ProductIdentityCell,
   ProfitCell,
   SelectCell,
@@ -59,6 +60,8 @@ export function ProductRow({
         <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-600">
           {groupName ?? '—'}
         </td>
+
+        <ModelCell code={p.code} />
 
         <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">{p.category ?? '—'}</td>
 

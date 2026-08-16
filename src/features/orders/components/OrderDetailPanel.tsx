@@ -47,8 +47,8 @@ export function OrderDetailPanel({ order, myKind, pending, onClose, onAdvance, o
           {order.items.map((i) => (
             <tr key={i.id}>
               <td className="py-2.5">
+                {/* Model kodu yazılmaz — ürün adının içinde zaten var. */}
                 <span className="block text-slate-900">{i.name}</span>
-                <span className="block font-mono text-xs text-slate-500">{i.code}</span>
               </td>
               <td className="py-2.5 text-right text-slate-700">{formatQuantity(i.quantity)}</td>
               <td className="py-2.5 text-right text-slate-700">

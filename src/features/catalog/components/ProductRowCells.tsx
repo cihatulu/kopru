@@ -16,7 +16,7 @@ const BAND_STYLE = {
   unknown: 'bg-slate-100 text-slate-500 border-slate-200',
 } as const;
 
-/** Görsel + ad + SET/PASİF rozetleri + model kodu. */
+/** Görsel + ad + SET/PASİF rozetleri. Model kodu AYRI sütunda. */
 export function ProductIdentityCell({ product: p }: { product: CatalogProduct }) {
   return (
     <td className="whitespace-nowrap px-4 py-4">
@@ -53,9 +53,24 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
               </span>
             )}
           </div>
-          <div className="mt-0.5 text-xs font-semibold text-slate-400">Model: {p.code || '—'}</div>
         </div>
       </div>
+    </td>
+  );
+}
+
+/**
+ * Model kodu.
+ *
+ * Ad hücresinin altında ikinci satır olarak duruyordu; ürün adı zaten modeli
+ * içerdiği için ("Pierro Sandalye" / "Model: Pierro") her satırda aynı kelime
+ * iki kez okunuyordu. Kendi sütununa alındı: tekrar bitti, kod da sıralanıp
+ * taranabilir bir alan oldu.
+ */
+export function ModelCell({ code }: { code: string }) {
+  return (
+    <td className="whitespace-nowrap px-4 py-4 font-mono text-xs font-semibold text-slate-500">
+      {code || '—'}
     </td>
   );
 }

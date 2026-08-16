@@ -40,8 +40,9 @@ export function RetailerProductTable(props: Props) {
                 />
               </th>
             )}
-            <th className={TH}>Ürün Adı / Kodu</th>
+            <th className={TH}>Ürün Adı</th>
             <th className={TH}>Grup</th>
+            <th className={TH}>Model</th>
             <th className={TH}>Kategori</th>
             <th className={TH}>Stok</th>
             <th className={TH}>Alış Maliyeti</th>
@@ -55,7 +56,7 @@ export function RetailerProductTable(props: Props) {
         <tbody className="divide-y divide-slate-100 bg-white">
           {products.length === 0 && (
             <tr>
-              <td colSpan={props.canEdit ? 10 : 9} className="py-16 text-center text-sm italic text-slate-400">
+              <td colSpan={props.canEdit ? 11 : 10} className="py-16 text-center text-sm italic text-slate-400">
                 Aradığınız kriterlere uygun ürün bulunamadı.
               </td>
             </tr>

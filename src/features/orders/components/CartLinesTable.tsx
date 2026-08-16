@@ -51,10 +51,7 @@ export function CartLinesTable({ lines, onQuantityChange }: Props) {
                         <p className="font-semibold text-slate-800 text-sm line-clamp-2 leading-tight">
                           {l.name}
                         </p>
-                        {l.model && l.model !== l.code && (
-                          <p className="text-xs text-slate-400 mt-0.5">{l.model}</p>
-                        )}
-                        <p className="text-xs text-slate-400 font-mono">{l.code}</p>
+                        {/* Model kodu yazılmaz — ürün adının içinde zaten var. */}
                         {l.customDescription && (
                           <span className="mt-1.5 inline-block text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg font-semibold border border-indigo-100/50">
                             Değişiklik: {l.customDescription}

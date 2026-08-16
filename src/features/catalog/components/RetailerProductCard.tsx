@@ -106,14 +106,13 @@ export function RetailerProductCard({ product, unitPrice, stock, ownStock, onOpe
       </button>
 
       <div className="flex flex-1 flex-col p-5">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-          {product.code || '—'}
-        </span>
+        {/* Model kodu başlığın üstünde YAZILMAZ: ürün adı zaten modeli
+            içeriyor ("Pierro Sandalye"), tekrarı kartı kalabalıklaştırıyordu. */}
         <button
           type="button"
           onClick={() => onOpen(product)}
           title={product.name}
-          className="mt-0.5 line-clamp-1 text-left text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
+          className="line-clamp-1 text-left text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
         >
           {product.name}
         </button>

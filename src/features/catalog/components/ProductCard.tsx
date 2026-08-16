@@ -77,12 +77,10 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-          {product.code || '—'}
-        </span>
+        {/* Model kodu başlığın üstünde YAZILMAZ: ürün adı zaten modeli içeriyor. */}
         <h3
           title={product.name}
-          className="mt-0.5 line-clamp-1 text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
+          className="line-clamp-1 text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600"
         >
           {product.name}
         </h3>

@@ -43,8 +43,8 @@ export function CartPanel({
           <li key={l.productId} className="border-b border-slate-100 pb-3 last:border-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
+                {/* Model kodu yazılmaz — ürün adının içinde zaten var. */}
                 <p className="truncate text-sm font-medium text-slate-900">{l.name}</p>
-                <p className="font-mono text-xs text-slate-500">{l.code}</p>
               </div>
               <p className="whitespace-nowrap text-sm font-medium text-slate-900">
                 {formatMoney(lineTotal(l))}
