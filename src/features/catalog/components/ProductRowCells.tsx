@@ -53,6 +53,16 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
               </span>
             )}
           </div>
+          {/*
+            Üyeliğe geçerken bu ürün mükerrer bir kayıtla birleştirildi ve
+            iki kaydın satış fiyatı farklıydı. En eskisininki tutuldu —
+            üretici hangisinin doğru olduğunu bilmeli.
+          */}
+          {p.priceReviewNeeded && (
+            <p className="mt-1 text-[11px] font-semibold text-amber-700">
+              Fiyatı kontrol edin — birleştirmede farklı fiyatlar vardı
+            </p>
+          )}
         </div>
       </div>
     </td>

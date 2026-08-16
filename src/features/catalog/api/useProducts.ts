@@ -7,7 +7,8 @@ import type { Dimensions, SetLine, Variant } from '../domain/variants';
 // üreticinin maliyeti ayrı `product_costs` tablosunda (A4).
 const PRODUCT_COLUMNS =
   'id, name, code, description, supplier_price, currency, is_active, owner_org_id, ' +
-  'images, type, variants, set_contents, width_cm, depth_cm, height_cm, group_id, category, created_at';
+  'images, type, variants, set_contents, width_cm, depth_cm, height_cm, group_id, category, ' +
+  'created_at, price_review_needed';
 
 export interface CatalogProduct {
   id: string;
@@ -28,6 +29,11 @@ export interface CatalogProduct {
   /** Grup › Kategori › Model hiyerarşisinin orta kademesi. */
   category: string | null;
   createdAt: string;
+  /**
+   * Üyeliğe geçerken mükerrer ürünler birleştirildi ve gruptaki satış
+   * fiyatları farklıydı. En eskisininki tutuldu; üretici kontrol etmeli.
+   */
+  priceReviewNeeded: boolean;
 }
 
 // jsonb kolonların içeriği tip sisteminden geçmez; alan alan ayrıştırılır ki
@@ -73,6 +79,7 @@ function toProduct(raw: unknown): CatalogProduct {
     groupId: typeof r.group_id === 'string' ? r.group_id : null,
     category: typeof r.category === 'string' ? r.category : null,
     createdAt: r.created_at as string,
+    priceReviewNeeded: r.price_review_needed === true,
   };
 }
 
