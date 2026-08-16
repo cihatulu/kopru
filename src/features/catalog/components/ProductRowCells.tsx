@@ -19,7 +19,7 @@ const BAND_STYLE = {
 /** Görsel + ad + SET/PASİF rozetleri. Model kodu AYRI sütunda. */
 export function ProductIdentityCell({ product: p }: { product: CatalogProduct }) {
   return (
-    <td className="whitespace-nowrap px-4 py-4">
+    <td className="whitespace-nowrap px-4 py-3">
       <div className="flex items-center">
         <div className="size-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
           {p.images[0] ? (
@@ -69,7 +69,7 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
  */
 export function ModelCell({ code }: { code: string }) {
   return (
-    <td className="whitespace-nowrap px-4 py-4 font-mono text-xs font-semibold text-slate-500">
+    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-slate-500">
       {code || '—'}
     </td>
   );
@@ -79,7 +79,7 @@ export function ModelCell({ code }: { code: string }) {
 export function StockCell({ quantity }: { quantity: number | null }) {
   const level = stockLevel(quantity);
   return (
-    <td className="whitespace-nowrap px-4 py-4">
+    <td className="whitespace-nowrap px-4 py-3">
       <span
         className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold ${STOCK_STYLE[level].chip}`}
       >
@@ -94,7 +94,7 @@ export function StockCell({ quantity }: { quantity: number | null }) {
 export function ProfitCell({ profit }: { profit: number | null }) {
   return (
     <td
-      className={`whitespace-nowrap px-4 py-4 text-sm font-extrabold ${
+      className={`whitespace-nowrap px-4 py-3 text-sm font-extrabold ${
         profit !== null && profit < 0 ? 'text-red-600' : 'text-emerald-600'
       }`}
     >
@@ -107,7 +107,7 @@ export function ProfitCell({ profit }: { profit: number | null }) {
 export function MarginCell({ margin }: { margin: number | null }) {
   const band = marginBand(margin);
   return (
-    <td className="whitespace-nowrap px-3 py-4 text-sm">
+    <td className="whitespace-nowrap px-3 py-3 text-sm">
       <div className="flex items-center gap-2">
         {margin !== null && (
           <span className={`font-extrabold ${margin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
@@ -135,7 +135,7 @@ export function SelectCell({
   onToggle: (id: string) => void;
 }) {
   return (
-    <td className="whitespace-nowrap px-4 py-4">
+    <td className="whitespace-nowrap px-4 py-3">
       <input
         type="checkbox"
         aria-label={`${p.name} seç`}

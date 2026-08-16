@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/Button';
+import { TD as TD_BASE, TH, THEAD, TH_NUM } from '@/components/ui/Table';
 import React, { useState } from 'react';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { OrderStatus } from '../domain/status';
@@ -15,8 +17,8 @@ interface Props {
   updatingOrderId: string | null;
 }
 
-const TH = 'px-6 py-4 text-left text-xs font-black uppercase tracking-wider text-slate-500 bg-slate-50';
-const TD = 'px-6 py-4.5 align-middle whitespace-nowrap text-sm';
+// Satır hücresi ortak dilden; yalnız yatay dolgu bu tabloda daha geniş.
+const TD = `${TD_BASE} whitespace-nowrap`;
 
 /** Üreticinin durumu elle değiştirebildiği aşamalar. */
 const EDITABLE: readonly OrderStatus[] = [
@@ -42,17 +44,17 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
   const isMfr = myKind === 'manufacturer';
 
   return (
-    <div className="w-full overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-sm">
+    <div className="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
       <table className="w-full min-w-[960px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-slate-100">
+        <thead className={THEAD}>
+          <tr>
             <th className={TH}>Sipariş No</th>
             <th className={TH}>Tarih</th>
             <th className={TH}>Tutar</th>
             <th className={TH}>{isMfr ? 'Perakendeci' : 'Tedarikçi'}</th>
             <th className={TH}>Son Kullanıcı</th>
             <th className={TH}>Durum</th>
-            <th className={`${TH} text-right pr-8`}>İşlemler</th>
+            <th className={`${TH_NUM} pr-8`}>İşlemler</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -93,36 +95,35 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                   </td>
                   <td className={`${TD} text-right pr-8`}>
                     <div className="flex justify-end gap-2 items-center">
+                      {/* Teslim alma ileri yönlü bir onay — `success`. */}
                       {!isMfr && (o.status === 'shipped' || o.status === 'partially_shipped') && (
-                        <button
-                          type="button"
+                        <Button
+                          variant="success"
+                          size="sm"
                           disabled={updatingOrderId === o.id}
                           onClick={() => onUpdateStatus(o.id, 'delivered')}
-                          className="rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-bold transition-all hover:bg-emerald-700 shadow-sm cursor-pointer"
                         >
                           Teslim Aldım
-                        </button>
+                        </Button>
                       )}
 
-                      <button
-                        type="button"
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-expanded={isExpanded}
                         onClick={() => setExpandedOrderId(isExpanded ? null : o.id)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors border cursor-pointer ${
-                          isExpanded
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                        }`}
                       >
-                        <span>Detay</span>
+                        Detay
                         <svg
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          className={`size-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          aria-hidden="true"
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                         </svg>
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

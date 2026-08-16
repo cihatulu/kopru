@@ -52,22 +52,22 @@ export function ProductRow({
 
   return (
     <>
-      <tr className={`transition-colors hover:bg-slate-50/45 ${selected ? 'bg-indigo-50/30' : ''}`}>
+      <tr className={`transition-colors hover:bg-slate-50/45 ${selected ? 'bg-brand-50' : ''}`}>
         <SelectCell product={p} selected={selected} onToggle={onToggle} />
 
         <ProductIdentityCell product={p} />
 
-        <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-600">
+        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-600">
           {groupName ?? '—'}
         </td>
 
         <ModelCell code={p.code} />
 
-        <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">{p.category ?? '—'}</td>
+        <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">{p.category ?? '—'}</td>
 
         <StockCell quantity={quantity} />
 
-        <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-700">
+        <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-slate-700">
           {isGuest ? (
             <div className="flex items-center gap-1">
               <span className="text-xs font-bold text-slate-400">₺</span>
@@ -87,7 +87,7 @@ export function ProductRow({
                   if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                 }}
                 placeholder="0,00"
-                className="w-24 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-24 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-sm focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
               />
             </div>
           ) : cost === undefined ? (
@@ -97,7 +97,7 @@ export function ProductRow({
           )}
         </td>
 
-        <td className="whitespace-nowrap px-4 py-4 text-sm font-extrabold text-slate-800">
+        <td className="whitespace-nowrap px-4 py-3 text-sm font-extrabold text-slate-800">
           {isGuest ? (
             <button
               type="button"
@@ -111,7 +111,7 @@ export function ProductRow({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={2}
-                className="size-3.5 text-slate-400 transition-colors group-hover:text-indigo-600"
+                className="size-3.5 text-slate-400 transition-colors group-hover:text-brand-600"
               >
                 <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
@@ -124,7 +124,7 @@ export function ProductRow({
         <ProfitCell profit={profit} />
         <MarginCell margin={margin} />
 
-        <td className="whitespace-nowrap px-3 py-4 text-center">
+        <td className="whitespace-nowrap px-3 py-3 text-center">
           {isGuest ? (
             <span className="text-xs font-medium text-slate-400">—</span>
           ) : (

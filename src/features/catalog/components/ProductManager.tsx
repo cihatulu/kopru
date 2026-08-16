@@ -73,8 +73,6 @@ export function ProductManager({ orgId }: { orgId: string }) {
         onActivityChange={setActivity}
         selectedCount={selectedIds.size}
         selectedSingleCount={selected.filter((p) => p.type === 'single').length}
-        productCount={all.length}
-        setCount={all.filter((p) => p.type === 'set').length}
         groups={groups.data ?? []}
         isGuest={isGuestManufacturer}
         onAssignGroup={() => setDialog('group-assign')}

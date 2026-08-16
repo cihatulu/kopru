@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import type { OrderStatus } from '../domain/status';
 
 interface Props {
@@ -35,10 +36,12 @@ export function OrderStatusCell({
   return (
     <div className="flex flex-col gap-1.5 max-w-[200px]">
       <div className="flex items-center gap-2">
+        {/* Seçici ve düğme 32px — satırdaki diğer eylemlerle aynı çizgi. */}
         <select
+          aria-label="Sipariş durumu"
           value={selected ?? baseline}
           onChange={(e) => onSelect(e.target.value as OrderStatus)}
-          className="text-xs border border-slate-200 rounded-xl py-1.5 pl-3 pr-8 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer shadow-sm"
+          className="select h-8 text-xs"
         >
           {(status === 'pending' || status === 'confirmed') && (
             <>
@@ -62,30 +65,28 @@ export function OrderStatusCell({
             </>
           )}
         </select>
-        <button
-          type="button"
+        {/*
+          Seçim değişmeden "Güncelle" birincil renge dönmez. Değişiklik
+          olmadan basılacak bir düğmeyi vurgulamak, kullanıcıyı boş bir
+          isteğe çağırmak olurdu.
+        */}
+        <Button
+          size="sm"
+          variant={changed ? 'primary' : 'secondary'}
           disabled={pending || !changed}
+          loading={pending}
           onClick={() => {
             if (selected) onUpdate(selected);
           }}
-          className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all border ${
-            changed
-              ? 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800 shadow-sm cursor-pointer'
-              : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
-          }`}
         >
           Güncelle
-        </button>
+        </Button>
       </div>
 
       {inProgress && isRoot && (
-        <button
-          type="button"
-          onClick={onPartialShip}
-          className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl transition-colors shadow-sm w-full uppercase tracking-wider cursor-pointer font-sans"
-        >
+        <Button variant="secondary" size="sm" className="w-full" onClick={onPartialShip}>
           Kısmi Sevk Et
-        </button>
+        </Button>
       )}
     </div>
   );

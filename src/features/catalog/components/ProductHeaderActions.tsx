@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Segmented } from '@/components/ui/Segmented';
 import type { ProductGroup } from '../api/useProductGroups';
 import { ACTIVITY_LABEL, type ActivityFilter } from '../domain/productStats';
 
@@ -7,8 +10,6 @@ interface Props {
   selectedCount: number;
   /** Seçilenlerden KAÇI tek ürün — set yalnız tek ürünlerden kurulur. */
   selectedSingleCount: number;
-  productCount: number;
-  setCount: number;
   groups: ProductGroup[];
   isGuest?: boolean;
   onAssignGroup: () => void;
@@ -17,20 +18,28 @@ interface Props {
   onAddProduct: () => void;
 }
 
+const ACTIVITY_OPTIONS = [
+  { value: 'active', label: ACTIVITY_LABEL.active },
+  { value: 'passive', label: ACTIVITY_LABEL.passive },
+] as const;
+
 /**
  * Başlık aksiyonları.
  *
- * furniture-platform'da butonlarda plan limitleri yazıyordu ("Ürün Ekle 2/30").
- * KÖPRÜ'de plan gating kaldırıldığı için sayaç var ama ÜST SINIR YOK — sahte
- * bir limit koymak, kullanıcıyı olmayan bir kurala çarptırırdı.
+ * Beş kontrol üç ayrı yükseklikteydi (36 / 44 / 44 ama farklı dolgu) ve
+ * dördü kendi rengini seçmişti: koyu gri, beyaz, indigo, siyah. Şimdi
+ * hepsi 36px ve TEK birincil eylem var — "Ürün Ekle". Gerisi yardımcı.
+ *
+ * "Ürün Ekle (4)" ve "Set Oluştur (1)" sayaçları düğmelerden alındı:
+ * düğmenin dört ürün ekleyeceğini ima ediyorlardı ve aynı sayı hemen
+ * altındaki "Toplam Ürün" kartında zaten yazıyor. "Gruba Ekle (0)"
+ * sayacı KALDI — orada sayı seçili ürün adedi, yani eylemin kendisi.
  */
 export function ProductHeaderActions({
   activity,
   onActivityChange,
   selectedCount,
   selectedSingleCount,
-  productCount,
-  setCount,
   groups,
   isGuest = false,
   onAssignGroup,
@@ -42,99 +51,44 @@ export function ProductHeaderActions({
   const canCreateSet = selectedSingleCount >= 2;
 
   return (
-    <div className="flex flex-col items-start justify-between gap-5 xl:flex-row xl:items-center">
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">Ürün Yönetimi</h1>
-        <p className="mt-1 text-xs text-slate-500">
-          Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin.
-        </p>
-      </div>
-
-      <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:w-auto">
-      {/* Aktif / Pasif — liste bu ikisini karıştırmaz. */}
-      <div className="inline-flex rounded-xl bg-slate-100 p-1">
-        {(['active', 'passive'] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={activity === v}
-            onClick={() => onActivityChange(v)}
-            className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
-              activity === v
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            {ACTIVITY_LABEL[v]}
-          </button>
-        ))}
-      </div>
-
-      {!isGuest && (
+    <PageHeader
+      title="Ürün Yönetimi"
+      description="Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin."
+      actions={
         <>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onAssignGroup}
-              disabled={selectedCount === 0}
-              title={selectedCount === 0 ? 'Önce tablodan ürün seçin' : undefined}
-              className="h-11 flex-1 rounded-xl bg-slate-800 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-900 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none"
-            >
-              Gruba Ekle ({selectedCount})
-            </button>
-            <button
-              type="button"
-              onClick={onManageGroups}
-              className="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 sm:flex-none"
-            >
-              Grupları Yönet{groups.length > 0 ? ` (${groups.length})` : ''}
-            </button>
-          </div>
+          <Segmented
+            label="Ürün durumu"
+            options={ACTIVITY_OPTIONS}
+            value={activity}
+            onChange={onActivityChange}
+          />
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onCreateSet}
-              disabled={!canCreateSet}
-              title={canCreateSet ? undefined : 'Takım oluşturmak için en az 2 tek ürün seçin'}
-              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
-                aria-hidden="true"
+          {!isGuest && (
+            <>
+              <Button
+                variant="secondary"
+                onClick={onAssignGroup}
+                disabled={selectedCount === 0}
+                title={selectedCount === 0 ? 'Önce tablodan ürün seçin' : undefined}
               >
-                <path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" />
-              </svg>
-              Set Oluştur ({setCount})
-            </button>
-            <button
-              type="button"
-              onClick={onAddProduct}
-              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95 sm:flex-none"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                className="size-4"
-                aria-hidden="true"
+                Gruba Ekle ({selectedCount})
+              </Button>
+              <Button variant="secondary" onClick={onManageGroups}>
+                Grupları Yönet{groups.length > 0 ? ` (${groups.length})` : ''}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={onCreateSet}
+                disabled={!canCreateSet}
+                title={canCreateSet ? undefined : 'Takım oluşturmak için en az 2 tek ürün seçin'}
               >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              Ürün Ekle ({productCount})
-            </button>
-          </div>
+                Set Oluştur
+              </Button>
+              <Button onClick={onAddProduct}>Ürün Ekle</Button>
+            </>
+          )}
         </>
-      )}
-      </div>
-    </div>
+      }
+    />
   );
 }

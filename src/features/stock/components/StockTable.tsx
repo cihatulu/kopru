@@ -1,3 +1,4 @@
+import { TH, THEAD } from '@/components/ui/Table';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StockTableRow } from './StockTableRow';
@@ -24,8 +25,6 @@ const CATEGORY_COLORS = [
 const categoryColor = (index: number): string =>
   CATEGORY_COLORS[index % CATEGORY_COLORS.length] ?? CATEGORY_COLORS[0];
 
-const TH = 'px-5 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest';
-
 export function StockTable({ rows, groups, busyId, onSave }: Props) {
   // Onay tabloda tutulur: satır yalnız "şunu yapmak istiyorum" der, kaydı
   // kullanıcı onaylayınca üst katman yazar. Tek tık kazayla stok bozmasın.
@@ -34,23 +33,21 @@ export function StockTable({ rows, groups, busyId, onSave }: Props) {
 
   if (rows.length === 0) {
     return (
-      <div className="bg-white border border-slate-100 rounded-2xl p-16 text-center shadow-sm">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-350">
-            📭
-          </div>
-          <p className="text-sm font-medium text-slate-400">Ürün bulunamadı.</p>
-        </div>
+      /* `text-slate-350` yazılıydı — Tailwind'de 350 tonu yok. Emoji ile
+         birlikte kaldırıldı; boş durum diğer tablolarla aynı dilde. */
+      <div className="rounded-2xl border border-slate-200 bg-white p-16 text-center shadow-xs">
+        <p className="text-sm text-slate-400">Ürün bulunamadı.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
       <div className="overflow-x-auto w-full scrollbar-thin table-scroll-shadow">
         <table className="min-w-[1000px] lg:min-w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-slate-50/80">
-            <tr className="bg-slate-50/80 border-b border-slate-100">
+          {/* Uzun listede sütun adı kaybolmasın diye yapışkan. */}
+          <thead className={`sticky top-0 z-10 ${THEAD}`}>
+            <tr>
               <th className={TH}>Ürün Adı</th>
               <th className={TH}>Grup Adı</th>
               <th className={TH}>Model</th>
