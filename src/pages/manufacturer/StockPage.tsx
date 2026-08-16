@@ -11,6 +11,7 @@ import {
   StockToolbar,
   filterByCategory,
   pageSlice,
+  stockImportError,
   toStockRows,
   toXlsxBlob,
   uniqueCategories,
@@ -119,8 +120,8 @@ export default function StockPage() {
       {importing && (
         <CsvImportDialog
           pending={bulk.isPending}
-          appliedCount={applied?.updated ?? null}
-          createdCount={applied?.created ?? null}
+          result={applied}
+          applyError={bulk.isError ? stockImportError(bulk.error) : null}
           canCreateProducts
           onClose={() => setImporting(false)}
           onApply={(csvRows) => bulk.mutate(csvRows, { onSuccess: setApplied })}

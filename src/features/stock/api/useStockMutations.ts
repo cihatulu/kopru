@@ -38,8 +38,13 @@ export function useSetProductStock() {
 /** Sunucunun gerçekten yaptığı iş — gönderilen satır sayısı değil. */
 export interface BulkStockResult {
   updated: number;
-  /** Kimliksiz satırlardan doğan PASİF ürünler. */
+  /** Kimliği boş VEYA hiç tanınmayan satırlardan doğan PASİF ürünler. */
   created: number;
+  /**
+   * Dokunulmayan satırlar: kimliği VAR ama bize kapalı bir ürüne ait, ya da
+   * adı da yok. Kullanıcı kaç satırın düştüğünü görmeli.
+   */
+  skipped: number;
 }
 
 /**
@@ -65,8 +70,12 @@ export function useBulkUpdateStock() {
       // RPC `jsonb` döner; `Json` tipi geniş olduğu için alanlar burada
       // daraltılır. Eksik alan 0 sayılır — sayı göstermek yerine patlamak
       // kullanıcıya "kaç satır işlendi" bilgisini tümden kaybettirirdi.
-      const raw = data as { updated?: number; created?: number } | null;
-      return { updated: Number(raw?.updated ?? 0), created: Number(raw?.created ?? 0) };
+      const raw = data as { updated?: number; created?: number; skipped?: number } | null;
+      return {
+        updated: Number(raw?.updated ?? 0),
+        created: Number(raw?.created ?? 0),
+        skipped: Number(raw?.skipped ?? 0),
+      };
     },
     onSuccess: invalidate,
   });

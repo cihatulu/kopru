@@ -4,22 +4,20 @@ import { Button } from '@/components/ui/Button';
 import { parseCsv, type ParsedCsv, type StockCsvRow } from '../domain/csv';
 import { looksLikeXlsx, parseXlsx } from '../domain/xlsx';
 import { CsvImportPreview } from './CsvImportPreview';
+import { CsvImportResult } from './CsvImportResult';
+import type { BulkStockResult } from '../api/useStockMutations';
 
 interface Props {
   pending: boolean;
-  /** Sunucunun GERÇEKTEN işlediği satır sayısı. */
-  appliedCount: number | null;
-  /**
-   * Kimliksiz satırlardan doğan PASİF ürün sayısı. Bu yeteneğin olmadığı
-   * çağrı yerlerinde (perakendeci) verilmez.
-   */
-  createdCount?: number | null;
+  /** Sunucunun GERÇEKTEN yaptığı iş; null ise henüz uygulanmadı. */
+  result: BulkStockResult | null;
+  /** Sunucudan dönen hata — kullanıcıya olduğu gibi değil, çevrilmiş gelir. */
+  applyError?: string | null;
   /** Yeni ürün doğurabiliyorsa önizlemede uyarı gösterilir. */
   canCreateProducts?: boolean;
   /**
-   * Perakendecide: yeni ürünlerin YAZILACAĞI üretici seçilir. Boş dizi
-   * verilirse seçici gösterilmez ve kimliksiz satırlar uygulanamaz.
-   * Üreticide verilmez — ürünler zaten kendisinindir.
+   * Perakendecide: yeni ürünlerin YAZILACAĞI üretici seçilir. Üreticide
+   * verilmez — ürünler zaten kendisinindir.
    */
   manufacturers?: { id: string; name: string }[];
   onClose: () => void;
@@ -35,8 +33,8 @@ interface Props {
  */
 export function CsvImportDialog({
   pending,
-  appliedCount,
-  createdCount = null,
+  result,
+  applyError = null,
   canCreateProducts = false,
   manufacturers,
   onClose,
@@ -53,10 +51,13 @@ export function CsvImportDialog({
     ? (parsed?.rows.filter((r) => !r.productId).length ?? 0)
     : 0;
 
-  // Seçici yalnız yeni ürün açabilen çağrı yerinde (perakendeci) vardır ve
-  // yalnız dosyada kimliksiz satır varsa anlam taşır.
-  const needsManufacturer = manufacturers !== undefined && newRows > 0;
-  const blocked = needsManufacturer && !manufacturerId;
+  // Seçici, dosya okunur okunmaz görünür. İSTEMCİ "yeni ürün var mı" diye
+  // bilemez: kimliği dolu ama tanınmayan satır da yeni ürün olarak açılıyor
+  // ve bunu yalnız sunucu bilir. Zorunluluk ise yalnız kimliği BOŞ satır
+  // varken uygulanır; salt güncelleme yapan kullanıcı seçim yapmak zorunda
+  // kalmasın.
+  const showManufacturer = manufacturers !== undefined && parsed !== null;
+  const blocked = newRows > 0 && !manufacturerId && manufacturers !== undefined;
 
   const [readError, setReadError] = useState<string | null>(null);
 
@@ -90,30 +91,8 @@ export function CsvImportDialog({
       onClose={onClose}
       closeDisabled={pending}
     >
-      {appliedCount !== null ? (
-        <>
-          <h2 className="text-lg font-bold text-slate-900">Yükleme tamamlandı</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            <strong>{appliedCount}</strong> ürünün stoğu güncellendi.
-          </p>
-          {createdCount !== null && createdCount > 0 && (
-            <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2.5 text-xs leading-relaxed text-blue-900">
-              <strong>{createdCount}</strong> yeni ürün <strong>pasif</strong> olarak açıldı.
-              Katalogda görünmezler ve sipariş edilemezler; Ürün Yönetimi'nden fiyatını girip
-              aktifleştirin.
-            </p>
-          )}
-          {parsed && appliedCount + (createdCount ?? 0) < parsed.rows.length && (
-            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
-              Dosyadaki {parsed.rows.length} satırın{' '}
-              {parsed.rows.length - appliedCount - (createdCount ?? 0)} tanesi işlenmedi — bu
-              ürünler size ait değil veya silinmiş olabilir.
-            </p>
-          )}
-          <div className="mt-6 flex justify-end">
-            <Button onClick={onClose}>Kapat</Button>
-          </div>
-        </>
+      {result !== null ? (
+        <CsvImportResult result={result} onClose={onClose} />
       ) : (
         <>
           <h2 className="text-lg font-bold text-slate-900">Excel ile stok yükle</h2>
@@ -122,9 +101,9 @@ export function CsvImportDialog({
             sütunları, özellikle <strong>ürün kimliğini</strong>, değiştirmeyin.
           </p>
 
-          {readError && (
-            <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2.5 text-xs font-semibold text-red-700">
-              {readError}
+          {(readError ?? applyError) && (
+            <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2.5 text-xs font-semibold leading-relaxed text-red-700">
+              {readError ?? applyError}
             </p>
           )}
 
@@ -144,7 +123,7 @@ export function CsvImportDialog({
 
           {parsed && <CsvImportPreview parsed={parsed} newRows={newRows} />}
 
-          {needsManufacturer && (
+          {showManufacturer && (
             <div className="mt-4">
               <label className="block text-xs font-bold text-slate-600" htmlFor="csv-mfr">
                 Yeni ürünler hangi üreticinin kataloğuna açılsın?

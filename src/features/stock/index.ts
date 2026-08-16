@@ -24,6 +24,7 @@ export { parseXlsx, toXlsxBlob, looksLikeXlsx } from './domain/xlsx';
 export type { StockCsvRow, ParsedCsv } from './domain/csv';
 
 export { toStockRows } from './domain/stockCsv';
+export { stockImportError } from './domain/stockErrors';
 export {
   uniqueCategories,
   filterByCategory,

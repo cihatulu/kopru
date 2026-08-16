@@ -6,6 +6,7 @@ import {
   EMPTY_STOCK_FILTERS,
   RetailerStockTable,
   filterStockRows,
+  stockImportError,
   toXlsxBlob,
   useBulkUpdateRetailerStock,
   useRetailerStockList,
@@ -113,8 +114,8 @@ export default function RetailerStockPage() {
       {importing && (
         <CsvImportDialog
           pending={bulk.isPending}
-          appliedCount={applied?.updated ?? null}
-          createdCount={applied?.created ?? null}
+          result={applied}
+          applyError={bulk.isError ? stockImportError(bulk.error) : null}
           canCreateProducts
           manufacturers={suppliers}
           onClose={() => setImporting(false)}

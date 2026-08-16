@@ -104,7 +104,7 @@ describe('toplu stok güncelleme', () => {
 
   test('yabancı ürün kimliği atlanır', () => {
     // CSV'ye başkasının ürün id'sini yazmak stoğuna dokunmaya yetmemeli.
-    expect(body).toMatch(/p\.owner_org_id = v_me[\s\S]*?continue;/i);
+    expect(body).toMatch(/v_owner is not null and v_owner <> v_me[\s\S]*?continue;/i);
   });
 
   test('negatif ve boş değerler atlanır', () => {
@@ -114,7 +114,7 @@ describe('toplu stok güncelleme', () => {
   test('güncellenen ve oluşturulan sayısı AYRI döner', () => {
     // Kullanıcıya "gönderdiğin satır" değil, sunucunun gerçekten yaptığı iş
     // gösterilir; yeni ürün açılması ayrıca görünmek zorunda.
-    expect(body).toMatch(/jsonb_build_object\('updated', v_updated, 'created', v_created\)/i);
+    expect(body).toMatch(/jsonb_build_object\('updated', v_updated, 'created', v_created/i);
   });
 
   test('dizi olmayan yük reddedilir', () => {
@@ -126,7 +126,7 @@ describe('Excel tanınmayan satırdan PASİF ürün doğurur', () => {
   const body = functionBody('bulk_update_stock');
 
   test('kimliksiz satır için ürün oluşturulur', () => {
-    expect(body).toMatch(/if v_product_id is null then[\s\S]*?insert into public\.products/i);
+    expect(body).toMatch(/if v_owner is null then[\s\S]*?insert into public\.products/i);
   });
 
   test('ÜRETİLMİŞ kolona yazılmaz', () => {
@@ -149,11 +149,21 @@ describe('Excel tanınmayan satırdan PASİF ürün doğurur', () => {
     expect(body).toMatch(/if v_name is null then[\s\S]*?continue;/i);
   });
 
-  test('dolu ama yabancı kimlik ürün DOĞURMAZ — atlanır', () => {
-    // Başkasının kimliğiyle ürün doğurmak, o kimliğin varlığını da doğrulardı.
-    const elseBranch = body.slice(body.indexOf('else'));
-    expect(elseBranch).toMatch(/owner_org_id = v_me[\s\S]*?continue;/i);
-    expect(elseBranch).not.toMatch(/insert into public\.products/i);
+  test('BAŞKASINA AİT kimlik ürün DOĞURMAZ — atlanır', () => {
+    // Başkasının ürün kimliğiyle kendi kataloğumuzda ürün doğurmak yanlış olur.
+    expect(body).toMatch(/v_owner is not null and v_owner <> v_me[\s\S]*?continue;/i);
+  });
+
+  test('HİÇ VAR OLMAYAN kimlik yeni ürün sayılır', () => {
+    // Excel kimlik sütununu bozunca (…ebc0 → …ebc1) dört satır birden
+    // atlanıyor ve kullanıcı yeni ürün yükleyemiyordu. Kimliği zaten SUNUCU
+    // üretiyor; var olmayan bir kimlik yüzünden satırı çöpe atmak veri
+    // kaybettirmekten başka işe yaramıyordu.
+    expect(body).toMatch(/if v_owner is null then[\s\S]*?insert into public\.products/i);
+  });
+
+  test('atlanan satır sayısı da döner', () => {
+    expect(body).toMatch(/'skipped', v_skipped/);
   });
 
   test('pasif ürün sipariş edilemez — sunucu tarafı hâlâ şart koşuyor', () => {
@@ -183,7 +193,7 @@ describe('stok tutma hakkı ÜYE tarafındır', () => {
   });
 
   test('izin anahtarı aktif ilişkide can_edit_catalog üzerinden okunur', () => {
-    const body = functionBody('manufacturer_may_write_stock');
+    const body = functionBody('manufacturer_may_manage_products');
     expect(body).toMatch(/get_my_org_is_subscriber\(\)/i);
     expect(body).toMatch(/r\.can_edit_catalog/i);
     expect(body).toMatch(/r\.status = 'active'/i);

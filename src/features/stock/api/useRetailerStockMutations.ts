@@ -75,8 +75,12 @@ export function useBulkUpdateRetailerStock() {
         }),
       );
       if (error) throw error;
-      const raw = data as { updated?: number; created?: number } | null;
-      return { updated: Number(raw?.updated ?? 0), created: Number(raw?.created ?? 0) };
+      const raw = data as { updated?: number; created?: number; skipped?: number } | null;
+      return {
+        updated: Number(raw?.updated ?? 0),
+        created: Number(raw?.created ?? 0),
+        skipped: Number(raw?.skipped ?? 0),
+      };
     },
     onSuccess: invalidate,
   });
