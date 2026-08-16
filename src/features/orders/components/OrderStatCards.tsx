@@ -1,25 +1,31 @@
-import type { ReactNode } from 'react';
+import { STAT_BORDER, STAT_SURFACE, StatCardContent } from '@/components/ui/StatCard';
 import type { OrderStats } from '../api/useOrderStats';
 import type { OrderStatus } from '../domain/status';
 
 export type OrderFilter = OrderStatus | 'all';
 
-const Icon = ({ d, className }: { d: string; className: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-  </svg>
-);
+/*
+  Sipariş durumu renginin ANLAMI VAR — bu kartlarda renk yerinde
+  kullanılıyordu ve korundu. Değişen iki şey:
 
+  1. Kabuk gösterge kartlarıyla aynı (beyaz yüzey, aynı yarıçap, aynı
+     başlık ölçüsü). Eskiden aynı panelde iki ayrı kart tasarımı vardı:
+     Ürün Yönetimi pastel degrade, Siparişler beyaz zeminli renkli rakam.
+  2. Geçersiz Tailwind sınıfları temizlendi — `text-amber-505`,
+     `text-cyan-505`, `text-emerald-505`, `text-red-505` diye tonlar yok;
+     `bg-indigo-50 text-indigo-50` ise ikonu zeminle aynı renge boyuyordu.
+*/
 interface CardDef {
   key: OrderFilter;
   field: keyof OrderStats;
   label: string;
-  /** Seçiliyken kenarlık + halka. */
+  /** Rakamın rengi — durum burada okunur. */
+  value: string;
+  /** İkon kutusu: açık zemin + koyu ikon. */
+  icon: string;
+  /** Seçiliyken kenarlık. */
   active: string;
-  labelTone: string;
-  valueTone: string;
-  iconBg: string;
-  icon: ReactNode;
+  path: string;
 }
 
 const CARDS: CardDef[] = [
@@ -27,61 +33,55 @@ const CARDS: CardDef[] = [
     key: 'all',
     field: 'all',
     label: 'Tüm Siparişler',
-    active: 'border-slate-300 ring-2 ring-slate-900/5 shadow-md',
-    labelTone: 'text-slate-400',
-    valueTone: 'text-slate-900',
-    iconBg: 'bg-slate-100 text-slate-500',
-    icon: <Icon className="w-4 h-4" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />,
+    value: 'text-slate-900',
+    icon: 'bg-slate-100 text-slate-500',
+    active: 'border-slate-400 ring-1 ring-slate-400',
+    path: 'M4 6h6v6H4zM14 6h6v6h-6zM4 16h6v4H4zM14 16h6v4h-6z',
   },
   {
     key: 'pending',
     field: 'pending',
     label: 'Bekleyen',
-    active: 'border-amber-300 ring-2 ring-amber-500/10 shadow-md',
-    labelTone: 'text-amber-600',
-    valueTone: 'text-amber-700',
-    iconBg: 'bg-amber-50 text-amber-505',
-    icon: <Icon className="w-4 h-4 text-amber-500" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    value: 'text-amber-700',
+    icon: 'bg-amber-50 text-amber-600',
+    active: 'border-amber-400 ring-1 ring-amber-400',
+    path: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
     key: 'in_production',
     field: 'in_production',
     label: 'Üretiliyor',
-    active: 'border-indigo-300 ring-2 ring-indigo-500/10 shadow-md',
-    labelTone: 'text-indigo-600',
-    valueTone: 'text-indigo-700',
-    iconBg: 'bg-indigo-50 text-indigo-50',
-    icon: <Icon className="w-4 h-4 text-indigo-500" d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a3 3 0 012.122.879L13.5 5.379a3 3 0 002.122.879H19.5a3 3 0 013 3v.888a3 3 0 01-3 3h-15a3 3 0 01-3-3z" />,
+    value: 'text-brand-700',
+    icon: 'bg-brand-50 text-brand-600',
+    active: 'border-brand-500 ring-1 ring-brand-500',
+    path: 'M3 10h18M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3m-16 0v7a2 2 0 002 2h12a2 2 0 002-2v-7',
   },
   {
     key: 'shipped',
     field: 'shipped',
     label: 'Sevkiyatta',
-    active: 'border-cyan-300 ring-2 ring-cyan-500/10 shadow-md',
-    labelTone: 'text-cyan-600',
-    valueTone: 'text-cyan-700',
-    iconBg: 'bg-cyan-50 text-cyan-505',
-    icon: <Icon className="w-4 h-4 text-cyan-500" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />,
+    value: 'text-sky-700',
+    icon: 'bg-sky-50 text-sky-600',
+    active: 'border-sky-400 ring-1 ring-sky-400',
+    path: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1',
   },
   {
     key: 'delivered',
     field: 'delivered',
     label: 'Teslim Edildi',
-    active: 'border-emerald-300 ring-2 ring-emerald-500/10 shadow-md',
-    labelTone: 'text-emerald-600',
-    valueTone: 'text-emerald-700',
-    iconBg: 'bg-emerald-50 text-emerald-505',
-    icon: <Icon className="w-4 h-4 text-emerald-500" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    value: 'text-emerald-700',
+    icon: 'bg-emerald-50 text-emerald-600',
+    active: 'border-emerald-400 ring-1 ring-emerald-400',
+    path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
     key: 'cancelled',
     field: 'cancelled',
     label: 'İptal Edildi',
-    active: 'border-red-300 ring-2 ring-red-500/10 shadow-md',
-    labelTone: 'text-red-600',
-    valueTone: 'text-red-700',
-    iconBg: 'bg-red-50 text-red-505',
-    icon: <Icon className="w-4 h-4 text-red-500" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    value: 'text-red-700',
+    icon: 'bg-red-50 text-red-600',
+    active: 'border-red-400 ring-1 ring-red-400',
+    path: 'M10 14l4-4m0 4l-4-4m11 2a9 9 0 11-18 0 9 9 0 0118 0z',
   },
 ];
 
@@ -99,20 +99,19 @@ export function OrderStatCards({ stats, active, onSelect }: Props) {
         <button
           key={c.key}
           type="button"
+          aria-pressed={active === c.key}
           onClick={() => onSelect(c.key)}
-          className={`flex flex-col items-start justify-between rounded-2xl border bg-white p-5 text-left transition-all ${
-            active === c.key ? c.active : 'border-slate-100 hover:border-slate-200 shadow-sm'
+          className={`${STAT_SURFACE} transition-colors ${
+            active === c.key ? c.active : `${STAT_BORDER} hover:border-slate-300`
           }`}
         >
-          <div className="flex w-full items-center justify-between gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider ${c.labelTone}`}>
-              {c.label}
-            </span>
-            <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${c.iconBg}`}>
-              {c.icon}
-            </span>
-          </div>
-          <span className={`mt-3 text-3xl font-black ${c.valueTone}`}>{stats[c.field]}</span>
+          <StatCardContent
+            label={c.label}
+            value={stats[c.field]}
+            iconClass={c.icon}
+            valueClass={c.value}
+            icon={<path d={c.path} />}
+          />
         </button>
       ))}
     </div>

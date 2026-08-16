@@ -7,8 +7,13 @@ interface Props {
   onChange: (page: number) => void;
 }
 
+/*
+  Bitişik grup olduğu için `Button` kullanılmaz — yuvarlak köşeler ve
+  gölge grubun içinde tekrarlanırdı. Yükseklik `Button`'ın `sm` boyutuyla
+  (32px) aynı tutulur; yanındaki düğmelerle aynı çizgide durması gerekir.
+*/
 const NAV_BTN =
-  'relative inline-flex items-center px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 focus:z-20 disabled:opacity-30 cursor-pointer';
+  'relative inline-flex h-8 items-center px-3 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus:z-20 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer';
 
 /** Bellekteki liste için sayfa çubuğu — toplam sayı biliniyorken kullanılır. */
 export function Pagination({ page, pageSize, total, onChange }: Props) {
@@ -39,13 +44,13 @@ export function Pagination({ page, pageSize, total, onChange }: Props) {
           arası gösteriliyor
         </p>
         <nav
-          className="isolate inline-flex -space-x-px rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+          className="isolate inline-flex overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xs"
           aria-label="Sayfalama"
         >
           <button type="button" onClick={() => onChange(page - 1)} disabled={page <= 1} className={NAV_BTN}>
             Önceki
           </button>
-          <span className="relative inline-flex items-center px-4 py-2 text-xs font-bold text-slate-800 bg-slate-50 border-x border-slate-200">
+          <span className="relative inline-flex h-8 items-center border-x border-slate-300 bg-slate-50 px-4 text-xs font-bold tabular-nums text-slate-800">
             {page} / {totalPages}
           </span>
           <button

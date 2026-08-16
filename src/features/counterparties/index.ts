@@ -58,6 +58,7 @@ export { CounterpartyTable } from './components/CounterpartyTable';
 export { IncomingRequests } from './components/IncomingRequests';
 export { AddCounterpartyDialog } from './components/AddCounterpartyDialog';
 export { SubscriptionBanner } from './components/SubscriptionBanner';
+export { SubscriptionRequestAction } from './components/SubscriptionRequestAction';
 export { PartyPicker } from './components/PartyPicker';
 export { CustomerManager } from './components/CustomerManager';
 export { CustomerTable } from './components/CustomerTable';

@@ -1,3 +1,5 @@
+import { Button } from './Button';
+
 interface Props {
   page: number;
   hasPrev: boolean;
@@ -5,9 +7,6 @@ interface Props {
   onPrev: () => void;
   onNext: () => void;
 }
-
-const BTN =
-  'rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors';
 
 /**
  * Önceki/sonraki sayfa düğmeleri.
@@ -18,13 +17,13 @@ const BTN =
 export function Pager({ page, hasPrev, hasNext, onPrev, onNext }: Props) {
   return (
     <div className="flex items-center justify-center gap-4 pt-4">
-      <button type="button" disabled={!hasPrev} onClick={onPrev} className={BTN}>
+      <Button variant="secondary" size="sm" disabled={!hasPrev} onClick={onPrev}>
         ← Önceki
-      </button>
-      <span className="text-xs font-bold text-slate-500">Sayfa {page}</span>
-      <button type="button" disabled={!hasNext} onClick={onNext} className={BTN}>
+      </Button>
+      <span className="text-xs font-semibold tabular-nums text-slate-500">Sayfa {page}</span>
+      <Button variant="secondary" size="sm" disabled={!hasNext} onClick={onNext}>
         Sonraki →
-      </button>
+      </Button>
     </div>
   );
 }

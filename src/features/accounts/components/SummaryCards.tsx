@@ -1,3 +1,4 @@
+import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { formatMoney } from '@/lib/format';
 import { isSummaryConsistent, type LedgerSummary } from '../domain/period';
 
@@ -42,19 +43,28 @@ export function SummaryCards({ summary, periodActive, isManufacturer }: Props) {
       <p className="text-xs text-slate-400">Dönemde {summary.entryCount} hareket.</p>
 
       {!consistent && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <ErrorAlert>
           Özet tutarlı değil: kapanış bakiyesi, devir + borç − alacak sonucuna eşit değil. Bu
           ekrandaki toplamları mutabakat için kullanmayın.
-        </p>
+        </ErrorAlert>
       )}
     </div>
   );
 }
 
+/*
+  Dolu renk burada KORUNDU: bu dört kutu bir mutabakat satırıdır, tek tek
+  sayaç değil. Borç ile alacağı zeminden ayırmak, dört sayıyı bir arada
+  okurken hangisinin hangisi olduğunu anında veriyor.
+
+  Değişen: `rose` → `red`. Uygulamada olumsuz durum için iki ayrı kırmızı
+  kullanılıyordu; artık tek kırmızı var.
+*/
 const TONE: Record<string, string> = {
   neutral: 'bg-white text-slate-900 ring-slate-200',
-  debit: 'bg-rose-50 text-rose-900 ring-rose-200',
-  credit: 'bg-emerald-50 text-emerald-900 ring-emerald-200',
+  debit: 'bg-red-50 text-red-800 ring-red-200',
+  credit: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  /** Kapanış bakiyesi — sonucun kendisi, bu yüzden koyu. */
   strong: 'bg-slate-900 text-white ring-slate-900',
 };
 

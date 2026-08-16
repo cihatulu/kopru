@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
+import { TH as TH_SHARED } from '@/components/ui/Table';
 import { downloadCSV } from '@/lib/csv';
 import {
   buildDetailReport,
@@ -8,7 +9,9 @@ import {
   type ReportSources,
 } from '../domain/reportColumns';
 
-const TH = 'px-6 py-3 text-xs font-bold text-slate-550 uppercase tracking-wider';
+// `text-slate-550` yazılıydı — Tailwind'de 550 tonu YOK, başlık renksiz
+// kalıyordu. Ortak tablo diline bağlandı.
+const TH = TH_SHARED;
 const SELECT = 'border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500/20 outline-none bg-white';
 const FILTER_LABEL = 'text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1';
 

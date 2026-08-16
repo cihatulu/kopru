@@ -1,5 +1,6 @@
 import { DASHBOARD_ICONS as I, SummaryCard, toRetailer, useDashboard } from '@/features/dashboard';
 import { useAnnouncements } from '@/features/announcements';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatDateTime, formatMoney } from '@/lib/format';
 
@@ -21,14 +22,10 @@ export default function RetailerHome() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-          Perakendeci Yönetim Paneli
-        </h1>
-        <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-slate-400">
-          Alım ve operasyon verilerinizin anlık özeti
-        </p>
-      </div>
+      <PageHeader
+        title="Perakendeci Yönetim Paneli"
+        description="Alım ve operasyon verilerinizin anlık özeti"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryCard
@@ -36,45 +33,50 @@ export default function RetailerHome() {
           value={String(d.supplierCount)}
           hint="Aktif ticari ilişki"
           icon={I.users}
-          tone="purple"
+          tone="neutral"
         />
         <SummaryCard
           title="Açık Sipariş"
           value={String(d.openOrders)}
           hint="Teslim edilmemiş sipariş"
           icon={I.cart}
-          tone="amber"
+          tone="attention"
         />
         <SummaryCard
           title="Bekleyen İade"
           value={String(d.pendingReturns)}
           hint="Karar bekleyen iade"
           icon={I.ret}
-          tone="rose"
+          tone="attention"
         />
         <SummaryCard
           title="Bekleyen SSH"
           value={String(d.pendingSsh)}
           hint="Çözüm bekleyen servis"
           icon={I.wrench}
-          tone="yellow"
+          tone="attention"
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[repeat(2,minmax(0,1fr))_2fr]">
+      {/*
+        `items-start`: duyuru kartı yükseldikçe solundaki tutar kartları da
+        onunla uzuyor, rakam boşluğun ortasında kalıyordu. Yükseklik artık
+        her kartın kendi içeriğinden gelir.
+      */}
+      <div className="grid items-start gap-4 lg:grid-cols-[repeat(2,minmax(0,1fr))_2fr]">
         <SummaryCard
           title="Toplam Alım"
           value={formatMoney(d.purchaseTotal)}
           hint="İptal ve iade hariç"
           icon={I.money}
-          tone="blue"
+          tone="neutral"
         />
         <SummaryCard
           title="Toplam Borç"
           value={formatMoney(d.totalDebt)}
           hint="Tüm tedarikçilere"
           icon={I.wallet}
-          tone="emerald"
+          tone="negative"
         />
 
         <section className="rounded-2xl bg-white p-6 ring-1 ring-inset ring-slate-200">

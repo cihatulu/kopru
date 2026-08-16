@@ -59,9 +59,16 @@ export function Sidebar({ items, companyName, open, onClose, unreadAnnouncements
                 end={item.to.split('/').length === 2}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  /*
+                    Aktif madde MARKA rengiyle işaretlenir. Eskiden gri bir
+                    tondu (`bg-slate-700/80`) ve hover ile neredeyse aynı
+                    görünüyordu — kullanıcı hangi sayfada olduğunu menüden
+                    okuyamıyordu. Marka tokenına bağlı olduğu için org kendi
+                    rengini verdiğinde menü de onunla döner.
+                  */
+                  `flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-slate-700/80 text-white'
+                      ? 'bg-brand-600 font-semibold text-white'
                       : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                   }`
                 }
