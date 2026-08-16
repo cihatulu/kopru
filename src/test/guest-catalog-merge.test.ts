@@ -48,6 +48,45 @@ describe('ürün kapsamı — perakendeci başına ayrım', () => {
   test('delete_product_permanently kapsam dışı ürünü silmez', () => {
     expect(functionBody('delete_product_permanently')).toMatch(/product_in_my_scope/i);
   });
+
+  test('YAZMA politikaları da kapsam koşulu taşır', () => {
+    /*
+      YAŞANAN HATA — RLS'in en sinsi tuzağı.
+
+      Kapsamlı SELECT politikaları doğru yazılmıştı, kapsam fonksiyonu doğru
+      cevap veriyordu, veri doğruydu. Buna rağmen misafir üretici bütün
+      perakendecilerin ürünlerini görüyordu.
+
+      Sebep iki kuralın birleşimi:
+        1. `FOR ALL` politikasının USING ifadesi SELECT'e DE uygulanır.
+        2. Aynı komut için birden çok PERMISSIVE politika OR'lanır.
+
+      `products_write_owner` yalnız `owner_org_id = benim org` diyordu.
+      Misafir üretici kendi ürünlerinin sahibi olduğu için bu koşul her
+      satırda geçiyor ve SELECT politikasındaki kapsam koşulunu tamamen
+      devre dışı bırakıyordu. Bir YAZMA politikası, farkında olmadan
+      okuma izni veriyordu.
+
+      Bu testin işi, yazma politikasının kapsam koşulunu kaybetmesini
+      engellemek. Kaybederse sızıntı sessizce geri gelir.
+    */
+    const yazma = sql.slice(sql.indexOf('create policy products_write_owner'));
+    expect(yazma).toMatch(/product_in_my_scope/i);
+
+    const grupYazma = sql.slice(sql.indexOf('create policy product_groups_write_owner'));
+    expect(grupYazma).toMatch(/product_in_my_scope/i);
+  });
+
+  test('ürün GRUPLARI da perakendeci başına ayrılır', () => {
+    // Ürünler ayrıldı ama gruplar atlandığında ekranda şu görüldü: yeni
+    // perakendeci diğerinin ürünlerini göremiyor ama sol menüde onun grup
+    // adını görüyor — üstelik grup boş, ölü bir düğüm.
+    expect(sql).toMatch(
+      /alter table public\.product_groups\s+add column if not exists managed_by_retailer_org_id/i,
+    );
+    expect(functionBody('save_product_group')).toMatch(/product_in_my_scope/i);
+    expect(functionBody('delete_product_group')).toMatch(/product_in_my_scope/i);
+  });
 });
 
 describe('birleştirme — üyeliğe geçişte', () => {
