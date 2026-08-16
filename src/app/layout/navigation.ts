@@ -21,6 +21,11 @@ export interface NavItem {
    * feature'ın bileşeni tarafından üretilip layout'a yuva olarak verilir.
    */
   slot?: 'catalog-tree';
+  /**
+   * Bu maddeye sayaç rozeti bağlanır. Rozet DEĞERİ layout'tan gelir —
+   * menü saf veridir ve veri çekmez (A20).
+   */
+  badgeKey?: 'announcements' | 'connections';
 }
 
 const ICONS = {
@@ -48,7 +53,12 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
     slot: 'catalog-tree',
   },
   { to: `${ROUTES.manufacturer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
-  { to: `${ROUTES.manufacturer}/musteriler`, label: 'Müşteri Yönetimi', icon: ICONS.users },
+  {
+    to: `${ROUTES.manufacturer}/musteriler`,
+    label: 'Müşteri Yönetimi',
+    icon: ICONS.users,
+    badgeKey: 'connections',
+  },
   { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },
   { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler', icon: ICONS.cart },
   { to: `${ROUTES.manufacturer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
@@ -59,6 +69,7 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
     label: 'Duyurular',
     icon: ICONS.megaphone,
     module: 'announcements',
+    badgeKey: 'announcements',
   },
   { to: `${ROUTES.manufacturer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
 ] as const;
@@ -80,8 +91,14 @@ export const RETAILER_NAV: readonly NavItem[] = [
     label: 'Duyurular',
     icon: ICONS.megaphone,
     module: 'announcements',
+    badgeKey: 'announcements',
   },
-  { to: `${ROUTES.retailer}/tedarikcilerim`, label: 'Tedarikçilerim', icon: ICONS.users },
+  {
+    to: `${ROUTES.retailer}/tedarikcilerim`,
+    label: 'Tedarikçilerim',
+    icon: ICONS.users,
+    badgeKey: 'connections',
+  },
   { to: `${ROUTES.retailer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
 ] as const;
 

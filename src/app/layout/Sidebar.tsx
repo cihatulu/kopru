@@ -7,7 +7,17 @@ interface Props {
   companyName: string;
   open: boolean;
   onClose: () => void;
-  unreadAnnouncementsCount?: number | undefined;
+  /**
+   * Menü maddelerinin sayaç rozetleri, `badgeKey` ile eşlenir.
+   *
+   * Eskiden rozet `item.label === 'Duyurular'` diye ETİKETE bakıyordu:
+   * başlık değişse rozet sessizce kaybolurdu ve ikinci bir sayaç eklemek
+   * mümkün değildi. Şimdi menü hangi rozeti taşıyacağını kendi bildiriyor,
+   * değeri buradan geliyor.
+   */
+  // `| undefined` açıkça yazılır: exactOptionalPropertyTypes açıkken sorgu
+  // henüz dönmemişken gelen `undefined` ile "hiç verilmedi" ayrı tiplerdir.
+  badges?: Partial<Record<NonNullable<NavItem['badgeKey']>, number | undefined>>;
   /**
    * Menü maddelerinin altına yerleştirilecek dinamik içerik.
    *
@@ -17,8 +27,21 @@ interface Props {
   slots?: Partial<Record<NonNullable<NavItem['slot']>, ReactNode>>;
 }
 
+/** Menü maddesinin sağ ucundaki sayaç. Sıfır ve tanımsız hiç çizilmez. */
+function NavBadge({ count }: { count: number | undefined }) {
+  if (!count || count <= 0) return null;
+  return (
+    <span
+      className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full
+        bg-red-600 px-1.5 text-[11px] font-bold tabular-nums text-white"
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
 /** Koyu sol menü. Mobilde kayarak açılır, masaüstünde sabittir. */
-export function Sidebar({ items, companyName, open, onClose, unreadAnnouncementsCount, slots }: Props) {
+export function Sidebar({ items, companyName, open, onClose, badges, slots }: Props) {
   return (
     <>
       {open && (
@@ -86,11 +109,7 @@ export function Sidebar({ items, companyName, open, onClose, unreadAnnouncements
                   <path d={item.icon} />
                 </svg>
                 <span className="truncate">{item.label}</span>
-                {item.label === 'Duyurular' && !!unreadAnnouncementsCount && unreadAnnouncementsCount > 0 && (
-                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black text-white shadow-sm">
-                    {unreadAnnouncementsCount > 99 ? '99+' : unreadAnnouncementsCount}
-                  </span>
-                )}
+                <NavBadge count={item.badgeKey ? badges?.[item.badgeKey] : undefined} />
               </NavLink>
 
               {/* Dinamik içerik (ör. katalog ağacı) maddenin hemen altında. */}

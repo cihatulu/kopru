@@ -51,12 +51,18 @@ describe('add_counterparty — yetki ve onay', () => {
     expect(body).toMatch(/NOT_SUBSCRIBER/);
   });
 
-  test('karşı taraf ABONEYSE ve ekleyen üreticiyse ilişki pending açılır', () => {
-    // Bir abone başka bir aboneyi onayı olmadan kendi ekosistemine bağlayamaz.
-    // Ancak perakendeci üye üreticiyi eklerse otomatik active başlar.
-    const actualBody = functionBody('add_counterparty');
-    expect(actualBody).toMatch(
-      /v_status\s*:=\s*case\s+when\s+v_target\.is_subscriber\s+and\s+v_me\.kind\s*=\s*'manufacturer'\s+then\s+'pending'\s+else\s+'active'\s+end/i,
+  test('karşı taraf ABONEYSE ilişki pending açılır — yön farketmez', () => {
+    // Bir abone başka bir aboneyi ONAYI OLMADAN kendi ekosistemine bağlayamaz;
+    // abone org'un kendi paneli vardır, kimin müşterisi/tedarikçisi olacağına
+    // kendisi karar verir (PLAN.md §5).
+    //
+    // 20260810060000 bu kuralı perakendeci→üye üretici yönünde delmişti:
+    // ilişki onaysız `active` açılıyor, üreticiye hiçbir bildirim gitmiyordu.
+    // Gerekçesi "sürtünme" idi, ama sürtünmenin sebebi onay adımı değil
+    // bildirimin hiç olmamasıydı. 20260816070000 kuralı geri getirdi,
+    // bildirim de kenar çubuğu rozeti + üst çubuk ikonu olarak eklendi.
+    expect(functionBody('add_counterparty')).toMatch(
+      /v_status\s*:=\s*case\s+when\s+v_target\.is_subscriber\s+then\s+'pending'\s+else\s+'active'\s+end/i,
     );
   });
 

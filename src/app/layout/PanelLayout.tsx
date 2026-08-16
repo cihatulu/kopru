@@ -4,7 +4,7 @@ import { useAuthSession, useLogout } from '@/features/auth';
 import { CatalogTree, RetailerCatalogTree } from '@/features/catalog';
 import { CartProvider, useCart } from '@/features/orders';
 import { useUnreadAnnouncements } from '@/features/announcements';
-import { useMyProductPermission } from '@/features/counterparties';
+import { useMyProductPermission, usePendingConnectionCount } from '@/features/counterparties';
 import { ORG_KIND, ROUTES } from '@/constants';
 import { navFor } from './navigation';
 import { Sidebar } from './Sidebar';
@@ -37,6 +37,7 @@ function RetailerPanel() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { totals } = useCart();
   const { unreadCount } = useUnreadAnnouncements();
+  const { data: pendingConnections } = usePendingConnectionCount(user?.org?.id);
 
   const org = user?.org;
   if (!org) return null;
@@ -50,7 +51,7 @@ function RetailerPanel() {
         companyName={org.companyName}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        unreadAnnouncementsCount={unreadCount}
+        badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <RetailerCatalogTree /> }}
       />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -70,6 +71,8 @@ function RetailerPanel() {
           onCartClick={() => void navigate(`${ROUTES.retailer}/sepetim`)}
           unreadAnnouncementsCount={unreadCount}
           onAnnouncementsClick={() => void navigate(`${ROUTES.retailer}/duyurular`)}
+          pendingConnectionsCount={pendingConnections}
+          onConnectionsClick={() => void navigate(`${ROUTES.retailer}/tedarikcilerim`)}
           loggingOut={logout.isPending}
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}
@@ -89,6 +92,7 @@ function ManufacturerPanel() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { unreadCount } = useUnreadAnnouncements();
+  const { data: pendingConnections } = usePendingConnectionCount(user?.org?.id);
   // Misafir üreticide Ürün Yönetimi anahtara bağlıdır.
   const canManageProducts = useMyProductPermission();
 
@@ -110,7 +114,7 @@ function ManufacturerPanel() {
         companyName={org.companyName}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        unreadAnnouncementsCount={unreadCount}
+        badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <CatalogTree ownerOrgId={org.id} /> }}
       />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -128,6 +132,8 @@ function ManufacturerPanel() {
           }
           unreadAnnouncementsCount={unreadCount}
           onAnnouncementsClick={() => void navigate(`${ROUTES.manufacturer}/duyurular`)}
+          pendingConnectionsCount={pendingConnections}
+          onConnectionsClick={() => void navigate(`${ROUTES.manufacturer}/musteriler`)}
           loggingOut={logout.isPending}
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}

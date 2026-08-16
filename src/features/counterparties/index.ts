@@ -20,6 +20,7 @@ export { useCounterpartyActions } from './api/useCounterpartyActions';
 export type { SupplierDialog } from './api/useCounterpartyActions';
 export { useCounterpartyInvites } from './api/useCounterpartyInvites';
 export type { InviteSent } from './api/useCounterpartyInvites';
+export { usePendingConnectionCount } from './api/usePendingConnections';
 export { useSubscriptionStatus, useRequestSubscription } from './api/useSubscriptionRequest';
 export { useToggleCatalogPermission } from './api/useCatalogPermission';
 export { useMyProductPermission } from './api/useMyProductPermission';
