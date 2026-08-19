@@ -144,7 +144,7 @@ export function CsvImportDialog({
               {manufacturers.length === 0 && (
                 <p className="mt-1.5 text-xs leading-relaxed text-amber-800">
                   Listede üretici yok. Ürün açabilmek için Tedarikçilerim ekranından o üreticinin
-                  <strong> ürün yönetimi iznini</strong> açmalısınız; bu izin yalnız misafir
+                  <strong> ürün yönetimi iznini</strong> kapatmalısınız; bu izin yalnız misafir
                   üreticiler için verilebilir.
                 </p>
               )}

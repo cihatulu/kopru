@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import { useCatalogTree } from '../api/useCatalogTree';
 import { TreeBranch } from './TreeBranch';
@@ -15,6 +15,7 @@ export function CatalogTree({ ownerOrgId }: { ownerOrgId: string | undefined }) 
   const tree = useCatalogTree(ownerOrgId);
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const location = useLocation();
   const [open, setOpen] = useState<Set<string>>(new Set());
 
   const activeGroup = params.get('grup');
@@ -36,7 +37,7 @@ export function CatalogTree({ ownerOrgId }: { ownerOrgId: string | undefined }) 
   };
 
   return (
-    <ul className="mb-1 ml-3 space-y-0.5 border-l border-slate-700/60 pl-2">
+    <ul key={location.pathname} className="mb-1 ml-3 space-y-0.5 border-l border-slate-700/60 pl-2">
       {tree.data.map((group) => {
         const groupKey = group.id ?? 'grupsuz';
         // Aktif grup kendiliğinden açılır: kullanıcı ona tıkladıysa içeriğini

@@ -75,7 +75,7 @@ export function catalogEditableSuppliers(
   const byId = new Map<string, { id: string; name: string }>();
   for (const e of edges) {
     if (e.status !== RELATIONSHIP_STATUS.active) continue;
-    if (!e.canEditCatalog) continue;
+    if (e.canEditCatalog) continue;
     if (e.manufacturer.isSubscriber) continue;
     byId.set(e.manufacturer.id, { id: e.manufacturer.id, name: e.manufacturer.companyName });
   }

@@ -2,22 +2,28 @@ import { Button } from '@/components/ui/Button';
 import { TBODY, TD, TH, THEAD, TH_NUM } from '@/components/ui/Table';
 import { SSH_STATUS_META } from '../domain/labels';
 import type { SshRequest } from '../api/useSshRequests';
+import type { SshStatus } from '../api/shared';
 import { formatDate } from '@/lib/format';
 
 interface Props {
   requests: SshRequest[];
   myOrgId: string;
   isManufacturer?: boolean;
+  isRetailer?: boolean;
   onOpen: (r: SshRequest) => void;
   onOpenStatusModal?: (r: SshRequest) => void;
+  /** Perakendeci hızlı aksiyon: 'tamamlandi' veya 'iptal' */
+  onRetailerAction?: (r: SshRequest, status: SshStatus) => void;
 }
 
 export function SshList({
   requests,
   myOrgId,
   isManufacturer = false,
+  isRetailer = false,
   onOpen,
   onOpenStatusModal,
+  onRetailerAction,
 }: Props) {
   if (requests.length === 0) {
     return (
@@ -34,11 +40,10 @@ export function SshList({
           <thead className={THEAD}>
             <tr>
               <th className={TH}>TARİH</th>
-              {isManufacturer && <th className={TH}>PERAKENDECİ</th>}
+              <th className={TH}>{isManufacturer ? 'PERAKENDECİ' : 'ÜRETİCİ'}</th>
               <th className={TH}>SİPARİŞ NO</th>
               <th className={TH}>SSH KODU</th>
               <th className={TH}>SON KULLANICI</th>
-              <th className={TH}>AÇIKLAMA</th>
               <th className={TH}>DURUM</th>
               <th className={TH_NUM}>İŞLEMLER</th>
             </tr>
@@ -47,19 +52,36 @@ export function SshList({
             {requests.map((r) => {
               const meta = SSH_STATUS_META[r.status];
               const isOwnerManufacturer = r.manufacturerOrgId === myOrgId;
+              const isClosed = r.status === 'tamamlandi' || r.status === 'iptal';
+
+              // Perakendeciye özel hızlı aksiyon butonu
+              const retailerBtn = isRetailer && !isClosed && onRetailerAction ? (
+                r.status === 'parca_gonderildi' ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => onRetailerAction(r, 'tamamlandi')}
+                  >
+                    ✓ Tamamlandı
+                  </Button>
+                ) : (r.status === 'bekliyor' || r.status === 'inceleniyor') ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onRetailerAction(r, 'iptal')}
+                  >
+                    İptal Et
+                  </Button>
+                ) : null
+              ) : null;
 
               return (
                 <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className={`${TD} text-slate-400 whitespace-nowrap`}>{formatDate(r.createdAt)}</td>
-                  {isManufacturer && (
-                    <td className={`${TD} font-bold text-slate-800`}>{r.counterpartyName}</td>
-                  )}
+                  <td className={`${TD} font-bold text-slate-800`}>{r.counterpartyName}</td>
                   <td className={`${TD} font-mono font-bold text-slate-800`}>{r.orderNo}</td>
                   <td className={`${TD} font-mono font-black text-slate-900`}>{r.sshCode}</td>
                   <td className={`${TD} text-slate-700 font-semibold`}>{r.customerName || '—'}</td>
-                  <td className={`${TD} text-slate-500 max-w-xs truncate`} title={r.description || r.title}>
-                    {r.description || r.title}
-                  </td>
                   <td className={TD}>
                     <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${meta.className}`}>
                       {meta.label}
@@ -71,10 +93,16 @@ export function SshList({
                         İncele
                       </Button>
                       {isOwnerManufacturer && onOpenStatusModal && (
-                        <Button variant="secondary" size="sm" onClick={() => onOpenStatusModal(r)}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={r.status === 'iptal'}
+                          onClick={() => onOpenStatusModal(r)}
+                        >
                           Güncelle
                         </Button>
                       )}
+                      {retailerBtn}
                     </div>
                   </td>
                 </tr>
@@ -86,3 +114,4 @@ export function SshList({
     </div>
   );
 }
+

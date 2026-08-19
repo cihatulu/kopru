@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { edgeErrorCode } from '@/lib/edgeError';
+import { STAFF_ERROR_MESSAGES } from '@/features/team/domain/staff';
 import type { RetailerTeamRole } from '../domain/retailerTeam';
 
 // ─── Üye Ekle ────────────────────────────────────────────────────────────────
@@ -23,11 +25,15 @@ export function useAddRetailerMember() {
           password: vars.password,
           role: vars.role === 'retailer_accountant' ? 'accountant' : 'staff',
         },
-      })) as { error: Error | null };
-      if (error) throw error;
+      })) as { error: any };
+      if (error) {
+        const code = await edgeErrorCode(error);
+        throw new Error(STAFF_ERROR_MESSAGES[code] ?? STAFF_ERROR_MESSAGES.DEFAULT);
+      }
     },
     onSuccess: (_d, vars) => {
       void qc.invalidateQueries({ queryKey: ['retailer-team', 'members', vars.orgId] });
+      void qc.invalidateQueries({ queryKey: ['team'] });
     },
   });
 }
@@ -52,6 +58,7 @@ export function useToggleRetailerMemberStatus() {
     },
     onSuccess: (_d, vars) => {
       void qc.invalidateQueries({ queryKey: ['retailer-team', 'members', vars.orgId] });
+      void qc.invalidateQueries({ queryKey: ['team'] });
     },
   });
 }
@@ -76,6 +83,7 @@ export function useUpdateRetailerMemberRole() {
     },
     onSuccess: (_d, vars) => {
       void qc.invalidateQueries({ queryKey: ['retailer-team', 'members', vars.orgId] });
+      void qc.invalidateQueries({ queryKey: ['team'] });
     },
   });
 }
@@ -99,11 +107,15 @@ export function useUpdateRetailerMemberPassword() {
           userId: vars.id,
           updates: { password: vars.password },
         },
-      })) as { error: Error | null };
-      if (error) throw error;
+      })) as { error: any };
+      if (error) {
+        const code = await edgeErrorCode(error);
+        throw new Error(STAFF_ERROR_MESSAGES[code] ?? STAFF_ERROR_MESSAGES.DEFAULT);
+      }
     },
     onSuccess: (_d, vars) => {
       void qc.invalidateQueries({ queryKey: ['retailer-team', 'members', vars.orgId] });
+      void qc.invalidateQueries({ queryKey: ['team'] });
     },
   });
 }

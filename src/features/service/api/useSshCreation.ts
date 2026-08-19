@@ -97,17 +97,25 @@ export function useSshCreation(defaultRelId: string, onDone: () => void) {
       return;
     }
 
+    const selectedItems = items.filter((i) => i.selected);
     setError(null);
     setSubmitting(true);
     try {
+      const primaryItem = selectedItems[0];
       const sshId = await createSsh.mutateAsync({
         relationshipId: relId,
         title: sshTitle(draft),
         description: fields.description.trim(),
         orderId: order?.id,
-        productId: items.find((i) => i.selected)?.productId || undefined,
+        productId: primaryItem?.productId || undefined,
+        quantity: primaryItem?.qty ?? 1,
         customerName: fields.customerName.trim() || undefined,
         customerPhone: fields.customerPhone.trim() || undefined,
+        items: selectedItems.map(i => ({
+          productId: i.productId,
+          productName: i.name,
+          quantity: i.qty
+        })),
       });
 
       // Fotoğraf yüklenemese de talep açıldı; kullanıcı sonradan ekleyebilir.

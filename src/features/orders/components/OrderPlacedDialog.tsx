@@ -58,7 +58,7 @@ export function OrderPlacedDialog({
 
         {!phone && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            Müşteri telefonu girilmediği için WhatsApp ile gönderilemiyor.
+            Müşterinize, takip linki gönderebilmeniz için platform üyesi olmanız gerekmektedir.
           </p>
         )}
 
@@ -97,3 +97,4 @@ export function OrderPlacedDialog({
     </Modal>
   );
 }
+

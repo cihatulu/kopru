@@ -276,8 +276,28 @@ Deno.serve(async (req) => {
           .eq('retailer_org_id', rtl)
           .maybeSingle();
 
-        sponsorOk = rel?.status === 'active';
-        if (sponsorOk) sponsorOrgId = sponsor.id;
+        if (rel) {
+          if (rel.status === 'active') {
+            sponsorOk = true;
+            sponsorOrgId = sponsor.id;
+          } else if (rel.status === 'pending') {
+            const { error: updateError } = await admin
+              .from('relationships')
+              .update({ status: 'active', activated_at: new Date().toISOString() })
+              .eq('id', rel.id);
+
+            if (!updateError) {
+              sponsorOk = true;
+              sponsorOrgId = sponsor.id;
+            } else {
+              sponsorOk = false;
+            }
+          } else {
+            sponsorOk = false;
+          }
+        } else {
+          sponsorOk = false;
+        }
       }
     }
 

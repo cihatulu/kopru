@@ -6,9 +6,10 @@ import type { DateRange, RetailerReportOrder } from '../domain/retailerReport';
 // Açık kolon listesi (kilitli kural 19). `salesperson_user_id` → `users` tek
 // yabancı anahtar olduğu için kolon ipucu yeterli, kısıt adı gerekmiyor.
 const COLUMNS = `
-  id, status, created_at, total_amount,
+  id, status, created_at, total_amount, parent_order_id,
   manufacturer:manufacturer_org_id(company_name),
   salesperson:salesperson_user_id(id, full_name, user_code),
+  parent:parent_order_id(salesperson:salesperson_user_id(id, full_name, user_code)),
   order_items(quantity, supplier_unit_price, order_item_retail_prices(retail_unit_price))
 `;
 
@@ -29,8 +30,13 @@ function retailTotal(raw: Row): number {
 
   return items.reduce((sum, i) => {
     const qty = Number(i.quantity ?? 0);
-    const first = list(i.order_item_retail_prices)[0];
-    const retail = first ? Number(first.retail_unit_price ?? 0) : 0;
+    const pr = i.order_item_retail_prices;
+    const first = Array.isArray(pr)
+      ? (pr as unknown[])[0]
+      : pr && typeof pr === 'object'
+        ? pr
+        : null;
+    const retail = first ? Number((first as Row).retail_unit_price ?? 0) : 0;
     const unit = retail > 0 ? retail : Number(i.supplier_unit_price ?? 0);
     return sum + unit * qty;
   }, 0);
@@ -38,8 +44,17 @@ function retailTotal(raw: Row): number {
 
 function toOrder(raw: unknown): RetailerReportOrder {
   const o = nested(raw);
-  const person = nested(o.salesperson);
-  const id = str(person.id);
+  
+  // Eğer kök siparişin satışçısı varsa, onu kullanalım (child siparişler kök siparişin satışçısına yazılsın)
+  const parent = nested(o.parent);
+  const parentSalesperson = nested(parent.salesperson);
+  const directSalesperson = nested(o.salesperson);
+  
+  const salesperson = o.parent_order_id && parentSalesperson.id 
+    ? parentSalesperson 
+    : directSalesperson;
+
+  const id = str(salesperson.id);
 
   return {
     id: str(o.id),
@@ -49,7 +64,7 @@ function toOrder(raw: unknown): RetailerReportOrder {
     manufacturerName: str(nested(o.manufacturer).company_name) || 'Bilinmeyen üretici',
     salespersonId: id || null,
     // Eski siparişlerde satışçı yok; ad yerine ham kimlik göstermek anlamsız.
-    salespersonName: str(person.full_name).trim() || str(person.user_code) || 'Belirtilmemiş',
+    salespersonName: str(salesperson.full_name).trim() || str(salesperson.user_code) || 'Belirtilmemiş',
   };
 }
 

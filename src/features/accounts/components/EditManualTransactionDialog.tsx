@@ -3,10 +3,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { parseDecimal } from '@/lib/format';
 import { manualEntryOptions } from '../domain/accountView';
-import {
-  useUpdateManualTransaction,
-  useDeleteManualTransaction,
-} from '../api/useManualTransactionEdits';
+import { useUpdateManualTransaction } from '../api/useManualTransactionEdits';
+import { useRequestDeleteManualTransaction } from '../api/useManualTransactionRequests';
 import type { LedgerEntry } from '../domain/ledgerEntry';
 import { ManualEntryFields } from './ManualEntryFields';
 
@@ -14,6 +12,7 @@ interface Props {
   entry: LedgerEntry;
   counterpartyName: string;
   isManufacturer: boolean;
+  counterpartyIsSubscriber: boolean;
   onClose: () => void;
 }
 
@@ -21,6 +20,7 @@ export function EditManualTransactionDialog({
   entry,
   counterpartyName,
   isManufacturer,
+  counterpartyIsSubscriber,
   onClose,
 }: Props) {
   const options = manualEntryOptions(isManufacturer);
@@ -31,9 +31,9 @@ export function EditManualTransactionDialog({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const updateMutation = useUpdateManualTransaction();
-  const deleteMutation = useDeleteManualTransaction();
+  const deleteRequestMutation = useRequestDeleteManualTransaction();
 
-  const isPending = updateMutation.isPending || deleteMutation.isPending;
+  const isPending = updateMutation.isPending || deleteRequestMutation.isPending;
 
   const handleSave = () => {
     setErrorMsg(null);
@@ -67,12 +67,15 @@ export function EditManualTransactionDialog({
 
   const handleDelete = () => {
     setErrorMsg(null);
-    deleteMutation.mutate(entry.id, {
-      onSuccess: () => {
+    deleteRequestMutation.mutate(entry.id, {
+      onSuccess: (data) => {
+        if (data.mode === 'pending') {
+          alert('Silme talebi karşı tarafa onay için gönderildi.');
+        }
         onClose();
       },
       onError: (err) => {
-        setErrorMsg(err instanceof Error ? err.message : 'Kayıt silinemedi');
+        setErrorMsg(err instanceof Error ? err.message : 'Silme işlemi gerçekleştirilemedi');
       },
     });
   };
@@ -119,6 +122,11 @@ export function EditManualTransactionDialog({
         {confirmDelete ? (
           <div className="rounded-xl bg-red-50 p-3 border border-red-200 text-xs text-red-800 space-y-2">
             <p className="font-bold">Bu cari kaydı silmek istediğinize emin misiniz?</p>
+            {counterpartyIsSubscriber && (
+              <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                ⚠️ Karşı taraf da üye olduğundan, silme işlemi karşı taraf onaylayana kadar cariye yansımaz.
+              </p>
+            )}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
@@ -130,7 +138,7 @@ export function EditManualTransactionDialog({
 
               <Button
                 variant="danger"
-                loading={deleteMutation.isPending}
+                loading={deleteRequestMutation.isPending}
                 onClick={handleDelete}
               >
                 Evet, Sil

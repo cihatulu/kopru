@@ -6,15 +6,24 @@ import type { SshRequest } from '../api/useSshRequests';
 
 interface Props {
   request: SshRequest;
-  isPending?: boolean;
+  isPending?: boolean | undefined;
   onClose: () => void;
   onSubmit: (status: SshStatus, note?: string) => void;
+  allowedStatuses?: SshStatus[] | undefined;
+  initialStatus?: SshStatus | undefined;
 }
 
 const STATUS_LIST: SshStatus[] = ['inceleniyor', 'bekliyor', 'parca_gonderildi', 'tamamlandi'];
 
-export function SshStatusModal({ request, isPending, onClose, onSubmit }: Props) {
-  const [newStatus, setNewStatus] = useState<SshStatus>(request.status);
+export function SshStatusModal({
+  request,
+  isPending,
+  onClose,
+  onSubmit,
+  allowedStatuses,
+  initialStatus,
+}: Props) {
+  const [newStatus, setNewStatus] = useState<SshStatus>(initialStatus ?? request.status);
   const [note, setNote] = useState('');
 
   const currentMeta = SSH_STATUS_META[request.status];
@@ -23,6 +32,8 @@ export function SshStatusModal({ request, isPending, onClose, onSubmit }: Props)
   const handleSubmit = () => {
     onSubmit(newStatus, note.trim() || undefined);
   };
+
+  const isForcedSingleStatus = allowedStatuses && allowedStatuses.length === 1;
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in duration-200">
@@ -55,18 +66,26 @@ export function SshStatusModal({ request, isPending, onClose, onSubmit }: Props)
             <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">
               YENİ DURUM
             </label>
-            <select
-              value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value as SshStatus)}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none cursor-pointer"
-            >
-              {STATUS_LIST.map((st) => (
-                <option key={st} value={st}>
-                  {SSH_STATUS_META[st].label}
-                </option>
-              ))}
-              <option value="iptal">İptal</option>
-            </select>
+            {isForcedSingleStatus ? (
+              <div className="py-1">
+                <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-extrabold ${targetMeta.className}`}>
+                  {targetMeta.label}
+                </span>
+              </div>
+            ) : (
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value as SshStatus)}
+                className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none cursor-pointer"
+              >
+                {STATUS_LIST.map((st) => (
+                  <option key={st} value={st}>
+                    {SSH_STATUS_META[st].label}
+                  </option>
+                ))}
+                <option value="iptal">İptal</option>
+              </select>
+            )}
           </div>
 
           <div>
@@ -75,7 +94,7 @@ export function SshStatusModal({ request, isPending, onClose, onSubmit }: Props)
             </label>
             <textarea
               rows={3}
-              placeholder="Yapılan işlem veya parça durum kargo takip no vb..."
+              placeholder="Yapılan işlem veya açıklama detayları..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none"

@@ -7,7 +7,6 @@ Bu dosya KÖPRÜ deposunda çalışan Claude Code'a rehberlik eder. Talimatlar b
 Her görev öncesi `PLAN.md` (mimari, şema, RLS, iş kuralları, inşa sırası) ve
 `.claude/ERROR_PROTOCOLS.md` (sık hatalar + kesin çözüm) dosyalarını oku.
 Bu dosya özet + kilitli kurallardır; çakışmada `PLAN.md` ile birlikte değerlendir.
-
 ## Proje Genel Bakış
 
 **KÖPRÜ** — üretici ve perakendecinin **aynı platformda** buluştuğu çok kiracılı B2B SaaS.
@@ -35,6 +34,21 @@ Her sorgu ve her index kararı bu ölçeğe göre verilir (PLAN §17).
 Gizli fiyatlar **ayrı tablolarda tutulur** — çünkü Postgres RLS kolon düzeyinde korumaz.
 `products` tablosuna `cost_price`, `order_items` tablosuna `retail_unit_price`
 kolonu **eklenmez**. Bu kural `guard-price-leak` hook'u ile zorlanır.
+
+### Ürün görünürlüğü — `managed_by_retailer_org_id` kuralı
+
+`products.managed_by_retailer_org_id` kolonu ürünün **kim tarafından girildiğini** tutar.
+Bu kolon RLS'in temel görünürlük anahtarıdır:
+
+| managed_by değeri | Kim görebilir |
+|---|---|
+| `NULL` | Üreticinin **kendi girdiği** ürün — ilişkisi olan **tüm** perakendeciler görür |
+| `perakendeci_org_id` | O **perakendecinin** misafir üretici adına girdiği ürün — yalnız **o perakendeci** görür |
+
+**Pratik sonuç:** İki perakendeci (A ve B) aynı misafir üreticiyle bağlıysa, A'nın girdiği
+ürünleri B göremez; misafir üreticinin kendisinin girdiği ürünleri ise her ikisi de görür.
+Bu kural `products_select_owner_or_customer` RLS politikasında zorlanır.
+
 
 ### Köprü yoktur
 

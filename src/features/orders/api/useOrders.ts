@@ -11,7 +11,8 @@ const ORDER_LIST_COLUMNS =
   'id, order_no, status, total_amount, currency, created_at, customer_name, ' +
   'manufacturer_org_id, retailer_org_id, relationship_id, parent_order_id, ' +
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name), ' +
-  'order_items(id, product_id, quantity, supplier_unit_price, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price)))';
+  'order_items(id, product_id, quantity, supplier_unit_price, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price))), ' +
+  'return_requests(approved_amount, status, items)';
 
 /** Sipariş listesi — keyset sayfalama (A17). RLS zaten kapsamı daraltır (A16). */
 export function useOrders(myOrgId: string, status?: OrderStatus | 'all') {

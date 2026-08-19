@@ -5,6 +5,7 @@ import {
   AnnouncementTable,
   AnnouncementsHeader,
   useAnnouncements,
+  useDeleteAnnouncement,
   usePublishAnnouncement,
   useSetAnnouncementActive,
   useUnreadAnnouncements,
@@ -28,6 +29,7 @@ export default function AnnouncementsPage() {
   const publish = usePublishAnnouncement();
   const update = useUpdateAnnouncement();
   const setActive = useSetAnnouncementActive();
+  const deleteAnn = useDeleteAnnouncement();
   const { markAllAsRead } = useUnreadAnnouncements();
   const counterparties = useCounterparties();
 
@@ -92,6 +94,14 @@ export default function AnnouncementsPage() {
           isOwnerView={false}
           busyId={busyId}
           onToggleActive={() => {}}
+          onDelete={(a) => {
+            setBusyId(a.id);
+            deleteAnn.mutate(
+              { id: a.id, retailerOrgId: myOrgId },
+              { onSettled: () => setBusyId(undefined) },
+            );
+          }}
+          deletingId={deleteAnn.isPending ? busyId : undefined}
         />
       )}
 

@@ -23,11 +23,19 @@ export function useCreateSsh() {
       description?: string | undefined;
       orderId?: string | undefined;
       productId?: string | undefined;
+      quantity?: number | undefined;
       customerName?: string | undefined;
       customerPhone?: string | undefined;
+      items?: { productId?: string; productName: string; quantity: number }[] | undefined;
     }): Promise<string> => {
       const isUuid = (val?: string) =>
         !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+      const formattedItems = input.items?.map(i => ({
+        product_id: isUuid(i.productId) ? i.productId : null,
+        product_name: i.productName,
+        quantity: i.quantity
+      }));
 
       const { data, error } = await supabase.rpc('create_ssh_request', rpcArgs({
         p_relationship_id: input.relationshipId,
@@ -35,9 +43,11 @@ export function useCreateSsh() {
         p_description: input.description?.trim() || undefined,
         p_order_id: isUuid(input.orderId) ? input.orderId : undefined,
         p_product_id: isUuid(input.productId) ? input.productId : undefined,
+        p_quantity: input.quantity && input.quantity > 0 ? input.quantity : undefined,
         p_customer: (input.customerName?.trim() || input.customerPhone?.trim())
           ? { name: input.customerName?.trim() || '', phone: input.customerPhone?.trim() || '' }
           : undefined,
+        p_items: formattedItems || undefined,
       }));
       if (error) {
         console.error('[create_ssh_request] rpc error:', error.message, error.details, error.hint);

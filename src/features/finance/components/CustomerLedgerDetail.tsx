@@ -1,5 +1,5 @@
 import { formatMoney, formatDate } from '@/lib/format';
-import type { CustomerLedger, FinanceTransaction, MinimalOrder } from '../api/useFinance';
+import type { CustomerLedger, FinanceTransaction, MinimalOrder, MinimalReturnRequest } from '../api/useFinance';
 import {
   computeReturnCreditsByOrder,
   buildChildrenByParent,
@@ -10,9 +10,10 @@ interface CustomerLedgerDetailProps {
   ledger: CustomerLedger;
   orders: MinimalOrder[];
   transactions: FinanceTransaction[];
+  returnRequests: MinimalReturnRequest[];
 }
 
-export function CustomerLedgerDetail({ ledger, orders, transactions }: CustomerLedgerDetailProps) {
+export function CustomerLedgerDetail({ ledger, orders, transactions, returnRequests }: CustomerLedgerDetailProps) {
   // Get all orders for this customer
   const customerOrders = orders.filter(o => ledger.order_ids.includes(o.id));
 
@@ -24,11 +25,17 @@ export function CustomerLedgerDetail({ ledger, orders, transactions }: CustomerL
 
   const rootOrders = customerOrders.filter(o => !o.parentOrderId);
 
+  // Filter return requests for this customer's orders
+  const customerReturns = returnRequests.filter(rr => ledger.order_ids.includes(rr.orderId));
+
+  // Filter cancelled orders/shipments
+  const cancelledOrders = customerOrders.filter(o => o.status === 'cancelled');
+
   // Combine them into a single timeline
   const timeline = [
     ...rootOrders.map(o => {
       return {
-        id: o.id,
+        id: `order-${o.id}`,
         date: o.createdAt || '',
         dateMs: new Date(o.createdAt || 0).getTime(),
         label: `Sipariş (${o.manufacturerName || '-'}) - ${o.orderNo}`,
@@ -40,12 +47,45 @@ export function CustomerLedgerDetail({ ledger, orders, transactions }: CustomerL
       const methodLabel = p.method === 'cash' ? 'Nakit' : p.method === 'pos_own' ? 'Bizim POS' : 'Üretici POS';
       const isExpense = p.type === 'expense';
       return {
-        id: p.id,
+        id: `payment-${p.id}`,
         date: p.created_at || '',
         dateMs: new Date(p.created_at || 0).getTime(),
-        label: `${isExpense ? 'İade' : 'Tahsilat'} (${methodLabel}) - ${p.description || ''}`,
+        label: `${isExpense ? 'Geri Ödeme' : 'Tahsilat'} (${methodLabel}) - ${p.description || ''}`,
         debt: isExpense ? Number(p.amount) : 0,
         credit: isExpense ? 0 : Number(p.amount),
+      };
+    }),
+    ...customerReturns.map(cr => {
+      const order = customerOrders.find(o => o.id === cr.orderId);
+      let refundAmount = 0;
+      const itemNames: string[] = [];
+      
+      for (const item of cr.items) {
+        const orderItem = order?.items?.find(oi => oi.id === item.orderItemId);
+        if (orderItem) {
+          refundAmount += item.quantity * orderItem.retailUnitPrice;
+          itemNames.push(`${orderItem.name} (${item.quantity} adet)`);
+        }
+      }
+
+      return {
+        id: `return-${cr.id}`,
+        date: cr.decidedAt || '',
+        dateMs: new Date(cr.decidedAt || 0).getTime(),
+        label: `İade - ${order ? `Sipariş #${order.orderNo}` : ''} ${itemNames.length > 0 ? `[${itemNames.join(', ')}]` : ''}`,
+        debt: 0,
+        credit: refundAmount,
+      };
+    }),
+    ...cancelledOrders.map(o => {
+      const isChild = !!o.parentOrderId;
+      return {
+        id: `cancel-${o.id}`,
+        date: o.updatedAt || o.createdAt || '',
+        dateMs: new Date(o.updatedAt || o.createdAt || 0).getTime(),
+        label: `İptal - ${isChild ? 'Sevkiyat' : 'Sipariş'} #${o.orderNo}`,
+        debt: 0,
+        credit: o.totalAmount,
       };
     })
   ].sort((a, b) => a.dateMs - b.dateMs); // Oldest to newest

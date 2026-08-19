@@ -13,6 +13,7 @@ interface Props {
   counterpartyName?: string;
   isManufacturer?: boolean;
   canWrite?: boolean;
+  counterpartyIsSubscriber: boolean;
 }
 
 /**
@@ -29,6 +30,7 @@ export function LedgerTable({
   counterpartyName = '',
   isManufacturer = false,
   canWrite = true,
+  counterpartyIsSubscriber,
 }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingEntry, setEditingEntry] = useState<LedgerEntry | null>(null);
@@ -79,12 +81,12 @@ export function LedgerTable({
                     <td className={`${TD} whitespace-nowrap text-xs text-slate-500`}>
                       {formatDate(e.createdAt)}
                     </td>
-                    <td className={`${TD} text-slate-700 font-medium`}>
-                      <div className="flex items-center gap-1.5">
+                    <td className={`${TD} text-slate-700 font-medium max-w-[260px]`}>
+                      <div className="flex min-w-0 items-center gap-1.5">
                         {hasDetails && (
-                          <span className="text-slate-400 text-xs">{isExpanded ? '▾' : '▸'}</span>
+                          <span className="shrink-0 text-slate-400 text-xs">{isExpanded ? '▾' : '▸'}</span>
                         )}
-                        <span>{e.description}</span>
+                        <span className="truncate" title={e.description}>{e.description}</span>
                       </div>
                     </td>
                     <td className={`${TD} text-right font-semibold text-red-600`}>
@@ -145,6 +147,7 @@ export function LedgerTable({
           entry={editingEntry}
           counterpartyName={counterpartyName}
           isManufacturer={isManufacturer}
+          counterpartyIsSubscriber={counterpartyIsSubscriber}
           onClose={() => setEditingEntry(null)}
         />
       )}

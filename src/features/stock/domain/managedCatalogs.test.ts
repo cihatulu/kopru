@@ -3,24 +3,24 @@ import { managedManufacturerIds, type CatalogEdge } from './managedCatalogs';
 
 const edge = (over: Partial<CatalogEdge> = {}): CatalogEdge => ({
   manufacturerOrgId: 'm1',
-  canEditCatalog: true,
+  canEditCatalog: false, // Default is false (retailer manages it)
   manufacturerIsSubscriber: false,
   ...over,
 });
 
 describe('managedManufacturerIds', () => {
-  test('misafir üretici + anahtar açık = yönetilir', () => {
-    expect([...managedManufacturerIds([edge()])]).toEqual(['m1']);
+  test('misafir üretici + anahtar kapalı = yönetilir', () => {
+    expect([...managedManufacturerIds([edge({ canEditCatalog: false })])]).toEqual(['m1']);
   });
 
-  test('ÜYE üretici anahtar açık olsa da yönetilmez', () => {
+  test('ÜYE üretici anahtar kapalı olsa da yönetilmez', () => {
     // Yaşanan hata: bu koşul unutulunca üye üreticinin PASİF ürünleri
     // perakendecinin stok listesinde göründü.
-    expect(managedManufacturerIds([edge({ manufacturerIsSubscriber: true })]).size).toBe(0);
+    expect(managedManufacturerIds([edge({ manufacturerIsSubscriber: true, canEditCatalog: false })]).size).toBe(0);
   });
 
-  test('anahtar kapalıysa misafir üretici de yönetilmez', () => {
-    expect(managedManufacturerIds([edge({ canEditCatalog: false })]).size).toBe(0);
+  test('anahtar açık ise misafir üretici yönetilmez', () => {
+    expect(managedManufacturerIds([edge({ canEditCatalog: true })]).size).toBe(0);
   });
 
   test('aynı üretici birden çok satırda gelse tek kimlik döner', () => {

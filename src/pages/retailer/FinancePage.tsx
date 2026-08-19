@@ -94,6 +94,7 @@ export default function FinancePage() {
             ledgers={page.customers.rows}
             orders={page.orders}
             transactions={page.transactions}
+            returnRequests={page.returnRequests}
             expandedKeys={expandedKeys}
             isEmpty={page.customers.total === 0}
             onToggle={(key) =>

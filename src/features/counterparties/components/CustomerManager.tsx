@@ -42,6 +42,8 @@ export function CustomerManager({
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [resetDone, setResetDone] = useState(false);
+  const [createResult, setCreateResult] = useState<any>(null);
+  const [generatedPassword, setGeneratedPassword] = useState('');
 
   const list = useCounterparties();
   const create = useCreateCustomer();
@@ -64,6 +66,8 @@ export function CustomerManager({
     setDialog('none');
     setTarget(null);
     setResetDone(false);
+    setCreateResult(null);
+    setGeneratedPassword('');
     create.reset();
     update.reset();
     resetPassword.reset();
@@ -130,8 +134,21 @@ export function CustomerManager({
           myVknTc={myVknTc}
           pending={create.isPending}
           errorMessage={create.error instanceof CustomerError ? create.error.message : undefined}
+          result={createResult}
+          generatedPassword={generatedPassword}
           onClose={close}
-          onSubmit={(input) => create.mutate(input, { onSuccess: close })}
+          onSubmit={(input) =>
+            create.mutate(input, {
+              onSuccess: (res) => {
+                if (input.password) {
+                  setCreateResult(res);
+                  setGeneratedPassword(input.password);
+                } else {
+                  setCreateResult(res);
+                }
+              },
+            })
+          }
         />
       )}
 

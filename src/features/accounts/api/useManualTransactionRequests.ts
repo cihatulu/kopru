@@ -103,3 +103,86 @@ export function useDecideRequest() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounts'] }),
   });
 }
+
+export interface PendingDeleteRequest {
+  id: string;
+  relationshipId: string;
+  transactionId: string;
+  requestingOrgId: string;
+  companyName: string;
+  createdAt: string;
+  transactionDescription: string;
+  transactionAmount: number;
+  transactionType: 'debit' | 'credit';
+}
+
+export function useRequestDeleteManualTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (transactionId: string): Promise<{ mode: RequestMode; id: string | null }> => {
+      const { data, error } = await supabase.rpc('request_delete_manual_transaction', {
+        p_transaction_id: transactionId,
+      });
+      if (error) throw error;
+      return data as unknown as { mode: RequestMode; id: string | null };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
+
+export function usePendingDeleteRequests(relationshipId: string | null) {
+  return useQuery({
+    queryKey: ['accounts', 'pending-deletes', relationshipId],
+    enabled: !!relationshipId,
+    staleTime: STALE_TIME.transactional,
+    queryFn: async (): Promise<PendingDeleteRequest[]> => {
+      const { data, error } = await supabase
+        .from('manual_transaction_delete_requests')
+        .select(`
+          id,
+          relationship_id,
+          transaction_id,
+          requesting_org_id,
+          created_at,
+          transaction:transaction_id(description, amount, type)
+        `)
+        .eq('relationship_id', relationshipId ?? '')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+
+      return (data ?? []).map((r: any) => {
+        const tx = r.transaction ? r.transaction : {};
+        return {
+          id: String(r.id),
+          relationshipId: String(r.relationship_id),
+          transactionId: String(r.transaction_id),
+          requestingOrgId: String(r.requesting_org_id),
+          companyName: '',
+          createdAt: String(r.created_at),
+          transactionDescription: String(tx.description || ''),
+          transactionAmount: Number(tx.amount || 0),
+          transactionType: tx.type || 'debit',
+        };
+      });
+    },
+  });
+}
+
+export function useDecideDeleteRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { requestId: string; approve: boolean }) => {
+      const { error } = await supabase.rpc('decide_delete_manual_transaction', {
+        p_request_id: input.requestId,
+        p_approve: input.approve,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}

@@ -28,6 +28,7 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
   const [filters, setFilters] = useState<ServiceFilters>(EMPTY_FILTERS);
   const [openId, setOpenId] = useState<string | null>(null);
   const [statusTarget, setStatusTarget] = useState<SshRequest | null>(null);
+  const [targetStatus, setTargetStatus] = useState<SshStatus | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const list = useSshRequests(myOrgId, myKind, filters);
@@ -43,6 +44,7 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
       {
         onSuccess: () => {
           setStatusTarget(null);
+          setTargetStatus(null);
           void list.refetch();
         },
       },
@@ -93,8 +95,13 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
           requests={requests}
           myOrgId={myOrgId}
           isManufacturer={!isRetailer}
+          isRetailer={isRetailer}
           onOpen={(r) => setOpenId(r.id)}
           onOpenStatusModal={(r) => setStatusTarget(r)}
+          onRetailerAction={(r, status) => {
+            setStatusTarget(r);
+            setTargetStatus(status);
+          }}
         />
       )}
 
@@ -117,8 +124,13 @@ export function SshPanel({ myOrgId, myKind, partyOptions }: Props) {
       {statusTarget && (
         <SshStatusModal
           request={statusTarget}
+          initialStatus={targetStatus ?? undefined}
+          allowedStatuses={targetStatus ? [targetStatus] : undefined}
           isPending={advance.isPending}
-          onClose={() => setStatusTarget(null)}
+          onClose={() => {
+            setStatusTarget(null);
+            setTargetStatus(null);
+          }}
           onSubmit={handleUpdateStatus}
         />
       )}

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import type { NavItem } from './navigation';
 
 interface Props {
@@ -42,6 +42,8 @@ function NavBadge({ count }: { count: number | undefined }) {
 
 /** Koyu sol menü. Mobilde kayarak açılır, masaüstünde sabittir. */
 export function Sidebar({ items, companyName, open, onClose, badges, slots }: Props) {
+  const location = useLocation();
+
   return (
     <>
       {open && (
@@ -75,47 +77,54 @@ export function Sidebar({ items, companyName, open, onClose, badges, slots }: Pr
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6">
-          {items.map((item) => (
-            <div key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to.split('/').length === 2}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  /*
-                    Aktif madde MARKA rengiyle işaretlenir. Eskiden gri bir
-                    tondu (`bg-slate-700/80`) ve hover ile neredeyse aynı
-                    görünüyordu — kullanıcı hangi sayfada olduğunu menüden
-                    okuyamıyordu. Marka tokenına bağlı olduğu için org kendi
-                    rengini verdiğinde menü de onunla döner.
-                  */
-                  `flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-brand-600 font-semibold text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                  }`
-                }
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-5 shrink-0"
-                  aria-hidden="true"
-                >
-                  <path d={item.icon} />
-                </svg>
-                <span className="truncate">{item.label}</span>
-                <NavBadge count={item.badgeKey ? badges?.[item.badgeKey] : undefined} />
-              </NavLink>
+          {items.map((item) => {
+            const isEnd = item.to.split('/').length === 2;
+            const isItemActive = isEnd 
+              ? location.pathname === item.to 
+              : location.pathname.startsWith(item.to);
 
-              {/* Dinamik içerik (ör. katalog ağacı) maddenin hemen altında. */}
-              {item.slot && slots?.[item.slot]}
-            </div>
-          ))}
+            return (
+              <div key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={isEnd}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    /*
+                      Aktif madde MARKA rengiyle işaretlenir. Eskiden gri bir
+                      tondu (`bg-slate-700/80`) ve hover ile neredeyse aynı
+                      görünüyordu — kullanıcı hangi sayfada olduğunu menüden
+                      okuyamıyordu. Marka tokenına bağlı olduğu için org kendi
+                      rengini verdiğinde menü de onunla döner.
+                    */
+                    `flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-brand-600 font-semibold text-white'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    }`
+                  }
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.7}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-5 shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path d={item.icon} />
+                  </svg>
+                  <span className="truncate">{item.label}</span>
+                  <NavBadge count={item.badgeKey ? badges?.[item.badgeKey] : undefined} />
+                </NavLink>
+
+                {/* Dinamik içerik (ör. katalog ağacı) sadece ilgili menü aktifken çizilir. */}
+                {item.slot && isItemActive && slots?.[item.slot]}
+              </div>
+            );
+          })}
         </nav>
       </aside>
     </>

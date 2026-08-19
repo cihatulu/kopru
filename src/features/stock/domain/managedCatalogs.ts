@@ -24,7 +24,7 @@ export interface CatalogEdge {
 export function managedManufacturerIds(edges: readonly CatalogEdge[]): Set<string> {
   const ids = new Set<string>();
   for (const e of edges) {
-    if (e.canEditCatalog && !e.manufacturerIsSubscriber) ids.add(e.manufacturerOrgId);
+    if (!e.canEditCatalog && !e.manufacturerIsSubscriber) ids.add(e.manufacturerOrgId);
   }
   return ids;
 }

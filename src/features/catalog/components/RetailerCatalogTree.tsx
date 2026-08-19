@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import { useCounterparties, type Edge } from '@/features/counterparties';
 import { useCatalogTree } from '../api/useCatalogTree';
@@ -97,6 +97,7 @@ export function RetailerCatalogTree() {
 
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const location = useLocation();
 
   const activeManufacturerId = params.get('manufacturerId') ?? params.get('uretici');
   const activeGroupId = params.get('groupId') ?? params.get('grup');
@@ -109,7 +110,7 @@ export function RetailerCatalogTree() {
   };
 
   return (
-    <ul className="mb-1 ml-3 space-y-1 border-l border-slate-700/60 pl-2">
+    <ul key={location.pathname} className="mb-1 ml-3 space-y-1 border-l border-slate-700/60 pl-2">
       {edges.map((edge) => (
         <ManufacturerBranch
           key={edge.id}

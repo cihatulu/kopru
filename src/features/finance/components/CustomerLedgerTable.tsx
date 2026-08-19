@@ -3,7 +3,7 @@ import React from 'react';
 import { formatMoney } from '@/lib/format';
 import { CustomerLedgerDetail } from './CustomerLedgerDetail';
 import { customerLedgerKey, type CustomerLedger } from '../domain/customerLedger';
-import type { FinanceTransaction, MinimalOrder } from '../domain/finance';
+import type { FinanceTransaction, MinimalOrder, MinimalReturnRequest } from '../domain/finance';
 
 const TD = 'px-5 py-3.5 text-sm';
 
@@ -11,6 +11,7 @@ interface Props {
   ledgers: CustomerLedger[];
   orders: MinimalOrder[];
   transactions: FinanceTransaction[];
+  returnRequests: MinimalReturnRequest[];
   expandedKeys: string[];
   isEmpty: boolean;
   onToggle: (key: string) => void;
@@ -21,6 +22,7 @@ export function CustomerLedgerTable({
   ledgers,
   orders,
   transactions,
+  returnRequests,
   expandedKeys,
   isEmpty,
   onToggle,
@@ -89,7 +91,12 @@ export function CustomerLedgerTable({
                 {isExpanded && (
                   <tr>
                     <td colSpan={8} className="px-5 py-2 bg-slate-50/30">
-                      <CustomerLedgerDetail ledger={l} orders={orders} transactions={transactions} />
+                      <CustomerLedgerDetail
+                        ledger={l}
+                        orders={orders}
+                        transactions={transactions}
+                        returnRequests={returnRequests}
+                      />
                     </td>
                   </tr>
                 )}

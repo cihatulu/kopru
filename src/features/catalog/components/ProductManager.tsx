@@ -5,6 +5,7 @@ import { useProducts, useProductCosts, type CatalogProduct } from '../api/usePro
 import { useProductStock } from '../api/useProductStock';
 import { useProductGroups } from '../api/useProductGroups';
 import { useAuthSession } from '@/features/auth';
+import { useMyProductPermission } from '@/features/counterparties';
 import { useCatalogAdmin } from '../api/useCatalogAdmin';
 import { ProductError } from '../domain/productErrors';
 import {
@@ -43,10 +44,12 @@ export function ProductManager({ orgId }: { orgId: string }) {
   const stock = useProductStock(ids);
   const admin = useCatalogAdmin();
   const session = useAuthSession();
+  const hasEditPermission = useMyProductPermission();
   // Kalıcı silme yalnız org SAHİBİNDE; sunucu da ayrıca doğrular.
   const canDelete = session.data?.orgRole === 'owner';
   const isSubscriber = session.data?.org?.isSubscriber ?? true;
-  const isGuestManufacturer = session.data?.org?.kind === 'manufacturer' && !isSubscriber;
+  const isGuestManufacturer = 
+    session.data?.org?.kind === 'manufacturer' && !isSubscriber && !hasEditPermission;
 
   const visible = filterProducts(
     all,

@@ -158,10 +158,26 @@ async function selfChange(req: Request, currentPassword: string, newPassword: st
 
   const { data: row } = await admin
     .from('users')
-    .select('auth_email')
+    .select('auth_email, org_id')
     .eq('id', me.user.id)
     .maybeSingle();
   if (!row) return json({ error: 'UNAUTHORIZED' }, 401);
+
+  // Şifre benzersizliği kontrolü (1 yetkili + N personel şifresi aynı olamaz)
+  const { data: conflict, error: conflictError } = await admin.rpc('check_staff_password_conflict', {
+    p_org_id: row.org_id,
+    p_password: newPassword,
+    p_exclude_user_id: me.user.id,
+  });
+
+  if (conflictError) {
+    console.error('Şifre benzersizlik kontrolü hatası:', conflictError);
+    return json({ error: 'DB_ERROR' }, 500);
+  }
+
+  if (conflict) {
+    return json({ error: 'PASSWORD_ALREADY_TAKEN' }, 409);
+  }
 
   const anon = anonClient();
   const { error: signInError } = await anon.auth.signInWithPassword({
@@ -256,6 +272,23 @@ async function staffUpdate(
     if (!validPassword(updates.password)) {
       return json({ error: 'WEAK_PASSWORD' }, 400);
     }
+    
+    // Şifre benzersizliği kontrolü (1 yetkili + N personel şifresi aynı olamaz)
+    const { data: conflict, error: conflictError } = await admin.rpc('check_staff_password_conflict', {
+      p_org_id: me.org_id,
+      p_password: updates.password,
+      p_exclude_user_id: targetUserId,
+    });
+
+    if (conflictError) {
+      console.error('Şifre benzersizlik kontrolü hatası:', conflictError);
+      return json({ error: 'DB_ERROR' }, 500);
+    }
+
+    if (conflict) {
+      return json({ error: 'PASSWORD_ALREADY_TAKEN' }, 409);
+    }
+
     authUpdates.password = updates.password;
   }
 

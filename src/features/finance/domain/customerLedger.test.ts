@@ -6,12 +6,15 @@ const order = (p: Partial<MinimalOrder>): MinimalOrder => ({
   id: 'o1',
   orderNo: 'SIP-1',
   createdAt: '2026-08-01T00:00:00Z',
+  updatedAt: null,
   parentOrderId: null,
+  status: 'pending',
   totalAmount: 0,
   customerName: 'Ayşe Yılmaz',
   customerPhone: '5550001122',
   customerAddress: null,
   manufacturerName: null,
+  items: [],
   ...p,
 });
 
@@ -139,5 +142,46 @@ describe('buildCustomerLedgers', () => {
     );
     expect(rows[0]?.customer_phone).toBe('222');
     expect(rows[1]?.customer_phone).toBe('111');
+  });
+
+  test('onaylanan iade satış fiyatı üzerinden alacak olarak cariden düşer', () => {
+    const o = order({
+      id: 'o1',
+      totalAmount: 1000,
+      items: [
+        {
+          id: 'oi1',
+          quantity: 2,
+          supplierUnitPrice: 300,
+          retailUnitPrice: 500, // Perakende satış fiyatı
+          name: 'Yatak',
+        },
+      ],
+    });
+    
+    const returns = [
+      {
+        id: 'r1',
+        orderId: 'o1',
+        decidedAt: '2026-08-03T00:00:00Z',
+        items: [{ orderItemId: 'oi1', quantity: 1 }], // 1 adet iade edildi
+      },
+    ];
+
+    const rows = buildCustomerLedgers([o], [], returns);
+    expect(rows[0]?.total_paid_amount).toBe(500); // 1 * 500 = 500 TL alacak
+    expect(rows[0]?.remaining_balance).toBe(500); // 1000 - 500 = 500 TL kalan bakiye
+  });
+
+  test('iptal edilmiş sipariş alacak olarak cariden düşer', () => {
+    const o = order({
+      id: 'o1',
+      totalAmount: 1000,
+      status: 'cancelled',
+    });
+
+    const rows = buildCustomerLedgers([o], []);
+    expect(rows[0]?.total_paid_amount).toBe(1000); // 1000 TL alacak kaydı
+    expect(rows[0]?.remaining_balance).toBe(0); // 1000 - 1000 = 0 TL kalan bakiye
   });
 });

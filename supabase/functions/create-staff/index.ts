@@ -101,6 +101,21 @@ Deno.serve(async (req) => {
       userCode = generated;
     }
 
+    // Şifre benzersizliği kontrolü (1 yetkili + N personel şifresi aynı olamaz)
+    const { data: conflict, error: conflictError } = await admin.rpc('check_staff_password_conflict', {
+      p_org_id: auth.orgId,
+      p_password: password,
+    });
+
+    if (conflictError) {
+      console.error('Şifre benzersizlik kontrolü hatası:', conflictError);
+      return json({ error: 'DB_ERROR' }, 500);
+    }
+
+    if (conflict) {
+      return json({ error: 'PASSWORD_ALREADY_TAKEN' }, 409);
+    }
+
     const authEmail = `${userCode}@users.kopru.local`;
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({

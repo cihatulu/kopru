@@ -1,10 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
-import type { StaffMember } from '../domain/staff';
+import type { StaffMember, StaffRole } from '../domain/staff';
 
-// Açık kolon listesi (kilitli kural 19).
-const COLUMNS = 'id, user_code, full_name, email, phone, org_role, is_active, created_at';
+interface DbUserRow {
+  id: string;
+  user_code: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  org_role: StaffRole;
+  is_active: boolean;
+  created_at: string;
+  organizations: { authorized_name: string | null } | { authorized_name: string | null }[] | null;
+}
 
 /**
  * Organizasyonun ekibi.
@@ -23,11 +32,11 @@ export function useStaff() {
     queryFn: async (): Promise<StaffMember[]> => {
       const { data, error } = await supabase
         .from('users')
-        .select(COLUMNS)
+        .select('id, user_code, full_name, email, phone, org_role, is_active, created_at, organizations!users_org_id_fkey(authorized_name)')
         .order('created_at', { ascending: true });
       if (error) throw error;
 
-      const rows = data ?? [];
+      const rows = (data as unknown) as DbUserRow[] ?? [];
       const ids = rows.map((r) => String(r.id));
 
       const scopeCounts = new Map<string, number>();
@@ -43,17 +52,22 @@ export function useStaff() {
         }
       }
 
-      return rows.map((r) => ({
-        id: String(r.id),
-        userCode: String(r.user_code),
-        fullName: r.full_name ?? null,
-        email: r.email ?? null,
-        phone: r.phone ?? null,
-        role: r.org_role,
-        isActive: Boolean(r.is_active),
-        createdAt: String(r.created_at),
-        scopeCount: scopeCounts.get(String(r.id)) ?? 0,
-      }));
+      return rows.map((r) => {
+        const orgAuthorizedName = r.organizations 
+          ? (Array.isArray(r.organizations) ? r.organizations[0]?.authorized_name : r.organizations.authorized_name) 
+          : null;
+        return {
+          id: String(r.id),
+          userCode: String(r.user_code),
+          fullName: r.full_name?.trim() || (r.org_role === 'owner' ? orgAuthorizedName : null) || null,
+          email: r.email ?? null,
+          phone: r.phone ?? null,
+          role: r.org_role,
+          isActive: Boolean(r.is_active),
+          createdAt: String(r.created_at),
+          scopeCount: scopeCounts.get(String(r.id)) ?? 0,
+        };
+      });
     },
   });
 }

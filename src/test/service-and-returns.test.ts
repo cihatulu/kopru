@@ -114,8 +114,8 @@ describe('SSH yetki ayrımı', () => {
     expect(body).toMatch(/v_row\.manufacturer_org_id <> v_me/);
   });
 
-  test('iptal her iki tarafça yapılabilir', () => {
-    expect(body).toMatch(/p_status = 'iptal'/);
+  test('iptal ve tamamlandi her iki tarafça yapılabilir', () => {
+    expect(body).toMatch(/p_status in \('iptal', 'tamamlandi'\)/);
   });
 
   test('kapanmış talep yeniden ilerletilemez', () => {

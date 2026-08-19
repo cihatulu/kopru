@@ -28,11 +28,15 @@ export interface TrackedLog {
   /** Durum değiştirilirken yazılan açıklama; müşteriye de görünür. */
   note: string | null;
   created_at: string;
+  /** Hangi sipariş/sevkiyata ait olduğunu gösterir; takip zaman çizelgesinde görünür. */
+  order_no?: string | null;
 }
 
 export interface TrackedShipment {
   id: string;
+  order_no: string;
   status: OrderStatus;
+  note: string | null;
   created_at: string;
   items: TrackedItem[];
   returned_items: TrackedReturnLine[];
@@ -95,6 +99,32 @@ export function stepIndexOf(status: OrderStatus): number {
   return TRACK_STEPS.findIndex((s) => s.status === status);
 }
 
+/**
+ * Siparişin efektif durumu.
+ *
+ * Kök sipariş iptal edilse dahi (kalan parçalar iptal edildiğinde kök sipariş iptal durumuna çekilir)
+ * aktif çocuk sevkiyatlar varsa (shipped veya delivered) sipariş iptal edilmiş sayılmaz,
+ * bu aktif çocuk sevkiyatların en ilerideki durumuna göre takip adımları gösterilir.
+ */
+export function getEffectiveStatus(order: TrackedOrder): OrderStatus {
+  if (order.status !== 'cancelled' && order.status !== 'returned') {
+    return order.status;
+  }
+
+  const activeShipments = (order.shipments ?? []).filter(
+    (s) => s.status !== 'cancelled' && s.status !== 'returned'
+  );
+
+  if (activeShipments.length > 0) {
+    const statuses = activeShipments.map((s) => s.status);
+    if (statuses.includes('delivered')) return 'delivered';
+    if (statuses.includes('shipped') || statuses.includes('partially_shipped')) return 'shipped';
+    return 'confirmed';
+  }
+
+  return order.status;
+}
+
 /** İade satırının hangi kaleme ait olduğu iki alandan biriyle gelebilir. */
 const returnedQtyFor = (item: TrackedItem, returns: TrackedReturnLine[]): number =>
   returns
@@ -114,8 +144,31 @@ interface Source {
  * başına yarım kalıyordu; müşteri "kısmi sevk" satırlarının notunu göremezdi.
  */
 export function mergedHistory(order: TrackedOrder): TrackedLog[] {
-  const all = [...order.history, ...order.shipments.flatMap((s) => s.history)];
-  return all.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  // Kısmi sevk logları kök siparişin geçmişinde tutulur ama hangi child
+  // sevkiyata ait olduğunu göstermek için zaman damgasıyla eşleştiriyoruz.
+  // Her partially_shipped root log'unu, en yakın child sevkiyatıyla eşleştirip
+  // o child'ın order_no'sunu etiket olarak kullanıyoruz.
+  const childsByTime = [...order.shipments].sort((a, b) =>
+    a.created_at.localeCompare(b.created_at)
+  );
+
+  // Kullanılmış child indeksini takip et (her log farklı bir child'a denk gelsin)
+  let partialIdx = 0;
+
+  const rootLogs = order.history.map((h) => {
+    const child = h.status === 'partially_shipped' ? childsByTime[partialIdx] : undefined;
+    if (child) {
+      partialIdx++;
+      return { ...h, order_no: child.order_no };
+    }
+    return { ...h, order_no: order.order_no };
+  });
+
+  const shipmentLogs = order.shipments.flatMap((s) =>
+    s.history.map((h) => ({ ...h, order_no: s.order_no }))
+  );
+
+  return [...rootLogs, ...shipmentLogs].sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
 /**

@@ -10,7 +10,7 @@ import {
   type LedgerFilters,
   type TxFilters,
 } from '../domain/financeFilters';
-import { useAllOrders, useCustomerLedgers, useFinanceTransactions, useManufacturers } from './useFinance';
+import { useAllOrders, useApprovedReturnRequests, useCustomerLedgers, useFinanceTransactions, useManufacturers } from './useFinance';
 
 export type FinanceTab = 'cash' | 'pos_own' | 'pos_manufacturer' | 'customers';
 
@@ -35,7 +35,8 @@ export function useFinancePage() {
   const transactions = useFinanceTransactions();
   const orders = useAllOrders();
   const manufacturers = useManufacturers();
-  const ledgers = useCustomerLedgers(orders.data);
+  const returnRequests = useApprovedReturnRequests();
+  const ledgers = useCustomerLedgers(orders.data, returnRequests.data);
 
   useEffect(() => {
     setPage(1);
@@ -78,10 +79,11 @@ export function useFinancePage() {
     setTxFilters,
     ledgerFilters,
     setLedgerFilters,
-    isLoading: transactions.isLoading || orders.isLoading,
+    isLoading: transactions.isLoading || orders.isLoading || returnRequests.isLoading,
     transactions: transactions.data ?? [],
     orders: orders.data ?? [],
     manufacturers: manufacturers.data ?? [],
+    returnRequests: returnRequests.data ?? [],
     ledgers,
     tx: {
       cash: visible(filteredTx.cash),

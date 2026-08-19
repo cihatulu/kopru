@@ -166,14 +166,19 @@ Deno.serve(async (req) => {
       .eq('org_role', 'owner')
       .maybeSingle();
 
-    // Zaten girişi olan bir firmanın şifresi BURADAN değiştirilmez; bu bir
-    // "müşteri ekleme" akışıdır, hesap ele geçirme yolu değil.
     if (existing) {
+      const { error: updateError } = await admin.auth.admin.updateUserById(existing.id, { password });
+      if (updateError) {
+        console.error('mevcut misafir sifre guncellemesi basarisiz', updateError);
+        return json({ error: 'AUTH_UPDATE_FAILED' }, 500);
+      }
+      await admin.from('users').update({ failed_attempts: 0, locked_until: null }).eq('id', existing.id);
+
       return json({
         orgId,
         alreadyExisted: Boolean(row.already_existed),
         status: row.status,
-        accountCreated: false,
+        accountCreated: true,
         userCode: existing.user_code,
         inviteToken,
       });

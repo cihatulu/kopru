@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { formatDateTime } from '@/lib/format';
 import type { Announcement } from '../api/useAnnouncements';
@@ -8,9 +9,20 @@ interface Props {
   isOwnerView: boolean;
   busyId?: string | undefined;
   onToggleActive: (a: Announcement) => void;
+  onDelete?: (a: Announcement) => void;
+  deletingId?: string | undefined;
 }
 
-export function AnnouncementList({ announcements, isOwnerView, busyId, onToggleActive }: Props) {
+export function AnnouncementList({
+  announcements,
+  isOwnerView,
+  busyId,
+  onToggleActive,
+  onDelete,
+  deletingId,
+}: Props) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   if (announcements.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -49,11 +61,43 @@ export function AnnouncementList({ announcements, isOwnerView, busyId, onToggleA
               </p>
             </div>
 
-            {isOwnerView && (
-              <Button variant="ghost" loading={busyId === a.id} onClick={() => onToggleActive(a)}>
-                {a.isActive ? 'Yayından kaldır' : 'Yayınla'}
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {isOwnerView && (
+                <Button variant="ghost" loading={busyId === a.id} onClick={() => onToggleActive(a)}>
+                  {a.isActive ? 'Yayından kaldır' : 'Yayınla'}
+                </Button>
+              )}
+
+              {/* Perakendeci silme butonu */}
+              {!isOwnerView && onDelete && (
+                confirmId === a.id ? (
+                  <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-1.5 ring-1 ring-inset ring-red-200">
+                    <span className="text-xs font-medium text-red-700">Emin misiniz?</span>
+                    <Button
+                      variant="ghost"
+                      loading={deletingId === a.id}
+                      onClick={() => {
+                        onDelete(a);
+                        setConfirmId(null);
+                      }}
+                    >
+                      <span className="text-xs font-bold text-red-700">Evet</span>
+                    </Button>
+                    <Button variant="ghost" onClick={() => setConfirmId(null)}>
+                      <span className="text-xs text-slate-500">Vazgeç</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    aria-label="Duyuruyu sil"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                    onClick={() => setConfirmId(a.id)}
+                  >
+                    🗑
+                  </button>
+                )
+              )}
+            </div>
           </div>
 
           {a.imageUrl && (

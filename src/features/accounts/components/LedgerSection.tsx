@@ -15,6 +15,7 @@ interface Props {
   counterpartyName: string;
   isManufacturer: boolean;
   canWrite?: boolean;
+  counterpartyIsSubscriber: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ export function LedgerSection({
   counterpartyName,
   isManufacturer,
   canWrite = true,
+  counterpartyIsSubscriber,
 }: Props) {
   const [period, setPeriod] = useState<Period>(EMPTY_PERIOD);
   const [search, setSearch] = useState('');
@@ -90,6 +92,7 @@ export function LedgerSection({
           counterpartyName={counterpartyName}
           isManufacturer={isManufacturer}
           canWrite={canWrite}
+          counterpartyIsSubscriber={counterpartyIsSubscriber}
         />
       )}
 

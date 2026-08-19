@@ -13,7 +13,8 @@ const COLUMNS = `
   relationship_id,
   manufacturer:manufacturer_org_id(company_name),
   order_items(id, product_id, quantity, supplier_unit_price, product_snapshot),
-  ssh_requests(id, status)
+  ssh_requests(id, status),
+  return_requests(id, status, items)
 `;
 
 /** SSH kapanmış sayılan durumlar — açık talep sayımının dışında kalır. */
@@ -52,6 +53,20 @@ export interface ServiceOrder extends SshOrderSummary {
 function toOrder(raw: unknown): ServiceOrder {
   const o = nested(raw);
   const ssh = list(o.ssh_requests);
+  const returns = list(o.return_requests);
+  const approvedReturns = returns.filter((r) => str(r.status) === 'approved');
+
+  // Build a map of order_item_id -> returned_quantity
+  const returnedQtys: Record<string, number> = {};
+  approvedReturns.forEach((ret) => {
+    const itemsList = Array.isArray(ret.items) ? ret.items : [];
+    itemsList.forEach((it) => {
+      const itemObj = nested(it);
+      const itemId = str(itemObj.order_item_id);
+      const qty = Number(itemObj.quantity ?? 0);
+      returnedQtys[itemId] = (returnedQtys[itemId] || 0) + qty;
+    });
+  });
 
   return {
     id: str(o.id),
@@ -61,17 +76,22 @@ function toOrder(raw: unknown): ServiceOrder {
     manufacturerName: str(nested(o.manufacturer).company_name) || 'Tedarikçi Firma',
     openSshCount: ssh.filter((s) => !CLOSED_SSH.includes(str(s.status))).length,
     totalSshCount: ssh.length,
-    items: list(o.order_items).map((i) => {
-      const snap = nested(i.product_snapshot);
-      return {
-        id: str(i.id),
-        productId: str(i.product_id),
-        name: str(snap.name) || 'Ürün',
-        code: str(snap.code),
-        quantity: Number(i.quantity ?? 1),
-        unitPrice: Number(i.supplier_unit_price ?? 0),
-      };
-    }),
+    items: list(o.order_items)
+      .map((i) => {
+        const snap = nested(i.product_snapshot);
+        const itemId = str(i.id);
+        const originalQty = Number(i.quantity ?? 1);
+        const returnedQty = returnedQtys[itemId] || 0;
+        return {
+          id: itemId,
+          productId: str(i.product_id),
+          name: str(snap.name) || 'Ürün',
+          code: str(snap.code),
+          quantity: Math.max(0, originalQty - returnedQty),
+          unitPrice: Number(i.supplier_unit_price ?? 0),
+        };
+      })
+      .filter((item) => item.quantity > 0),
   };
 }
 

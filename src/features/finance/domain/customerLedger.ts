@@ -4,6 +4,7 @@ import {
   reconstructRootOrderDebt,
   type FinanceTransaction,
   type MinimalOrder,
+  type MinimalReturnRequest,
 } from './finance';
 
 /** Bir müşterinin (perakendecinin kendi müşterisi) borç/ödeme özeti. */
@@ -46,6 +47,7 @@ const cleanPhone = (v: string | null) => (v || '').trim();
 export function buildCustomerLedgers(
   orders: readonly MinimalOrder[] | undefined,
   transactions: readonly FinanceTransaction[] | undefined,
+  returnRequests: readonly MinimalReturnRequest[] | undefined = [],
 ): CustomerLedger[] {
   if (!orders || !transactions) return [];
 
@@ -78,7 +80,9 @@ export function buildCustomerLedgers(
       ledgers.set(key, entry);
     }
 
-    entry.order_ids.push(o.id);
+    if (!entry.order_ids.includes(o.id)) {
+      entry.order_ids.push(o.id);
+    }
     if (o.manufacturerName && !entry.manufacturer_names.includes(o.manufacturerName)) {
       entry.manufacturer_names.push(o.manufacturerName);
     }
@@ -107,6 +111,41 @@ export function buildCustomerLedgers(
     } else if (t.type === 'expense') {
       entry.total_order_amount += amt;
       entry.remaining_balance += amt;
+    }
+  }
+
+  // İadelerden kaynaklı alacak kayıtları
+  if (returnRequests) {
+    for (const rr of returnRequests) {
+      const order = orderById.get(rr.orderId);
+      if (!order) continue;
+
+      const entry = ledgers.get(ledgerKey(cleanName(order.customerName), cleanPhone(order.customerPhone)));
+      if (!entry) continue;
+
+      let refundAmount = 0;
+      for (const item of rr.items) {
+        const orderItem = order.items?.find((oi) => oi.id === item.orderItemId);
+        if (orderItem) {
+          refundAmount += item.quantity * orderItem.retailUnitPrice;
+        }
+      }
+
+      if (refundAmount > 0) {
+        entry.total_paid_amount += refundAmount;
+        entry.remaining_balance -= refundAmount;
+      }
+    }
+  }
+
+  // İptallerden kaynaklı alacak kayıtları
+  for (const o of orders) {
+    if (o.status === 'cancelled') {
+      const entry = ledgers.get(ledgerKey(cleanName(o.customerName), cleanPhone(o.customerPhone)));
+      if (!entry) continue;
+
+      entry.total_paid_amount += o.totalAmount;
+      entry.remaining_balance -= o.totalAmount;
     }
   }
 

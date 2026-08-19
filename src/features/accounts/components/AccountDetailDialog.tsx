@@ -4,12 +4,14 @@ import { useLedger } from '../api/useAccounts';
 import {
   useRequestManualTransaction,
   usePendingRequests,
+  usePendingDeleteRequests,
 } from '../api/useManualTransactionRequests';
 import { formatMoney } from '@/lib/format';
 import { balanceSide, BALANCE_LABEL, type AccountRow } from '../domain/accountView';
 import { LedgerSection } from './LedgerSection';
 import { ManualEntryPanel } from './ManualEntryPanel';
 import { PendingRequestsPanel } from './PendingRequestsPanel';
+import { PendingDeleteRequestsPanel } from './PendingDeleteRequestsPanel';
 
 interface Props {
   account: AccountRow;
@@ -42,6 +44,7 @@ export function AccountDetailDialog({
 
   const ledger  = useLedger(account.relationshipId);
   const pending = usePendingRequests(account.relationshipId);
+  const pendingDeletes = usePendingDeleteRequests(account.relationshipId);
   const request = useRequestManualTransaction();
 
   const latest  = ledger.data?.pages[0]?.[0];
@@ -55,6 +58,7 @@ export function AccountDetailDialog({
     <Modal
       label={`${account.companyName} hesap detayı`}
       panelClassName="flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-2xl"
+      resizable
       onClose={onClose}
       closeDisabled={request.isPending}
     >
@@ -85,6 +89,7 @@ export function AccountDetailDialog({
           counterpartyName={account.companyName}
           isManufacturer={isManufacturer}
           canWrite={canWrite}
+          counterpartyIsSubscriber={cpIsSubscriber}
         />
 
         {/* Sağ: Onay paneli + form */}
@@ -92,12 +97,20 @@ export function AccountDetailDialog({
 
           {/* Bekleyen onay istekleri — karşı taraf aboneyse göster */}
           {cpIsSubscriber && (
-            <PendingRequestsPanel
-              requests={pending.data ?? []}
-              myOrgId={myOrgId}
-              canDecide={canWrite}
-              counterpartyName={account.companyName}
-            />
+            <>
+              <PendingRequestsPanel
+                requests={pending.data ?? []}
+                myOrgId={myOrgId}
+                canDecide={canWrite}
+                counterpartyName={account.companyName}
+              />
+              <PendingDeleteRequestsPanel
+                requests={pendingDeletes.data ?? []}
+                myOrgId={myOrgId}
+                canDecide={canWrite}
+                counterpartyName={account.companyName}
+              />
+            </>
           )}
 
           {/* Manuel kayıt formu */}

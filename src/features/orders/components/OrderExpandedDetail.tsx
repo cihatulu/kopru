@@ -101,7 +101,12 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
 
       {/* Sağ sütun: kalemler ve tarihçe */}
       <div className="space-y-6">
-        <OrderItemsCard items={detail.items} totalAmount={detail.totalAmount} />
+        <OrderItemsCard
+          items={detail.items}
+          totalAmount={detail.originalAmount}
+          returnTotalAmount={detail.returnTotalAmount}
+          isCancelled={detail.status === 'cancelled'}
+        />
 
         <div className={`${CARD} space-y-4`}>
           <h4 className={`${CAPTION} border-b border-slate-100 pb-3`}>

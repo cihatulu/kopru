@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/Button';
-import { formatMoney } from '@/lib/format';
 import { CartSummaryCard } from './CartSummaryCard';
 import { CheckoutFields } from './CheckoutFields';
 import type { useCheckout } from '../api/useCheckout';
@@ -58,7 +57,7 @@ export function CartCheckoutPanel({
       >
         {checkout.pending
           ? 'Gönderiliyor…'
-          : `Siparişi Tamamla · ${formatMoney(totals.supplierTotal)}`}
+          : 'Siparişi Tamamla'}
       </Button>
     </div>
   );

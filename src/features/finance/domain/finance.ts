@@ -43,12 +43,22 @@ export interface FinanceTransaction extends ManufacturerNamed {
     | null;
 }
 
+export interface MinimalOrderItem {
+  id: string;
+  quantity: number;
+  supplierUnitPrice: number;
+  retailUnitPrice: number;
+  name: string;
+}
+
 /** Cari hesap hesaplamaları için gereken en küçük sipariş gösterimi. */
 export interface MinimalOrder {
   id: string;
   orderNo: string;
   createdAt: string;
+  updatedAt: string | null;
   parentOrderId: string | null;
+  status: string;
   /**
    * PERAKENDE tutar (KATMAN 3) — müşteri carisinin tek bazı.
    * `orders.total_amount` DEĞİLDİR; o üreticiye olan borçtur (KATMAN 2).
@@ -58,6 +68,14 @@ export interface MinimalOrder {
   customerPhone: string | null;
   customerAddress: string | null;
   manufacturerName: string | null;
+  items: MinimalOrderItem[];
+}
+
+export interface MinimalReturnRequest {
+  id: string;
+  orderId: string;
+  decidedAt: string;
+  items: { orderItemId: string; quantity: number }[];
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;

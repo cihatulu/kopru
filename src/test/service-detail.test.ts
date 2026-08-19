@@ -64,7 +64,7 @@ describe('advance_ssh_status geçmiş kaydı', () => {
   });
 
   test('akışı üretici yürütür, iptali her iki taraf yapabilir', () => {
-    expect(body).toMatch(/if p_status = 'iptal' then/i);
+    expect(body).toMatch(/p_status in \('iptal', 'tamamlandi'\)/i);
     expect(body).toMatch(/elsif v_row\.manufacturer_org_id <> v_me then/i);
   });
 

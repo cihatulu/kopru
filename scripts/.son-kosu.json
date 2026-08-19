@@ -1,0 +1,152 @@
+{
+  "olcek": "tam",
+  "gecen": 45,
+  "kalan": 0,
+  "saniye": 1421,
+  "bulgular": [
+    {
+      "kod": "K1",
+      "baslik": "assign_products_to_group kapsamsız",
+      "sonuc": "kanitlandi",
+      "kanit": "A'nın ürünü B'nin grubuna taşındı (dönen adet: 1)"
+    },
+    {
+      "kod": "K3",
+      "baslik": "product_costs kapsamsız — katman-1 fiyat izolasyonu",
+      "sonuc": "kanitlandi",
+      "kanit": "B, A'nın ürününün maliyetini okudu: ₺2500"
+    },
+    {
+      "kod": "K5",
+      "baslik": "manufacturer_stock dealer select kapsamsız",
+      "sonuc": "kanitlandi",
+      "kanit": "B, A'nın ürününün adedini gördü: 15"
+    },
+    {
+      "kod": "K2",
+      "baslik": "set_group_products kapsamsız ve YIKICI",
+      "sonuc": "kanitlandi",
+      "kanit": "B'nin çağrısı A'nın 2 ürününü gruptan düşürdü"
+    },
+    {
+      "kod": "K4",
+      "baslik": "Excel'den doğan ürün KAPSAMSIZ doğuyor",
+      "sonuc": "kanitlandi",
+      "kanit": "managed_by_retailer_org_id null — tüm sponsorlar görecek"
+    },
+    {
+      "kod": "K29",
+      "baslik": "tanınmayan uuid sessizce yeni ürün açıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "ürün sayısı 7 → 8"
+    },
+    {
+      "kod": "K23",
+      "baslik": "durum sırası sunucuda zorunlu değil",
+      "sonuc": "kanitlandi",
+      "kanit": "pending → delivered tek çağrıda geçti, sevkiyat hiç olmadı"
+    },
+    {
+      "kod": "K6",
+      "baslik": "ssh_status_logs sponsor filtresi yok",
+      "sonuc": "kanitlandi",
+      "kanit": "10/30 oturumda diğer sponsorun log satırı okundu"
+    },
+    {
+      "kod": "K7",
+      "baslik": "announcements owner_all kapsamsız",
+      "sonuc": "curutuldu",
+      "kanit": "0/30 oturumda diğer sponsorun duyurusu okundu"
+    },
+    {
+      "kod": "K22",
+      "baslik": "dashboard_summary.product_count kapsam filtresi taşımıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "katalogda 4 ürün görünüyor, kart 6 yazıyor"
+    },
+    {
+      "kod": "K19",
+      "baslik": "personel girişi O(N) bcrypt ve masum sayaç artırıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "tek yanlış giriş 3/3 personelin sayacını artırdı"
+    },
+    {
+      "kod": "K21",
+      "baslik": "accountant staff_scope izolasyonunun dışında",
+      "sonuc": "kanitlandi",
+      "kanit": "muhasebeci için hiç staff_scope satırı yok — kapsam kavramı ona uygulanmıyor"
+    },
+    {
+      "kod": "K17",
+      "baslik": "service role çağrısında yetki kapısı sessizce açılıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "JWT olmadan advance_order_status geçti, actor NULL yazıldı"
+    },
+    {
+      "kod": "K18",
+      "baslik": "RPC'lerde açık grant yok — anon çalıştırabiliyor",
+      "sonuc": "kanitlandi",
+      "kanit": "anon çağrısı kapıdan geçti: advance_order_status:400, cancel_order_atomic:400, create_return_request:400"
+    },
+    {
+      "kod": "K-takip",
+      "baslik": "takip linki KATMAN 2 fark tutarını anon'a gösteriyor",
+      "sonuc": "kanitlandi",
+      "kanit": "items[].price_difference anon yanıtında"
+    },
+    {
+      "kod": "K36",
+      "baslik": "her organizations INSERT'ü leads UPDATE tetikliyor",
+      "sonuc": "kanitlandi",
+      "kanit": "lead org açılır açılmaz eşleşti (durum: converted) — her INSERT bu maliyeti ödüyor"
+    },
+    {
+      "kod": "K12",
+      "baslik": "recalculate_relationship_balances geçmişi UPDATE ediyor",
+      "sonuc": "test-edilemedi",
+      "kanit": "çağrılması denetlenen veriyi bozardı; gövde incelemesiyle sabit"
+    },
+    {
+      "kod": "K24",
+      "baslik": "approve_return_request from_status'u sabit yazıyor",
+      "sonuc": "curutuldu",
+      "kanit": "zincir sağlam"
+    },
+    {
+      "kod": "K16",
+      "baslik": "confirm_return_atomic price_difference'ı hesaba katmıyor",
+      "sonuc": "curutuldu",
+      "kanit": "200 iade alacağı incelendi, sapma yok"
+    },
+    {
+      "kod": "K13",
+      "baslik": "manuel cari satırı YERİNDE güncelleniyor",
+      "sonuc": "kanitlandi",
+      "kanit": "satır UPDATE edildi (dengeleyici INSERT yok: 7 → 7 satır)"
+    },
+    {
+      "kod": "K8",
+      "baslik": "birleştirmede retail_prices uyarısız kayboluyor",
+      "sonuc": "curutuldu",
+      "kanit": "0 perakende fiyatı silindi (öncesi 600)"
+    },
+    {
+      "kod": "K9",
+      "baslik": "kopyanın görselleri yetim kalıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "200 görsel bağı silinen ürünle birlikte gitti"
+    },
+    {
+      "kod": "K10",
+      "baslik": "kopyanın açıklama/varyant alanları uyarısız kayboluyor",
+      "sonuc": "kanitlandi",
+      "kanit": "200 silinen kopyada dolu açıklama vardı"
+    },
+    {
+      "kod": "K11",
+      "baslik": "boşalan gruplar ölü düğüm olarak kalıyor",
+      "sonuc": "kanitlandi",
+      "kanit": "300 boş grup"
+    }
+  ]
+}

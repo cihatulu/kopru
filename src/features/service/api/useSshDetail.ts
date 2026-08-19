@@ -10,10 +10,11 @@ const LOG_COLUMNS =
 
 const DETAIL_COLUMNS =
   'id, title, description, status, created_at, updated_at, images, relationship_id, ' +
-  'order_id, product_id, customer_name, customer_phone, ' +
+  'order_id, product_id, quantity, customer_name, customer_phone, ' +
   'manufacturer_org_id, retailer_org_id, ' +
-  'orders(order_no, order_items(id, quantity, product_snapshot)), ' +
-  'retailer:retailer_org_id(company_name), manufacturer:manufacturer_org_id(company_name)';
+  'orders(order_no, order_items(id, quantity, product_id, product_snapshot)), ' +
+  'retailer:retailer_org_id(company_name), manufacturer:manufacturer_org_id(company_name), ' +
+  'ssh_request_items(product_id, product_name, quantity)';
 
 export interface SshLogEntry {
   id: string;
@@ -81,16 +82,35 @@ export function useSshDetail(sshId: string | null) {
       const orderNo = str(orderObj.order_no) || '—';
       const orderItemsRaw = (Array.isArray(orderObj.order_items) ? orderObj.order_items : []) as Row[];
 
-      const items = orderItemsRaw.map((oi) => {
-        const snap = nested(oi.product_snapshot);
-        return {
-          name: str(snap.name) || str(r.title) || 'Ürün',
-          quantity: Number(oi.quantity || 1),
-        };
-      });
+      const dbItems = (Array.isArray(r.ssh_request_items) ? r.ssh_request_items : []) as Row[];
 
-      if (items.length === 0 && r.title) {
-        items.push({ name: str(r.title), quantity: 1 });
+      const items: { name: string; quantity: number }[] = [];
+      if (dbItems.length > 0) {
+        dbItems.forEach((item) => {
+          items.push({
+            name: str(item.product_name) || 'Ürün',
+            quantity: Number(item.quantity || 1),
+          });
+        });
+      } else {
+        // Fallback to old behavior
+        const sshProductId = r.product_id ? str(r.product_id) : null;
+        const sshQuantity = Number(r.quantity || 1);
+
+        const matchedOrderItem = orderItemsRaw.find((oi) => {
+          const oiProductId = oi.product_id ? str(oi.product_id) : null;
+          return sshProductId && oiProductId === sshProductId;
+        }) ?? orderItemsRaw[0];
+
+        if (matchedOrderItem) {
+          const snap = nested(matchedOrderItem.product_snapshot);
+          items.push({
+            name: str(snap.name) || str(r.title) || 'Ürün',
+            quantity: sshQuantity,
+          });
+        } else if (r.title) {
+          items.push({ name: str(r.title), quantity: sshQuantity });
+        }
       }
 
       const paths = Array.isArray(r.images) ? (r.images as string[]) : [];

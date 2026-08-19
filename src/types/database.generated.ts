@@ -17,16 +17,19 @@ export type Database = {
       announcement_reads: {
         Row: {
           announcement_id: string
+          dismissed: boolean
           read_at: string
           retailer_org_id: string
         }
         Insert: {
           announcement_id: string
+          dismissed?: boolean
           read_at?: string
           retailer_org_id: string
         }
         Update: {
           announcement_id?: string
+          dismissed?: boolean
           read_at?: string
           retailer_org_id?: string
         }
@@ -335,6 +338,88 @@ export type Database = {
           user_code?: string
         }
         Relationships: []
+      }
+      manual_transaction_delete_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by_org_id: string | null
+          decided_by_user_id: string | null
+          id: string
+          relationship_id: string
+          requesting_org_id: string
+          requesting_user_id: string
+          status: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_org_id?: string | null
+          decided_by_user_id?: string | null
+          id?: string
+          relationship_id: string
+          requesting_org_id: string
+          requesting_user_id: string
+          status?: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_org_id?: string | null
+          decided_by_user_id?: string | null
+          id?: string
+          relationship_id?: string
+          requesting_org_id?: string
+          requesting_user_id?: string
+          status?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_transaction_delete_requests_decided_by_org_id_fkey"
+            columns: ["decided_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_delete_requests_decided_by_user_id_fkey"
+            columns: ["decided_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_delete_requests_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_delete_requests_requesting_org_id_fkey"
+            columns: ["requesting_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_delete_requests_requesting_user_id_fkey"
+            columns: ["requesting_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_transaction_delete_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manual_transaction_requests: {
         Row: {
@@ -826,6 +911,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          managed_by_retailer_org_id: string | null
           name: string
           owner_kind: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
@@ -837,6 +923,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          managed_by_retailer_org_id?: string | null
           name: string
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
@@ -848,6 +935,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          managed_by_retailer_org_id?: string | null
           name?: string
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id?: string
@@ -856,6 +944,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_groups_managed_by_retailer_org_id_fkey"
+            columns: ["managed_by_retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_groups_owner_org_id_owner_kind_fkey"
             columns: ["owner_org_id", "owner_kind"]
@@ -885,9 +980,11 @@ export type Database = {
           id: string
           images: string[]
           is_active: boolean
+          managed_by_retailer_org_id: string | null
           name: string
           owner_kind: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
+          price_review_needed: boolean
           set_contents: Json
           supplier_price: number
           type: Database["public"]["Enums"]["product_type"]
@@ -907,9 +1004,11 @@ export type Database = {
           id?: string
           images?: string[]
           is_active?: boolean
+          managed_by_retailer_org_id?: string | null
           name: string
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
+          price_review_needed?: boolean
           set_contents?: Json
           supplier_price: number
           type?: Database["public"]["Enums"]["product_type"]
@@ -929,9 +1028,11 @@ export type Database = {
           id?: string
           images?: string[]
           is_active?: boolean
+          managed_by_retailer_org_id?: string | null
           name?: string
           owner_kind?: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id?: string
+          price_review_needed?: boolean
           set_contents?: Json
           supplier_price?: number
           type?: Database["public"]["Enums"]["product_type"]
@@ -945,6 +1046,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "product_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_managed_by_retailer_org_id_fkey"
+            columns: ["managed_by_retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1181,6 +1289,48 @@ export type Database = {
           },
         ]
       }
+      ssh_request_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          ssh_request_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          ssh_request_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          ssh_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssh_request_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ssh_request_items_ssh_request_id_fkey"
+            columns: ["ssh_request_id"]
+            isOneToOne: false
+            referencedRelation: "ssh_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ssh_requests: {
         Row: {
           created_at: string
@@ -1192,6 +1342,7 @@ export type Database = {
           manufacturer_org_id: string
           order_id: string | null
           product_id: string | null
+          quantity: number
           relationship_id: string
           retailer_org_id: string
           status: Database["public"]["Enums"]["ssh_status"]
@@ -1208,6 +1359,7 @@ export type Database = {
           manufacturer_org_id: string
           order_id?: string | null
           product_id?: string | null
+          quantity?: number
           relationship_id: string
           retailer_org_id: string
           status?: Database["public"]["Enums"]["ssh_status"]
@@ -1224,6 +1376,7 @@ export type Database = {
           manufacturer_org_id?: string
           order_id?: string | null
           product_id?: string | null
+          quantity?: number
           relationship_id?: string
           retailer_org_id?: string
           status?: Database["public"]["Enums"]["ssh_status"]
@@ -1799,6 +1952,7 @@ export type Database = {
           manufacturer_org_id: string
           order_id: string | null
           product_id: string | null
+          quantity: number
           relationship_id: string
           retailer_org_id: string
           status: Database["public"]["Enums"]["ssh_status"]
@@ -1942,19 +2096,49 @@ export type Database = {
         Args: { p_items: Json; p_order_id: string; p_reason?: string }
         Returns: string
       }
-      create_ssh_request: {
-        Args: {
-          p_customer?: Json
-          p_description?: string
-          p_order_id?: string
-          p_product_id?: string
-          p_relationship_id: string
-          p_title: string
-        }
-        Returns: string
-      }
+      create_ssh_request:
+        | {
+            Args: {
+              p_customer?: Json
+              p_description?: string
+              p_order_id?: string
+              p_product_id?: string
+              p_relationship_id: string
+              p_title: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_customer?: Json
+              p_description?: string
+              p_order_id?: string
+              p_product_id?: string
+              p_quantity?: number
+              p_relationship_id: string
+              p_title: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_customer?: Json
+              p_description?: string
+              p_items?: Json
+              p_order_id?: string
+              p_product_id?: string
+              p_quantity?: number
+              p_relationship_id: string
+              p_title: string
+            }
+            Returns: string
+          }
       current_balance: { Args: { p_relationship_id: string }; Returns: number }
       dashboard_summary: { Args: never; Returns: Json }
+      decide_delete_manual_transaction: {
+        Args: { p_approve: boolean; p_request_id: string }
+        Returns: undefined
+      }
       decide_manual_transaction: {
         Args: { p_approve: boolean; p_request_id: string }
         Returns: undefined
@@ -2088,15 +2272,21 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      manufacturer_may_manage_products: { Args: never; Returns: boolean }
       manufacturer_may_write_stock: { Args: never; Returns: boolean }
       manufacturer_summary: {
         Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
+      merge_duplicate_products: { Args: { p_org_id: string }; Returns: number }
       my_relationship_ids: { Args: never; Returns: string[] }
       next_order_no: {
         Args: { p_manufacturer_org_id: string }
         Returns: string
+      }
+      open_group_scope_for_org: {
+        Args: { p_org_id: string }
+        Returns: undefined
       }
       place_order_atomic: {
         Args: {
@@ -2107,6 +2297,7 @@ export type Database = {
         }
         Returns: string
       }
+      product_in_my_scope: { Args: { p_managed_by: string }; Returns: boolean }
       recalculate_relationship_balances: {
         Args: { p_relationship_id: string }
         Returns: undefined
@@ -2114,6 +2305,10 @@ export type Database = {
       relationship_has_module: {
         Args: { p_module: string; p_relationship_id: string }
         Returns: boolean
+      }
+      request_delete_manual_transaction: {
+        Args: { p_transaction_id: string }
+        Returns: Json
       }
       request_manual_transaction: {
         Args: {
@@ -2284,9 +2479,11 @@ export type Database = {
           id: string
           images: string[]
           is_active: boolean
+          managed_by_retailer_org_id: string | null
           name: string
           owner_kind: Database["public"]["Enums"]["org_kind"] | null
           owner_org_id: string
+          price_review_needed: boolean
           set_contents: Json
           supplier_price: number
           type: Database["public"]["Enums"]["product_type"]
@@ -2321,6 +2518,7 @@ export type Database = {
           manufacturer_org_id: string
           order_id: string | null
           product_id: string | null
+          quantity: number
           relationship_id: string
           retailer_org_id: string
           status: Database["public"]["Enums"]["ssh_status"]

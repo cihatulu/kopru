@@ -19,7 +19,8 @@ const ORDER_DETAIL_COLUMNS =
   'manufacturer_org_id, retailer_org_id, relationship_id, parent_order_id, ' +
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name), ' +
   'customer_phone, customer_address, note, order_token, ' +
-  'order_items(id, product_id, quantity, supplier_unit_price, total_price, product_snapshot, custom_description, price_difference, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price)))';
+  'order_items(id, product_id, quantity, supplier_unit_price, total_price, product_snapshot, custom_description, price_difference, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price))), ' +
+  'return_requests(approved_amount, status, items)';
 
 export function useOrderDetail(orderId: string | null, myOrgId: string) {
   return useQuery({
@@ -71,6 +72,25 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         .in('order_id', [orderId ?? '', ...shipments.map((s) => s.id)])
         .order('created_at', { ascending: true });
 
+      // Onaylı iade talepleri — items JSONB [{order_item_id, quantity}] formatında.
+      const returnsRes = await supabase
+        .from('return_requests')
+        .select('id, items')
+        .eq('order_id', orderId ?? '')
+        .eq('status', 'approved');
+
+      // order_item_id → iade adedi haritası
+      const returnedQtyMap = new Map<string, number>();
+      if (!returnsRes.error && returnsRes.data) {
+        for (const rr of returnsRes.data) {
+          const rItems = Array.isArray(rr.items) ? rr.items : [];
+          for (const ri of rItems as Array<{ order_item_id: string; quantity: number }>) {
+            const prev = returnedQtyMap.get(ri.order_item_id) ?? 0;
+            returnedQtyMap.set(ri.order_item_id, prev + Number(ri.quantity));
+          }
+        }
+      }
+
       const history = buildHistory(logsRes.data ?? [], shipments, orderId ?? '');
       if (history.length === 0 && r.created_at) {
         history.push({
@@ -87,16 +107,32 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         status === 'partially_shipped' ||
         (shipments.length > 0 && status !== 'delivered' && status !== 'cancelled');
 
+      const mappedItems = items.map((item) => {
+        const i = item as Record<string, unknown>;
+        const itemId = typeof i.id === 'string' ? i.id : '';
+        const returnedQty = returnedQtyMap.get(itemId) ?? 0;
+        return toItem(item, isRetailer, returnedQty);
+      });
+
+      // İade toplam tutarı (perakende fiyatı üzerinden)
+      let returnTotalAmount = 0;
+      for (const mi of mappedItems) {
+        if (mi.returnedQty > 0) {
+          returnTotalAmount += (mi.supplierUnitPrice + mi.priceDifference) * mi.returnedQty;
+        }
+      }
+
       return {
         ...toRow(r, myOrgId),
         customerPhone: nullable(r.customer_phone),
         customerAddress: nullable(r.customer_address),
         note: nullable(r.note),
         orderToken: str(r.order_token),
-        items: items.map((item) => toItem(item, isRetailer)),
+        items: mappedItems,
         history,
         shipments,
         hasUnfulfilledBalance,
+        returnTotalAmount,
       };
     },
   });

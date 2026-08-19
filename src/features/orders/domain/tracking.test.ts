@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   aggregate,
+  getEffectiveStatus,
   isCustomerPayment,
   linesTotal,
   mergedHistory,
@@ -8,6 +9,7 @@ import {
   stepIndexOf,
   type TrackedItem,
   type TrackedOrder,
+  type TrackedShipment,
 } from './tracking';
 
 const item = (over: Partial<TrackedItem> = {}): TrackedItem => ({
@@ -31,6 +33,18 @@ const order = (over: Partial<TrackedOrder> = {}): TrackedOrder => ({
   history: [],
   shipments: [],
   payments: [],
+  ...over,
+});
+
+const shipment = (over: Partial<TrackedShipment> = {}): TrackedShipment => ({
+  id: 's1',
+  order_no: '260813-0001-01',
+  status: 'shipped',
+  note: null,
+  created_at: '',
+  items: [],
+  returned_items: [],
+  history: [],
   ...over,
 });
 
@@ -59,14 +73,9 @@ describe('aggregate', () => {
     const o = order({
       items: [item({ quantity: 1 })],
       shipments: [
-        {
-          id: 's1',
-          status: 'shipped',
-          created_at: '',
+        shipment({
           items: [item({ quantity: 3 })],
-          returned_items: [],
-          history: [],
-        },
+        }),
       ],
     });
     // Kısmi sevkiyatta adet çocuğa taşınır; orijinal toplam yine 4 olmalı.
@@ -173,16 +182,11 @@ describe('mergedHistory', () => {
         { status: 'in_production', note: null, created_at: '2026-08-13T12:00:00Z' },
       ],
       shipments: [
-        {
-          id: 's1',
-          status: 'shipped',
-          created_at: '',
-          items: [],
-          returned_items: [],
+        shipment({
           history: [
             { status: 'shipped', note: 'Kargoya verildi', created_at: '2026-08-13T11:00:00Z' },
           ],
-        },
+        }),
       ],
     });
 
@@ -208,3 +212,32 @@ describe('isCustomerPayment', () => {
     expect(isCustomerPayment({ amount: 1, method: 'cash', description: null, created_at: '' })).toBe(true);
   });
 });
+
+describe('getEffectiveStatus', () => {
+  test('aktif siparişlerde kendi durumunu döner', () => {
+    expect(getEffectiveStatus(order({ status: 'pending' }))).toBe('pending');
+    expect(getEffectiveStatus(order({ status: 'in_production' }))).toBe('in_production');
+  });
+
+  test('iptal edilmiş ama aktif çocuk sevkiyatları olan siparişte sevkiyat durumunu döner', () => {
+    const o = order({
+      status: 'cancelled',
+      shipments: [
+        shipment({ status: 'shipped' }),
+        shipment({ status: 'cancelled' }),
+      ],
+    });
+    expect(getEffectiveStatus(o)).toBe('shipped');
+  });
+
+  test('iptal edilmiş ve tüm çocukları da iptal edilmişse cancelled döner', () => {
+    const o = order({
+      status: 'cancelled',
+      shipments: [
+        shipment({ status: 'cancelled' }),
+      ],
+    });
+    expect(getEffectiveStatus(o)).toBe('cancelled');
+  });
+});
+

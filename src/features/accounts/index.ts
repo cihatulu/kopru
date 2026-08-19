@@ -5,8 +5,12 @@ export {
   useRequestManualTransaction,
   usePendingRequests,
   useDecideRequest,
+  useRequestDeleteManualTransaction,
+  usePendingDeleteRequests,
+  useDecideDeleteRequest,
   type RequestMode,
   type PendingRequest,
+  type PendingDeleteRequest,
 } from './api/useManualTransactionRequests';
 export {
   useUpdateManualTransaction,
@@ -48,5 +52,6 @@ export { LedgerTable } from './components/LedgerTable';
 export { LedgerSection } from './components/LedgerSection';
 export { ManualEntryPanel } from './components/ManualEntryPanel';
 export { PendingRequestsPanel } from './components/PendingRequestsPanel';
+export { PendingDeleteRequestsPanel } from './components/PendingDeleteRequestsPanel';
 export { PeriodBar } from './components/PeriodBar';
 export { SummaryCards } from './components/SummaryCards';

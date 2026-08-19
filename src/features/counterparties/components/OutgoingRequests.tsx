@@ -32,7 +32,9 @@ export function OutgoingRequests({ requests, myOrgId }: Props) {
                 <p className="font-medium text-slate-900">{party.companyName}</p>
                 <p className="font-mono text-xs text-slate-500">{party.vknTc}</p>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Karşı taraf da abone olduğu için onayı bekleniyor.
+                  {party.isSubscriber
+                    ? 'Karşı taraf da abone olduğu için kendi panelinden onaylaması bekleniyor.'
+                    : 'Giriş bilgileriyle sisteme ilk kez girdiğinde otomatik olarak onaylanacaktır.'}
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">

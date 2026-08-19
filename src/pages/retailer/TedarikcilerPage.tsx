@@ -22,11 +22,19 @@ import {
 export default function TedarikcilerPage() {
   const { data: user } = useAuthSession();
   const [tab, setTab] = useState<SupplierTab>('active');
+  const [createResult, setCreateResult] = useState<any>(null);
+  const [generatedPassword, setGeneratedPassword] = useState('');
   const org = user?.org;
   const a = useCounterpartyActions(org?.id ?? '');
   const invites = useCounterpartyInvites();
 
   if (!org) return null;
+
+  const handleClose = () => {
+    setCreateResult(null);
+    setGeneratedPassword('');
+    a.close();
+  };
 
   const visible = tab === 'active' ? a.active : a.passive;
 
@@ -78,8 +86,21 @@ export default function TedarikcilerPage() {
           errorMessage={
             a.createCustomer.error instanceof Error ? a.createCustomer.error.message : undefined
           }
-          onClose={a.close}
-          onSubmit={(input) => a.createCustomer.mutate(input, { onSuccess: a.close })}
+          result={createResult}
+          generatedPassword={generatedPassword}
+          onClose={handleClose}
+          onSubmit={(input) =>
+            a.createCustomer.mutate(input, {
+              onSuccess: (res) => {
+                if (input.password) {
+                  setCreateResult(res);
+                  setGeneratedPassword(input.password);
+                } else {
+                  setCreateResult(res);
+                }
+              },
+            })
+          }
         />
       )}
 

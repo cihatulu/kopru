@@ -74,6 +74,28 @@ export function useSetAnnouncementActive() {
   });
 }
 
+/**
+ * Perakendeci kendi listesinden duyuruyu gizler.
+ * announcements satırına dokunulmaz (üreticinin kaydı korunur);
+ * announcement_reads tablosuna dismissed=true upsert edilir.
+ * RLS: announcement_reads_own politikası (retailer_org_id = get_my_org_id()) yeterli.
+ */
+export function useDeleteAnnouncement() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async ({ id, retailerOrgId }: { id: string; retailerOrgId: string }) => {
+      const { error } = await supabase
+        .from('announcement_reads')
+        .upsert(
+          { announcement_id: id, retailer_org_id: retailerOrgId, dismissed: true },
+          { onConflict: 'announcement_id,retailer_org_id' },
+        );
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 /** Okundu işareti — yalnız okuyan perakendeci yazabilir (RLS). */
 export function useMarkRead() {
   const invalidate = useInvalidate();

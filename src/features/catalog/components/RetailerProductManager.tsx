@@ -46,7 +46,7 @@ export function RetailerProductManager({ manufacturerId, isGuest, canEditCatalog
   const admin = writes.admin;
 
   // Sadece Guest üretici ise kalıcı silme vs yapılabilir.
-  const canDelete = isGuest && canEditCatalog;
+  const canDelete = isGuest && !canEditCatalog;
 
   const visible = filterProducts(
     all,
@@ -70,7 +70,7 @@ export function RetailerProductManager({ manufacturerId, isGuest, canEditCatalog
 
   return (
     <div className="space-y-6">
-      {isGuest && canEditCatalog && (
+      {isGuest && !canEditCatalog && (
         <RetailerCatalogToolbar
           activity={activity}
           onActivityChange={setActivity}
@@ -102,7 +102,7 @@ export function RetailerProductManager({ manufacturerId, isGuest, canEditCatalog
         retailPrices={retailPrices.data}
         groupNames={new Map((groups.data ?? []).map((g) => [g.id, g.name]))}
         canDelete={canDelete}
-        canEdit={isGuest && canEditCatalog}
+        canEdit={isGuest && !canEditCatalog}
         selectedIds={selectedIds}
         onToggleOne={(id) => setSelectedIds((prev) => toggleInSet(prev, id))}
         onToggleAll={(pageIds, selectAll) => {

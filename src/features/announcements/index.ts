@@ -5,6 +5,7 @@ export {
   usePublishAnnouncement,
   useUpdateAnnouncement,
   useSetAnnouncementActive,
+  useDeleteAnnouncement,
   useMarkRead,
 } from './api/useAnnouncementMutations';
 export { useUnreadAnnouncements } from './api/useUnreadAnnouncements';

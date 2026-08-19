@@ -20,6 +20,7 @@ export interface OrderRow {
   orderNo: string;
   status: OrderStatus;
   totalAmount: number;
+  originalAmount: number;
   createdAt: string;
   manufacturerOrgId: string;
   retailerOrgId: string;
@@ -44,6 +45,8 @@ export interface OrderItemRow {
    * `totalPrice`'a dahildir: ekran tabanı ve farkı ayrı satırda gösterir.
    */
   priceDifference: number;
+  /** Onaylanmış iade adedi (yok ise 0). */
+  returnedQty: number;
 }
 
 export interface OrderStatusLogItem {
@@ -72,6 +75,8 @@ export interface OrderDetail extends OrderRow {
   history: OrderStatusLogItem[];
   shipments: ChildShipment[];
   hasUnfulfilledBalance: boolean;
+  /** Onaylanmış iade toplamı (perakende fiyatı üzerinden, TL). */
+  returnTotalAmount: number;
 }
 
 /**
@@ -120,6 +125,35 @@ function retailAllIn(item: Row, diff: number): number | undefined {
   return undefined;
 }
 
+function getReturnedTotal(r: Row, iAmManufacturer: boolean): number {
+  const returns = Array.isArray(r.return_requests) ? r.return_requests : [];
+  let total = 0;
+  for (const retRaw of returns) {
+    const ret = nested(retRaw);
+    if (ret.status !== 'approved') continue;
+    if (iAmManufacturer) {
+      total += num(ret.approved_amount);
+    } else {
+      // Perakendeci için perakende fiyatları üzerinden iade toplamı hesapla
+      const retItems = Array.isArray(ret.items) ? ret.items : [];
+      const orderItems = Array.isArray(r.order_items) ? (r.order_items as unknown[]) : [];
+      for (const retItemRaw of retItems) {
+        const retItem = nested(retItemRaw);
+        const retItemId = str(retItem.order_item_id);
+        const orderItemRaw = orderItems.find(oi => str(nested(oi).id) === retItemId);
+        if (orderItemRaw) {
+          const orderItem = nested(orderItemRaw);
+          const diff = num(orderItem.price_difference);
+          const price = retailAllIn(orderItem, diff);
+          const unitPrice = price !== undefined && price > 0 ? price : (num(orderItem.supplier_unit_price) + diff);
+          total += unitPrice * num(retItem.quantity);
+        }
+      }
+    }
+  }
+  return round2(total);
+}
+
 export function toRow(raw: unknown, myOrgId: string): OrderRow {
   const r = raw as Row;
   const iAmManufacturer = r.manufacturer_org_id === myOrgId;
@@ -147,11 +181,23 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
     if (hasRetail && retailTotal > 0) totalAmount = round2(retailTotal);
   }
 
+  const originalAmount = totalAmount;
+
+  // İptal edilen sipariş için net tutar 0 olarak gösterilir.
+  if (r.status === 'cancelled') {
+    totalAmount = 0;
+  } else {
+    // İadeleri düş
+    const returnedTotal = getReturnedTotal(r, iAmManufacturer);
+    totalAmount = round2(totalAmount - returnedTotal);
+  }
+
   return {
     id: str(r.id),
     orderNo: str(r.order_no),
     status: r.status as OrderStatus,
     totalAmount,
+    originalAmount,
     createdAt: str(r.created_at),
     manufacturerOrgId: str(r.manufacturer_org_id),
     retailerOrgId: str(r.retailer_org_id),
@@ -172,7 +218,7 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
  * Perakendecide kayıtlı fiyat her şey dahildir, taban için fark geri çıkarılır;
  * üreticide `supplier_unit_price` zaten farksız durur.
  */
-export function toItem(raw: unknown, isRetailer: boolean): OrderItemRow {
+export function toItem(raw: unknown, isRetailer: boolean, returnedQty = 0): OrderItemRow {
   const i = nested(raw);
   const snap = nested(i.product_snapshot);
   const qty = num(i.quantity);
@@ -194,5 +240,6 @@ export function toItem(raw: unknown, isRetailer: boolean): OrderItemRow {
     totalPrice: round2((unitPrice + diff) * qty),
     customDescription: nullable(i.custom_description),
     priceDifference: num(i.price_difference),
+    returnedQty,
   };
 }

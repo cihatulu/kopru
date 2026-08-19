@@ -22,7 +22,7 @@ export function stockImportError(err: unknown): string {
     return 'Dosyada yeni ürün olarak açılacak satırlar var. Bunların hangi üreticinin kataloğuna yazılacağını seçmeniz gerekiyor.';
   }
   if (text.includes('CATALOG_NOT_ALLOWED')) {
-    return 'Seçtiğiniz üreticinin kataloğunu düzenleme izniniz yok. Tedarikçilerim ekranından o üreticinin ürün yönetimi anahtarını açın.';
+    return 'Seçtiğiniz üreticinin kataloğunu düzenleme izniniz yok. Tedarikçilerim ekranından o üreticinin ürün yönetimi anahtarını kapatın.';
   }
   if (text.includes('STOCK_NOT_ALLOWED')) {
     return 'Stok tutma yetkiniz yok. Misafir hesaplar yalnız tedarikçisinin stoğunu görebilir.';

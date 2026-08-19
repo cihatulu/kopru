@@ -124,5 +124,6 @@ export const STAFF_ERROR_MESSAGES: Record<string, string> = {
   INVALID_NAME: 'Ad soyad en az 2 karakter olmalı.',
   CODE_LIMIT_REACHED: 'Bu organizasyonda 99 kullanıcı sınırına ulaşıldı.',
   FORBIDDEN: 'Bu işlem için organizasyon sahibi olmanız gerekir.',
+  PASSWORD_ALREADY_TAKEN: 'Bu şifre organizasyondaki başka bir kullanıcı (Yetkili veya Personel) tarafından kullanılmaktadır. Lütfen farklı bir şifre giriniz.',
   DEFAULT: 'Personel eklenemedi. Tekrar deneyin.',
 };
