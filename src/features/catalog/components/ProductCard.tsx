@@ -11,15 +11,7 @@ interface Props {
 }
 
 /**
- * Katalog kartı.
- *
- * Maliyet ve marj BURADA GÖSTERİLMEZ. Katalog, ürünü "vitrinde" gösteren
- * ekrandır ve ekran paylaşımı/sunum sırasında açık kalması olağandır; maliyet
- * Ürün Yönetimi tablosunda kalır (A4'ün arayüz tarafındaki karşılığı).
- *
- * Görsel dil perakendeci kataloğuyla ORTAK: aynı kart iskeleti, aynı rozet
- * biçimi, aynı tipografi. Farklı olan yalnız içerik — burada sepet düğmesi
- * yoktur (üretici kendi ürününü sepete eklemez) ve tek stok rozeti vardır.
+ * Katalog kartı (Impeccable Design).
  */
 export function ProductCard({ product, groupName, stock, highlighted, onOpen }: Props) {
   const image = product.images[0];
@@ -28,11 +20,11 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
     <button
       type="button"
       onClick={() => onOpen(product)}
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white text-left transition-all duration-300 hover:shadow-xl ${
-        highlighted ? 'border-slate-900 ring-2 ring-slate-900' : 'border-slate-200 hover:border-slate-300'
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer ${
+        highlighted ? 'border-slate-900 ring-2 ring-slate-900' : 'border-slate-200/80 hover:border-slate-300'
       }`}
     >
-      <div className="relative flex h-56 w-full items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50">
+      <div className="relative flex h-60 w-full items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50">
         {image ? (
           <img
             src={image}
@@ -54,15 +46,15 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
           </svg>
         )}
 
-        <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-slate-100 bg-white/95 px-2.5 py-1 shadow-md backdrop-blur-md">
+        <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-slate-200/60 bg-white/90 px-2.5 py-1 shadow-xs backdrop-blur-md">
           <span
-            className={`size-1.5 rounded-full ${
+            className={`size-2 rounded-full ${
               stock === null ? 'bg-slate-400' : stock > 0 ? 'bg-emerald-500' : 'bg-red-500'
             }`}
           />
           <span
-            className={`text-[10px] font-extrabold uppercase ${
-              stock === null ? 'text-slate-500' : stock > 0 ? 'text-emerald-600' : 'text-red-500'
+            className={`text-[10px] font-extrabold uppercase tracking-wide ${
+              stock === null ? 'text-slate-500' : stock > 0 ? 'text-emerald-700' : 'text-red-600'
             }`}
           >
             {stock === null ? 'Stok: —' : `Stok: ${stock}`}
@@ -70,26 +62,25 @@ export function ProductCard({ product, groupName, stock, highlighted, onOpen }: 
         </span>
 
         {product.type === 'set' && (
-          <span className="absolute left-3 top-3 rounded-full bg-slate-900/85 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+          <span className="absolute left-3 top-3 rounded-full bg-slate-900/85 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white shadow-xs backdrop-blur-xs">
             Set
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        {/* Model kodu başlığın üstünde YAZILMAZ: ürün adı zaten modeli içeriyor. */}
         <h3
           title={product.name}
-          className="line-clamp-1 text-base font-extrabold leading-snug text-slate-800 transition-colors group-hover:text-brand-600"
+          className="line-clamp-1 text-base font-extrabold leading-snug text-slate-900 transition-colors group-hover:text-brand-600"
         >
           {product.name}
         </h3>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-brand-600">
+        <p className="mt-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
           {groupName ?? 'Gruplanmamış'}
         </p>
 
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-          <span className="text-lg font-black tabular-nums text-slate-950">
+          <span className="text-xl font-black tabular-nums text-slate-900">
             {formatMoney(product.supplierPrice)}
           </span>
         </div>

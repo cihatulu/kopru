@@ -15,6 +15,8 @@ import {
   EditCustomerDialog,
   ResetCustomerPasswordDialog,
   DeleteCounterpartyConfirm,
+  GuestCredentialsModal,
+  otherParty,
   type SupplierTab,
 } from '@/features/counterparties';
 
@@ -45,7 +47,11 @@ export default function TedarikcilerPage() {
         myOrgId={org.id}
         onRespond={(relationshipId, accept) => a.respond.mutate({ relationshipId, accept })}
       />
-      <OutgoingRequests requests={a.outgoing} myOrgId={org.id} />
+      <OutgoingRequests
+        requests={a.outgoing}
+        myOrgId={org.id}
+        onShowCredentials={(edge) => a.openGuestCredentials(edge, otherParty(edge, org.id))}
+      />
 
       <SupplierHeader onInvite={a.openInvite} onAdd={a.openAdd} />
 
@@ -145,6 +151,25 @@ export default function TedarikcilerPage() {
           }
           onClose={a.close}
           onSubmit={a.savePassword}
+        />
+      )}
+
+      {a.dialog === 'guestCredentials' && a.target && (
+        <GuestCredentialsModal
+          party={a.target.party}
+          myVknTc={org.vknTc ?? ''}
+          myKind={org.kind}
+          pending={a.resetPassword.isPending}
+          errorMessage={
+            a.resetPassword.error instanceof Error ? a.resetPassword.error.message : undefined
+          }
+          onClose={a.close}
+          onSubmit={async (newPassword) => {
+            await a.resetPassword.mutateAsync({
+              orgId: a.target.party.id,
+              newPassword,
+            });
+          }}
         />
       )}
 

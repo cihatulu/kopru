@@ -1,34 +1,122 @@
-/** Toplu stok güncellemenin dört adımı. */
-export function StockHowToBanner() {
+interface Props {
+  isRetailer?: boolean;
+}
+
+/** Toplu stok güncellemenin dört adımı (Impeccable 4-Step Process Grid). */
+export function StockHowToBanner({ isRetailer = false }: Props) {
   return (
-    <div className="flex items-start gap-3.5 rounded-2xl border border-blue-100 bg-blue-50/70 p-5 text-left">
-      <svg
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2.5}
-        stroke="currentColor"
-        aria-hidden="true"
-        className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-      </svg>
-      <div>
-        <h2 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-blue-900">
-          Nasıl Kullanılır?
-        </h2>
-        <ol className="list-inside list-decimal space-y-1.5 text-xs font-semibold leading-relaxed text-blue-800">
-          <li>
-            <strong>Şablon İndir</strong> ile güncel listenizi bilgisayarınıza kaydedin.
-          </li>
-          <li>
-            Excel'de açın, yalnız <strong>stok</strong> sütununu düzenleyin.
-          </li>
-          <li>Ürünleri gruplamak isterseniz <strong>Grup Adı</strong> sütununa grup adını yazın.</li>
-          <li>
-            <strong>Dosya Yükle</strong> ile geri yükleyin — Excel dosyasını olduğu gibi
-            verebilirsiniz, uygulamadan önce önizleme gösterilir.
-          </li>
-        </ol>
+    <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 sm:p-5 text-left shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3.5 border-b border-blue-100/80 pb-2.5">
+        <div className="flex items-center gap-2">
+          <div className="flex size-5 items-center justify-center rounded-full bg-blue-600 text-white text-[11px] font-bold">
+            ℹ️
+          </div>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-blue-900">
+            Stok Güncelleme Rehberi
+          </h2>
+        </div>
+        <span className="text-[11px] font-semibold text-blue-700">
+          4 Adımda Excel İle Toplu veya Tablodan Hızlı Güncelleme
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Adım 1 */}
+        <div className="rounded-xl border border-blue-200/60 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                1
+              </span>
+              <h3 className="text-xs font-bold text-slate-900">Şablon İndir</h3>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Şablon İndir</strong> butonuna basarak güncel listenizi Excel formatında bilgisayarınıza kaydedin.
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 2 */}
+        <div className="rounded-xl border border-blue-200/60 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                2
+              </span>
+              <h3 className="text-xs font-bold text-slate-900">Stokları Düzenle</h3>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Excel dosyasını açın ve yalnız <strong>stok</strong> sütunundaki adetleri güncelleyin.
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 3 */}
+        <div className="rounded-xl border border-blue-200/60 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                3
+              </span>
+              <h3 className="text-xs font-bold text-slate-900">
+                {isRetailer ? 'Tedarikçiyi Gör' : 'Grupları Belirle'}
+              </h3>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              {isRetailer
+                ? 'Excel dosyasında her ürünün hangi üreticiye ait olduğu belirtilir.'
+                : 'Ürünleri gruplamak isterseniz Grup Adı sütununa ilgili grup adını yazın.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Adım 4 */}
+        <div className="rounded-xl border border-blue-200/60 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="flex size-6 items-center justify-center rounded-lg bg-blue-50 text-blue-700 text-xs font-black border border-blue-100">
+                4
+              </span>
+              <h3 className="text-xs font-bold text-slate-900">Dosyayı Yükle</h3>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Dosya Yükle</strong> ile geri yükleyin; önizleme ekranında kontrol edip tek tıkla onaylayın.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bilgilendirme Notları */}
+      <div className="mt-3.5 grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+        {/* Manuel Stok Güncelleme */}
+        <div className="flex items-center gap-2.5 rounded-xl border border-blue-200/80 bg-blue-100/50 px-3.5 py-2.5 text-xs text-blue-950">
+          <span className="text-base shrink-0">✍️</span>
+          <p className="text-[11px] leading-relaxed text-blue-900">
+            <strong className="font-extrabold text-blue-950">Manuel Stok Güncelleme:</strong> Tablodaki stok rakamına tıklayın, güncel stok rakamını yazın, sayfada herhangi bir yeri tıklayın ve ardından <strong>"Evet, Güncelle"</strong>ye basın.
+          </p>
+        </div>
+
+        {/* Yeni Ürün Ekleme & DİKKAT Uyarısı */}
+        {isRetailer ? (
+          <div className="flex items-center gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-950">
+            <span className="text-base shrink-0">⚠️</span>
+            <p className="text-[11px] leading-relaxed text-amber-900">
+              <strong className="font-extrabold text-amber-950">DİKKAT:</strong> Aktif ve ürün yönetimi izni olan bir üretici bağlı değilse perakendeci yeni ürün yükleyemez. Yeni ürün için Excel'de <strong>Ürün ID</strong> sütununu boş bırakın.
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2.5 rounded-xl border border-blue-200/80 bg-blue-100/50 px-3.5 py-2.5 text-xs text-blue-950">
+            <div className="flex items-center gap-2">
+              <span className="text-base shrink-0">💡</span>
+              <p className="text-[11px] leading-relaxed text-blue-900">
+                <strong className="font-extrabold text-blue-950">Yeni Ürün Ekleme:</strong> Excel'de yeni ürün için <strong>Ürün ID</strong> sütununu <strong>boş</strong> bırakın.
+              </p>
+            </div>
+            <span className="text-[10px] font-bold text-blue-900 bg-white/85 px-2 py-0.5 rounded-md border border-blue-200/70 shrink-0">
+              Pasif Ürünler'de açılır
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

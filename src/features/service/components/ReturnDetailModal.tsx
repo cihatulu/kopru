@@ -32,7 +32,7 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
             </span>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors text-xl font-light cursor-pointer"
+              className="size-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors text-xl font-light cursor-pointer"
             >
               ×
             </button>
@@ -43,15 +43,27 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
         <div className="flex-1 overflow-y-auto p-6 space-y-5 text-xs">
           {/* Section 1: İADE EDİLEN ÜRÜNLER */}
           <div className="space-y-2">
-            <p className="font-extrabold text-[10px] uppercase tracking-wider text-slate-400">
-              İADE EDİLEN ÜRÜNLER
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="font-extrabold text-[10px] uppercase tracking-wider text-slate-400">
+                İADE EDİLEN ÜRÜNLER
+              </p>
+              <span className="font-bold text-slate-700 text-xs">
+                Toplam İade: <span className="font-black text-slate-900 tabular-nums">{formatMoney(request.totalAmount)}</span>
+              </span>
+            </div>
             <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-2">
               {request.items && request.items.length > 0 ? (
                 request.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-1">
-                    <span className="font-bold text-slate-800">{item.name}</span>
-                    <span className="font-medium text-slate-500">{item.quantity} adet</span>
+                  <div key={idx} className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 pb-1.5">
+                    <div>
+                      <span className="font-bold text-slate-800 block">{item.name}</span>
+                      <span className="text-[11px] text-slate-400">
+                        {item.quantity} adet {item.unitPrice > 0 && `× ${formatMoney(item.unitPrice)}`}
+                      </span>
+                    </div>
+                    <span className="font-black text-slate-900 tabular-nums text-xs">
+                      {formatMoney(item.totalPrice || item.unitPrice * item.quantity)}
+                    </span>
                   </div>
                 ))
               ) : (
@@ -79,7 +91,7 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
               {/* Step 1: Talep Oluşturuldu */}
               <div className="flex gap-3">
                 <div className="relative flex flex-col items-center">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400 mt-1" />
+                  <span className="size-2.5 rounded-full bg-slate-400 mt-1" />
                   {request.status !== 'pending' && (
                     <span className="w-0.5 flex-1 bg-slate-200 my-1" />
                   )}
@@ -94,7 +106,7 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
               {request.status === 'approved' && (
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1" />
+                    <span className="size-2.5 rounded-full bg-emerald-500 mt-1" />
                   </div>
                   <div>
                     <p className="font-bold text-emerald-700">Onaylandı</p>
@@ -113,7 +125,7 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
               {request.status === 'rejected' && (
                 <div className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 mt-1" />
+                    <span className="size-2.5 rounded-full bg-red-500 mt-1" />
                   </div>
                   <div>
                     <p className="font-bold text-red-700">Reddedildi</p>

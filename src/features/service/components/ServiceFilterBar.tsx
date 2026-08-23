@@ -20,12 +20,14 @@ export function ServiceFilterBar({ filters, statusOptions, partyOptions, onChang
   const inverted = isRangeInverted(filters);
 
   return (
-    <div className="space-y-2 rounded-xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-200">
+    <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex-1 min-w-[9rem]">
-          <span className="label">Durum</span>
+          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+            Durum
+          </span>
           <select
-            className="input"
+            className="input w-full text-xs font-semibold"
             value={filters.status}
             onChange={(e) => set({ status: e.target.value })}
           >
@@ -39,9 +41,11 @@ export function ServiceFilterBar({ filters, statusOptions, partyOptions, onChang
         </label>
 
         <label className="flex-1 min-w-[10rem]">
-          <span className="label">Karşı taraf</span>
+          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+            Karşı taraf
+          </span>
           <select
-            className="input"
+            className="input w-full text-xs font-semibold"
             value={filters.partyOrgId}
             onChange={(e) => set({ partyOrgId: e.target.value })}
           >
@@ -55,20 +59,24 @@ export function ServiceFilterBar({ filters, statusOptions, partyOptions, onChang
         </label>
 
         <label className="min-w-[8.5rem]">
-          <span className="label">Başlangıç</span>
+          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+            Başlangıç
+          </span>
           <input
             type="date"
-            className="input"
+            className="input w-full text-xs font-semibold"
             value={filters.from}
             onChange={(e) => set({ from: e.target.value })}
           />
         </label>
 
         <label className="min-w-[8.5rem]">
-          <span className="label">Bitiş</span>
+          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+            Bitiş
+          </span>
           <input
             type="date"
-            className="input"
+            className="input w-full text-xs font-semibold"
             value={filters.to}
             onChange={(e) => set({ to: e.target.value })}
           />
@@ -82,8 +90,8 @@ export function ServiceFilterBar({ filters, statusOptions, partyOptions, onChang
       </div>
 
       {inverted && (
-        <p role="alert" className="text-xs text-red-600">
-          Başlangıç tarihi bitişten sonra — bu aralıkta hiçbir kayıt bulunamaz.
+        <p role="alert" className="text-xs font-bold text-red-600">
+          ⚠️ Başlangıç tarihi bitişten sonra — bu aralıkta hiçbir kayıt bulunamaz.
         </p>
       )}
     </div>

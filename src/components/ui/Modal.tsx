@@ -107,7 +107,7 @@ export function Modal({
     >
       <Draggable
         nodeRef={nodeRef}
-        cancel="input,textarea,button,select,option,a,[role='button'],.cancel-drag"
+        cancel="input,textarea,button,select,option,a,[role='button'],.cancel-drag,.overflow-x-auto,table,thead,tbody,tr,th,td"
         bounds="parent"
       >
         <div

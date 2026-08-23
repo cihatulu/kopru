@@ -5,6 +5,7 @@ import {
   CsvImportDialog,
   EMPTY_STOCK_FILTERS,
   RetailerStockTable,
+  StockHowToBanner,
   filterStockRows,
   stockImportError,
   toXlsxBlob,
@@ -55,19 +56,18 @@ export default function RetailerStockPage() {
     );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 text-left">
       <div className="flex flex-col gap-4 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900">Stok Yönetimi</h1>
           <p className="mt-1 text-xs font-medium text-slate-500">
-            Kendi deponuzdaki adetleri girin. Bu sayılar yalnız size görünür; tedarikçinizin
-            stoğundan bağımsızdır.
+            Kendi deponuzdaki adetleri girin veya Excel ile toplu güncelleyin. Bu sayılar yalnız size görünür.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" size="sm" onClick={exportXlsx} disabled={all.length === 0}>
-            Excel Dışa Aktar
+            Şablon İndir
           </Button>
           <Button
             size="sm"
@@ -76,24 +76,26 @@ export default function RetailerStockPage() {
               setImporting(true);
             }}
           >
-            Excel ile Yükle
+            Dosya Yükle
           </Button>
         </div>
       </div>
 
-      <div className="relative rounded-2xl border border-slate-100 bg-white p-2 shadow-md">
+      <StockHowToBanner isRetailer />
+
+      <div className="relative rounded-2xl border border-slate-200/80 bg-white p-2 shadow-xs">
         <input
           type="text"
           placeholder="Ürün adı veya model ara..."
           aria-label="Ürün ara"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="block w-full rounded-xl border-none bg-transparent px-3 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0"
+          className="block w-full rounded-xl border-none bg-transparent px-3 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0"
         />
       </div>
 
       {list.isError && (
-        <p role="alert" className="text-sm font-bold text-red-600">
+        <p role="alert" className="text-xs font-bold text-red-600">
           Stok listesi yüklenemedi.
         </p>
       )}

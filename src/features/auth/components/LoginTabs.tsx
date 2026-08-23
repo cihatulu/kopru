@@ -23,6 +23,8 @@ export function LoginTabs({ active, onSelect }: Props) {
     >
       {LOGIN_TABS.map((tab) => {
         const isActive = tab.id === active;
+        const parts = tab.label.split(' ');
+
         return (
           <button
             key={tab.id}
@@ -30,10 +32,10 @@ export function LoginTabs({ active, onSelect }: Props) {
             type="button"
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
-            className={`flex flex-col items-center gap-1.5 border-b-2 px-1 py-3 transition-colors ${
+            className={`flex flex-col items-center justify-center gap-1.5 border-b-2 px-1 py-3 transition-colors ${
               isActive
-                ? 'border-brand-600 text-brand-700'
-                : 'border-transparent text-slate-400 hover:text-slate-700'
+                ? 'border-brand-600 text-brand-700 bg-brand-50/20'
+                : 'border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50/50'
             }`}
           >
             <svg
@@ -48,9 +50,16 @@ export function LoginTabs({ active, onSelect }: Props) {
             >
               <path d={ICONS[tab.id]} />
             </svg>
-            <span className="text-[10px] font-semibold leading-tight tracking-wide">
-              {tab.label}
-            </span>
+            <div className="flex flex-col items-center text-center text-[10px] font-bold leading-tight tracking-wider uppercase">
+              <span>{parts[0]}</span>
+              {parts.length > 1 ? (
+                <span>{parts.slice(1).join(' ')}</span>
+              ) : (
+                <span className="invisible select-none" aria-hidden="true">
+                  &nbsp;
+                </span>
+              )}
+            </div>
           </button>
         );
       })}

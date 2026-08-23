@@ -45,13 +45,17 @@ const ICONS = {
 
 export const MANUFACTURER_NAV: readonly NavItem[] = [
   { to: ROUTES.manufacturer, label: 'Anasayfa', icon: ICONS.home },
-  { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürün Yönetimi', icon: ICONS.box },
   {
     to: `${ROUTES.manufacturer}/katalog`,
     label: 'Ürün Kataloğu',
     icon: ICONS.catalog,
     slot: 'catalog-tree',
   },
+  { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler', icon: ICONS.cart },
+  { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },
+  { to: `${ROUTES.manufacturer}/ssh`, label: 'SSH Talepleri', icon: ICONS.wrench, module: 'ssh' },
+  { to: `${ROUTES.manufacturer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
+  { to: `${ROUTES.manufacturer}/urunler`, label: 'Ürün Yönetimi', icon: ICONS.box },
   { to: `${ROUTES.manufacturer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   {
     to: `${ROUTES.manufacturer}/musteriler`,
@@ -59,10 +63,7 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
     icon: ICONS.users,
     badgeKey: 'connections',
   },
-  { to: `${ROUTES.manufacturer}/cari`, label: 'Cari Hesaplar', icon: ICONS.wallet },
-  { to: `${ROUTES.manufacturer}/siparisler`, label: 'Siparişler', icon: ICONS.cart },
-  { to: `${ROUTES.manufacturer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
-  { to: `${ROUTES.manufacturer}/ssh`, label: 'SSH Talepleri', icon: ICONS.wrench, module: 'ssh' },
+  { to: `${ROUTES.manufacturer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
   { to: `${ROUTES.manufacturer}/raporlar`, label: 'Raporlar', icon: ICONS.report, module: 'reports' },
   {
     to: `${ROUTES.manufacturer}/duyurular`,
@@ -71,21 +72,17 @@ export const MANUFACTURER_NAV: readonly NavItem[] = [
     module: 'announcements',
     badgeKey: 'announcements',
   },
-  { to: `${ROUTES.manufacturer}/ekip`, label: 'Ekip Yönetimi', icon: ICONS.team },
 ] as const;
 
 export const RETAILER_NAV: readonly NavItem[] = [
   { to: ROUTES.retailer, label: 'Anasayfa', icon: ICONS.home },
-  { to: `${ROUTES.retailer}/urun-yonetimi`, label: 'Ürün Yönetimi', icon: ICONS.box },
   { to: `${ROUTES.retailer}/katalog`, label: 'Ürün Kataloğu', icon: ICONS.catalog, slot: 'catalog-tree' },
-  { to: `${ROUTES.retailer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   { to: `${ROUTES.retailer}/sepetim`, label: 'Sepetim', icon: ICONS.cart },
   { to: `${ROUTES.retailer}/siparisler`, label: 'Siparişlerim', icon: ICONS.cart },
   { to: `${ROUTES.retailer}/iade`, label: 'İade Talepleri', icon: ICONS.ret },
-  { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesabım', icon: ICONS.wallet },
   { to: `${ROUTES.retailer}/ssh`, label: 'SSH Talepleri', icon: ICONS.wrench, module: 'ssh' },
+  { to: `${ROUTES.retailer}/cari`, label: 'Cari Hesabım', icon: ICONS.wallet },
   { to: `${ROUTES.retailer}/finans`, label: 'Finans', icon: ICONS.wallet, module: 'finance' },
-  { to: `${ROUTES.retailer}/raporlar`, label: 'Raporlar', icon: ICONS.report, module: 'reports' },
   {
     to: `${ROUTES.retailer}/duyurular`,
     label: 'Duyurular',
@@ -93,6 +90,9 @@ export const RETAILER_NAV: readonly NavItem[] = [
     module: 'announcements',
     badgeKey: 'announcements',
   },
+  { to: `${ROUTES.retailer}/raporlar`, label: 'Raporlar', icon: ICONS.report, module: 'reports' },
+  { to: `${ROUTES.retailer}/urun-yonetimi`, label: 'Ürün Yönetimi', icon: ICONS.box },
+  { to: `${ROUTES.retailer}/stok`, label: 'Stok Yönetimi', icon: ICONS.stock },
   {
     to: `${ROUTES.retailer}/tedarikcilerim`,
     label: 'Tedarikçilerim',

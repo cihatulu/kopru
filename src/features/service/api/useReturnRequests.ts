@@ -19,6 +19,8 @@ export interface ReturnItemDetail {
   orderItemId: string;
   quantity: number;
   name: string;
+  unitPrice: number;
+  totalPrice: number;
 }
 
 export interface ReturnRequest extends Cursor {
@@ -27,6 +29,10 @@ export interface ReturnRequest extends Cursor {
   reason: string | null;
   /** Onay anında SİPARİŞTEN hesaplanan tutar; talep sahibi belirleyemez. */
   approvedAmount: number | null;
+  /** Talep anındaki kalemlerin toplam tutarı */
+  requestedAmount: number;
+  /** Tabloda ve ekranda gösterilecek geçerli iade tutarı (onaylıysa approvedAmount, değilse requestedAmount) */
+  totalAmount: number;
   createdAt: string;
   decidedAt: string | null;
   orderNo: string;
@@ -47,18 +53,27 @@ function toReturn(raw: unknown, myOrgId: string): ReturnRequest {
     const foundOrderItem = rawOrderItems.find((oi) => str(oi.id) === itemId);
     const snap = nested(foundOrderItem?.product_snapshot);
     const name = str(snap.name) || 'İade Ürün';
+    const unitPrice = Number(foundOrderItem?.supplier_unit_price ?? snap.supplier_price ?? 0);
     return {
       orderItemId: itemId,
       quantity: qty,
       name,
+      unitPrice,
+      totalPrice: unitPrice * qty,
     };
   });
+
+  const requestedAmount = items.reduce((sum, i) => sum + i.totalPrice, 0);
+  const approvedAmount = r.approved_amount == null ? null : Number(r.approved_amount);
+  const totalAmount = approvedAmount ?? requestedAmount;
 
   return {
     id: str(r.id),
     status: r.status as ReturnStatus,
     reason: nullableStr(r.reason),
-    approvedAmount: r.approved_amount == null ? null : Number(r.approved_amount),
+    approvedAmount,
+    requestedAmount,
+    totalAmount,
     createdAt: str(r.created_at),
     decidedAt: nullableStr(r.decided_at),
     orderNo: str(orderObj.order_no),

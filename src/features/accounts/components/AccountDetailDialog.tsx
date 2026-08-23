@@ -57,17 +57,17 @@ export function AccountDetailDialog({
   return (
     <Modal
       label={`${account.companyName} hesap detayı`}
-      panelClassName="flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-2xl"
+      panelClassName="flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-2xl overflow-hidden p-0"
       resizable
       onClose={onClose}
       closeDisabled={request.isPending}
     >
-      <header className="flex items-center justify-between border-b border-slate-100 px-6 py-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-base font-extrabold text-slate-900">{account.companyName}</h2>
-          <span className="font-mono text-xs text-slate-400">({account.vknTc})</span>
+      <header className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-6 py-3.5 bg-slate-50/50">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <h2 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">{account.companyName}</h2>
+          <span className="font-mono text-xs text-slate-400 shrink-0">({account.vknTc})</span>
           {cpIsSubscriber && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-700 shrink-0">
               Üye
             </span>
           )}
@@ -76,13 +76,13 @@ export function AccountDetailDialog({
           type="button"
           onClick={onClose}
           disabled={request.isPending}
-          className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 transition-colors"
+          className="rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 transition-colors cursor-pointer shrink-0"
         >
           Kapat
         </button>
       </header>
 
-      <div className="flex flex-1 min-h-0 flex-col gap-6 overflow-y-auto p-6 xl:flex-row">
+      <div className="flex flex-1 min-h-0 min-w-0 flex-col gap-6 overflow-y-auto overflow-x-hidden p-4 sm:p-6 xl:flex-row">
         {/* Sol: Ekstre */}
         <LedgerSection
           relationshipId={account.relationshipId}

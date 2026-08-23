@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { StatCard } from '@/components/ui/StatCard';
 import { useReturnRequests } from '../api/useReturnRequests';
 import { useDecideReturn } from '../api/useServiceMutations';
 import { EMPTY_FILTERS, type ServiceFilters } from '../domain/filters';
@@ -61,51 +62,36 @@ export function ReturnPanel({ myOrgId, myKind, partyOptions }: Props) {
         )}
       </div>
 
-      {/* 3D-Style Elevated Summary Stat Cards */}
+      {/* Unified Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: TOPLAM TALEP */}
-        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-slate-50/90 to-slate-100/70 border border-slate-200/80 shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">TOPLAM TALEP</p>
-            <p className="text-2xl font-black text-slate-900 mt-1.5">{stats.total}</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-white shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform font-bold text-sm">
-            📋
-          </div>
-        </div>
-
-        {/* Card 2: BEKLEYEN */}
-        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-amber-50/90 to-amber-100/60 border border-amber-200/80 shadow-[0_4px_12px_rgba(245,158,11,0.06)] hover:shadow-[0_8px_20px_rgba(245,158,11,0.12)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-extrabold text-amber-700 uppercase tracking-widest">BEKLEYEN</p>
-            <p className="text-2xl font-black text-amber-800 mt-1.5">{stats.pending}</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-amber-100/80 shadow-sm border border-amber-200/80 flex items-center justify-center text-amber-700 group-hover:scale-110 transition-transform font-bold text-sm">
-            ⏳
-          </div>
-        </div>
-
-        {/* Card 3: ONAYLANAN */}
-        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-emerald-50/90 to-emerald-100/60 border border-emerald-200/80 shadow-[0_4px_12px_rgba(16,185,129,0.06)] hover:shadow-[0_8px_20px_rgba(16,185,129,0.12)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-widest">ONAYLANAN</p>
-            <p className="text-2xl font-black text-emerald-800 mt-1.5">{stats.approved}</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-100/80 shadow-sm border border-emerald-200/80 flex items-center justify-center text-emerald-700 group-hover:scale-110 transition-transform font-bold text-sm">
-            ✅
-          </div>
-        </div>
-
-        {/* Card 4: REDDEDİLEN */}
-        <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-red-50/90 to-red-100/60 border border-red-200/80 shadow-[0_4px_12px_rgba(244,63,94,0.06)] hover:shadow-[0_8px_20px_rgba(244,63,94,0.12)] transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-extrabold text-red-700 uppercase tracking-widest">REDDEDİLEN</p>
-            <p className="text-2xl font-black text-red-800 mt-1.5">{stats.rejected}</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-red-100/80 shadow-sm border border-red-200/80 flex items-center justify-center text-red-700 group-hover:scale-110 transition-transform font-bold text-sm">
-            ❌
-          </div>
-        </div>
+        <StatCard
+          label="TOPLAM TALEP"
+          value={stats.total}
+          iconClass="bg-slate-100 text-slate-500"
+          valueClass="text-slate-900"
+          icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
+        />
+        <StatCard
+          label="BEKLEYEN"
+          value={stats.pending}
+          iconClass="bg-amber-50 text-amber-600"
+          valueClass="text-amber-700"
+          icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />}
+        />
+        <StatCard
+          label="ONAYLANAN"
+          value={stats.approved}
+          iconClass="bg-emerald-50 text-emerald-600"
+          valueClass="text-emerald-700"
+          icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
+        />
+        <StatCard
+          label="REDDEDİLEN"
+          value={stats.rejected}
+          iconClass="bg-red-50 text-red-600"
+          valueClass="text-red-700"
+          icon={<path strokeLinecap="round" strokeLinejoin="round" d="M10 14l4-4m0 4l-4-4m11 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
+        />
       </div>
 
       {/* Filter Bar */}

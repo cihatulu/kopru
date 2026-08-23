@@ -27,8 +27,8 @@ export function CustomerTable({
   onDelete,
 }: Props) {
   return (
-    <div className="w-full overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-xl">
-      <table className="min-w-[980px] divide-y divide-slate-100 lg:w-full">
+    <div className="w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+      <table className="min-w-[980px] divide-y divide-slate-100 lg:w-full text-xs">
         <thead className={THEAD}>
           <tr>
             <th className={TH}>Firma Bilgisi</th>
@@ -39,13 +39,9 @@ export function CustomerTable({
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-slate-100 bg-white">
+        <tbody className="divide-y divide-slate-100 bg-white font-medium text-slate-700">
           {edges.length === 0 && (
-            <tr>
-              <td colSpan={5} className="py-16 text-center text-sm italic text-slate-400">
-                Bu görünümde müşteri yok.
-              </td>
-            </tr>
+            <TableEmpty colSpan={5}>Bu görünümde müşteri bulunamadı.</TableEmpty>
           )}
 
           {edges.map((edge) => {
@@ -59,9 +55,9 @@ export function CustomerTable({
                 key={edge.id}
                 className={`transition-colors hover:bg-slate-50/40 ${active ? '' : 'bg-slate-50/40 opacity-70'}`}
               >
-                <td className="whitespace-nowrap px-6 py-3">
-                  <div className="flex items-center gap-4">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-brand-50 text-xs font-extrabold text-blue-600 shadow-sm">
+                <td className="whitespace-nowrap px-6 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-xs font-extrabold text-blue-600 shadow-xs">
                       {initials(p.companyName)}
                     </div>
                     <div className="min-w-0">
@@ -69,12 +65,12 @@ export function CustomerTable({
                       <p className="mt-0.5 text-xs text-slate-400">
                         Kodu: #{p.vknTc}
                         {p.isSubscriber && (
-                          <span className="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                          <span className="ml-2 rounded-full bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.2 text-[10px] font-bold text-emerald-700">
                             ÜYE
                           </span>
                         )}
                         {!active && (
-                          <span className="ml-2 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                          <span className="ml-2 rounded-full bg-slate-100 border border-slate-200 px-1.5 py-0.2 text-[10px] font-bold text-slate-600">
                             PASİF
                           </span>
                         )}
@@ -83,22 +79,22 @@ export function CustomerTable({
                   </div>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-3 text-sm font-bold text-slate-700">
+                <td className="whitespace-nowrap px-6 py-3.5 text-xs font-bold text-slate-800">
                   {p.authorizedName ?? '—'}
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-3 text-sm">
-                  <p className="text-slate-600">{p.email ?? '—'}</p>
-                  <p className="mt-0.5 text-slate-500">{p.phone ?? '—'}</p>
+                <td className="whitespace-nowrap px-6 py-3.5 text-xs">
+                  <p className="text-slate-700 font-medium">{p.email ?? '—'}</p>
+                  <p className="mt-0.5 text-slate-400">{p.phone ?? '—'}</p>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-3 text-center">
-                  <span className="inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                <td className="whitespace-nowrap px-6 py-3.5 text-center">
+                  <span className="inline-flex rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-extrabold text-emerald-700">
                     % {edge.discountRate}
                   </span>
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-3">
+                <td className="whitespace-nowrap px-6 py-3.5">
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     <Action
                       label="Düzenle"
@@ -139,14 +135,6 @@ export function CustomerTable({
   );
 }
 
-/**
- * Satır eylemi.
- *
- * Üç ton vardı — kehribar ("Düzenle", "Şifre Sıfırla"), düz beyaz ve
- * kırmızı — ve üçü de dolu zeminliydi. İki satırlık listede altı renkli
- * düğme yan yana geliyor, satırın kendisi okunmuyordu. Şimdi olağan
- * eylemler ikincil, yıkıcı olan zeminsiz kırmızı.
- */
 function Action({
   label,
   tone,

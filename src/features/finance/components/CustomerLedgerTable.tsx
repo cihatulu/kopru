@@ -18,6 +18,39 @@ interface Props {
   onShowCustomer: (ledger: CustomerLedger) => void;
 }
 
+interface GroupedRootOrder {
+  rootNo: string;
+  allNos: string[];
+  childCount: number;
+}
+
+function groupOrderNos(orderList: MinimalOrder[], orderIds: string[]): GroupedRootOrder[] {
+  const matchedOrders = orderList.filter((o) => orderIds.includes(o.id));
+  const rootMap = new Map<string, string[]>();
+
+  for (const o of matchedOrders) {
+    if (!o.orderNo) continue;
+    const rootNo = o.orderNo.split('/')[0].trim();
+    if (!rootMap.has(rootNo)) {
+      rootMap.set(rootNo, []);
+    }
+    rootMap.get(rootNo)!.push(o.orderNo);
+  }
+
+  const result: GroupedRootOrder[] = [];
+  for (const [rootNo, nos] of rootMap.entries()) {
+    const uniqueNos = Array.from(new Set(nos));
+    const childOrders = uniqueNos.filter((no) => no.includes('/'));
+    result.push({
+      rootNo,
+      allNos: uniqueNos,
+      childCount: childOrders.length,
+    });
+  }
+
+  return result;
+}
+
 export function CustomerLedgerTable({
   ledgers,
   orders,
@@ -47,10 +80,7 @@ export function CustomerLedgerTable({
           {ledgers.map((l) => {
             const key = customerLedgerKey(l);
             const isExpanded = expandedKeys.includes(key);
-            const orderNos = orders
-              .filter((o) => l.order_ids.includes(o.id))
-              .map((o) => o.orderNo)
-              .join(', ');
+            const groupedRoots = groupOrderNos(orders, l.order_ids);
 
             return (
               <React.Fragment key={key}>
@@ -58,7 +88,34 @@ export function CustomerLedgerTable({
                   <td className={`${TD} font-semibold text-slate-800`}>{l.customer_name}</td>
                   <td className={`${TD} text-slate-500`}>{l.customer_phone || '—'}</td>
                   <td className={`${TD} text-slate-600`}>{l.manufacturer_names.join(', ') || '—'}</td>
-                  <td className={`${TD} font-mono font-bold text-slate-800`}>{orderNos || '—'}</td>
+                  <td className={TD}>
+                    {groupedRoots.length === 0 ? (
+                      <span className="text-slate-400 font-normal">—</span>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {groupedRoots.map((group) => {
+                          const tooltipText =
+                            group.allNos.length > 1
+                              ? `Sipariş ve Sevkiyat Parçaları (${group.allNos.length}):\n• ${group.allNos.join('\n• ')}`
+                              : group.rootNo;
+                          return (
+                            <div
+                              key={group.rootNo}
+                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200/80 font-mono text-xs font-bold text-slate-800 cursor-help transition-all hover:bg-slate-200 hover:border-slate-300"
+                              title={tooltipText}
+                            >
+                              <span>{group.rootNo}</span>
+                              {group.childCount > 0 && (
+                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-700">
+                                  +{group.childCount}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </td>
                   <td className={`${TD} text-right font-semibold text-red-600`}>
                     {l.total_order_amount > 0 ? formatMoney(l.total_order_amount) : '—'}
                   </td>

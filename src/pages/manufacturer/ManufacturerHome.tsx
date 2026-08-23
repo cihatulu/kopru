@@ -70,15 +70,6 @@ export default function ManufacturerHome() {
         />
       </div>
 
-      {/*
-        Kartlar duyuru kartıyla AYNI grid'i paylaşmaz.
-
-        Önce dört kart tek grid'de duruyor, duyuru kartı da `row-span-2` ile
-        iki satıra yayılıyordu. Grid satırını yayılan öğe belirlediği için
-        duyuru sayısı arttıkça kartlar da uzuyor, rakam boşluğun ortasında
-        yalnız kalıyordu. Kartlar kendi iç grid'ine alınınca bağ koptu:
-        yükseklik artık yalnız kartın kendi içeriğinden gelir.
-      */}
       <div className="grid items-start gap-4 lg:grid-cols-[2fr_1fr]">
         <div className="grid gap-4 sm:grid-cols-2">
           <SummaryCard
@@ -111,18 +102,28 @@ export default function ManufacturerHome() {
           />
         </div>
 
-        <section className="rounded-2xl bg-white p-6 ring-1 ring-inset ring-slate-200">
-          <h2 className="text-base font-bold text-slate-900">Son Duyurular</h2>
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="size-2 rounded-full bg-blue-500" />
+            <h2 className="text-sm font-extrabold text-slate-900">Son Duyurular</h2>
+          </div>
           {latest.length === 0 ? (
-            <p className="py-12 text-center text-sm italic text-slate-400">
-              Henüz yayınlanmış bir duyurunuz bulunmuyor.
-            </p>
+            <div className="py-10 text-center">
+              <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-2">
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+              </div>
+              <p className="text-xs font-semibold text-slate-400">
+                Henüz yayınlanmış bir duyurunuz bulunmuyor.
+              </p>
+            </div>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3">
               {latest.map((a) => (
                 <li key={a.id} className="border-b border-slate-100 pb-3 last:border-0">
-                  <p className="text-sm font-medium text-slate-900">{a.title}</p>
-                  <p className="mt-0.5 text-xs text-slate-500">{formatDateTime(a.createdAt)}</p>
+                  <p className="text-xs font-bold text-slate-900">{a.title}</p>
+                  <p className="mt-0.5 text-[11px] font-medium text-slate-400">{formatDateTime(a.createdAt)}</p>
                 </li>
               ))}
             </ul>

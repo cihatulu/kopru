@@ -11,3 +11,4 @@ export {
 export type { LeadStatus } from './domain/lead';
 export { LeadTable } from './components/LeadTable';
 export { LeadDialog } from './components/LeadDialog';
+export { LeadApplicationModal } from './components/LeadApplicationModal';

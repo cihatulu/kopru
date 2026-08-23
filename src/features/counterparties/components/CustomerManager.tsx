@@ -23,8 +23,9 @@ import { ResetCustomerPasswordDialog } from './ResetCustomerPasswordDialog';
 import { IncomingRequests } from './IncomingRequests';
 import { OutgoingRequests } from './OutgoingRequests';
 import { DeleteCounterpartyConfirm } from './DeleteCounterpartyConfirm';
+import { GuestCredentialsModal } from './GuestCredentialsModal';
 
-type Dialog = 'none' | 'add' | 'edit' | 'password';
+type Dialog = 'none' | 'add' | 'edit' | 'password' | 'guestCredentials';
 
 /** Müşteri Yönetimi — durum burada, sayfa yalnız kompozisyon (A19/A20). */
 export function CustomerManager({
@@ -92,7 +93,14 @@ export function CustomerManager({
         }}
       />
 
-      <OutgoingRequests requests={outgoing} myOrgId={myOrgId} />
+      <OutgoingRequests
+        requests={outgoing}
+        myOrgId={myOrgId}
+        onShowCredentials={(e) => {
+          setTarget(e);
+          setDialog('guestCredentials');
+        }}
+      />
 
       {list.isPending ? (
         <div className="flex justify-center py-16">
@@ -193,6 +201,25 @@ export function CustomerManager({
               { onSuccess: () => setResetDone(true) },
             )
           }
+        />
+      )}
+
+      {dialog === 'guestCredentials' && target && (
+        <GuestCredentialsModal
+          party={otherParty(target, myOrgId)}
+          myVknTc={myVknTc}
+          myKind={myKind}
+          pending={resetPassword.isPending}
+          errorMessage={
+            resetPassword.error instanceof CustomerError ? resetPassword.error.message : undefined
+          }
+          onClose={close}
+          onSubmit={async (newPassword) => {
+            await resetPassword.mutateAsync({
+              orgId: otherParty(target, myOrgId).id,
+              newPassword,
+            });
+          }}
         />
       )}
 

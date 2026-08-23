@@ -1,4 +1,4 @@
-import { TBODY, TH, THEAD, TableEmpty } from '@/components/ui/Table';
+import { TBODY, THEAD, TableEmpty } from '@/components/ui/Table';
 import { RetailerProductRow } from './RetailerProductRow';
 import type { CatalogProduct } from '../api/useProducts';
 
@@ -18,6 +18,9 @@ interface Props {
   onUpdateRetailPrice: (productId: string, price: number) => void;
 }
 
+const TH_L = 'px-2.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap';
+const TH_R = 'px-2.5 py-2.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap';
+const TH_C = 'px-2 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap';
 
 export function RetailerProductTable(props: Props) {
   const { products, stock, retailPrices, groupNames, selectedIds } = props;
@@ -26,34 +29,34 @@ export function RetailerProductTable(props: Props) {
 
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-      <table className="min-w-[1000px] lg:min-w-full">
+      <table className="w-full min-w-[980px] border-collapse">
         <thead className={THEAD}>
           <tr>
             {props.canEdit && (
-              <th className="w-10 px-4 py-2.5 text-left">
+              <th className="w-8 px-2 py-2.5 text-center">
                 <input
                   type="checkbox"
                   aria-label="Tümünü seç"
                   checked={allSelected}
                   onChange={() => props.onToggleAll(ids, !allSelected)}
-                  className="size-4 cursor-pointer rounded border-slate-300 text-slate-900"
+                  className="size-3.5 cursor-pointer rounded border-slate-300 text-slate-900"
                 />
               </th>
             )}
-            <th className={TH}>Ürün Adı</th>
-            <th className={TH}>Grup</th>
-            <th className={TH}>Model</th>
-            <th className={TH}>Kategori</th>
-            <th className={TH}>Stok</th>
-            <th className={TH}>Alış Maliyeti</th>
-            <th className={TH}>Satış Fiyatınız</th>
-            <th className={TH}>Net Kâr</th>
-            <th className={`${TH} w-28`}>Kâr Marjı</th>
-            {props.canEdit && <th className={`${TH} w-24 text-center`}>İşlemler</th>}
+            <th className={TH_L}>Ürün Adı</th>
+            <th className={TH_L}>Grup</th>
+            <th className={TH_L}>Model</th>
+            <th className={TH_L}>Kategori</th>
+            <th className={TH_C}>Stok</th>
+            <th className={TH_R}>Alış Maliyeti</th>
+            <th className={TH_R}>Satış Fiyatınız</th>
+            <th className={TH_R}>Net Kâr</th>
+            <th className={TH_R}>Kâr Marjı</th>
+            {props.canEdit && <th className={TH_C}>İşlemler</th>}
           </tr>
         </thead>
 
-        <tbody className={`${TBODY} bg-white`}>
+        <tbody className={`${TBODY} bg-white divide-y divide-slate-100`}>
           {products.length === 0 && (
             <TableEmpty colSpan={props.canEdit ? 11 : 10}>
               Aradığınız kriterlere uygun ürün bulunamadı.

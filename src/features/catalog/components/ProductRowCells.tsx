@@ -16,22 +16,22 @@ const BAND_STYLE = {
   unknown: 'bg-slate-100 text-slate-500 border-slate-200',
 } as const;
 
-/** Görsel + ad + SET/PASİF rozetleri. Model kodu AYRI sütunda. */
+/** Görsel + ad + SET/PASİF rozetleri. */
 export function ProductIdentityCell({ product: p }: { product: CatalogProduct }) {
   return (
-    <td className="whitespace-nowrap px-4 py-3">
+    <td className="whitespace-nowrap px-2.5 py-2">
       <div className="flex items-center">
-        <div className="size-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
+        <div className="size-9 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50 shadow-xs">
           {p.images[0] ? (
-            <img src={p.images[0]} alt="" className="size-11 object-cover" />
+            <img src={p.images[0]} alt="" className="size-9 object-cover" />
           ) : (
-            <div className="flex size-11 items-center justify-center text-slate-300">
+            <div className="flex size-9 items-center justify-center text-slate-300">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.5}
-                className="size-5"
+                className="size-4"
                 aria-hidden="true"
               >
                 <path d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6" strokeLinejoin="round" />
@@ -39,28 +39,23 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
             </div>
           )}
         </div>
-        <div className="ml-3.5">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
-            {p.name}
+        <div className="ml-2.5 min-w-0 max-w-[180px]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 truncate" title={p.name}>
+            <span className="truncate">{p.name}</span>
             {p.type === 'set' && (
-              <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
+              <span className="shrink-0 rounded bg-brand-600 px-1 py-0.2 text-[8px] font-black uppercase tracking-widest text-white">
                 SET
               </span>
             )}
             {!p.isActive && (
-              <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-slate-600">
+              <span className="shrink-0 rounded bg-slate-200 px-1 py-0.2 text-[8px] font-black uppercase tracking-widest text-slate-600">
                 PASİF
               </span>
             )}
           </div>
-          {/*
-            Üyeliğe geçerken bu ürün mükerrer bir kayıtla birleştirildi ve
-            iki kaydın satış fiyatı farklıydı. En eskisininki tutuldu —
-            üretici hangisinin doğru olduğunu bilmeli.
-          */}
           {p.priceReviewNeeded && (
-            <p className="mt-1 text-[11px] font-semibold text-amber-700">
-              Fiyatı kontrol edin — birleştirmede farklı fiyatlar vardı
+            <p className="mt-0.5 text-[10px] font-semibold text-amber-700 truncate">
+              Fiyatı kontrol edin
             </p>
           )}
         </div>
@@ -69,29 +64,22 @@ export function ProductIdentityCell({ product: p }: { product: CatalogProduct })
   );
 }
 
-/**
- * Model kodu.
- *
- * Ad hücresinin altında ikinci satır olarak duruyordu; ürün adı zaten modeli
- * içerdiği için ("Pierro Sandalye" / "Model: Pierro") her satırda aynı kelime
- * iki kez okunuyordu. Kendi sütununa alındı: tekrar bitti, kod da sıralanıp
- * taranabilir bir alan oldu.
- */
+/** Model kodu. */
 export function ModelCell({ code }: { code: string }) {
   return (
-    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-slate-500">
+    <td className="whitespace-nowrap px-2 py-2 font-mono text-xs font-semibold text-slate-500">
       {code || '—'}
     </td>
   );
 }
 
-/** `null` adet "kayıt yok" demektir — "0 adet" ile aynı şey DEĞİL. */
+/** Stok seviyesi. */
 export function StockCell({ quantity }: { quantity: number | null }) {
   const level = stockLevel(quantity);
   return (
-    <td className="whitespace-nowrap px-4 py-3">
+    <td className="whitespace-nowrap px-2 py-2 text-center">
       <span
-        className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold ${STOCK_STYLE[level].chip}`}
+        className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-bold ${STOCK_STYLE[level].chip}`}
       >
         <span className={`size-1.5 rounded-full ${STOCK_STYLE[level].dot}`} />
         {quantity === null ? 'Kayıt yok' : `${quantity} Adet`}
@@ -104,7 +92,7 @@ export function StockCell({ quantity }: { quantity: number | null }) {
 export function ProfitCell({ profit }: { profit: number | null }) {
   return (
     <td
-      className={`whitespace-nowrap px-4 py-3 text-sm font-extrabold ${
+      className={`whitespace-nowrap px-2 py-2 text-xs font-bold text-right tabular-nums ${
         profit !== null && profit < 0 ? 'text-red-600' : 'text-emerald-600'
       }`}
     >
@@ -117,15 +105,15 @@ export function ProfitCell({ profit }: { profit: number | null }) {
 export function MarginCell({ margin }: { margin: number | null }) {
   const band = marginBand(margin);
   return (
-    <td className="whitespace-nowrap px-3 py-3 text-sm">
-      <div className="flex items-center gap-2">
+    <td className="whitespace-nowrap px-2 py-2 text-xs text-right tabular-nums">
+      <div className="flex items-center justify-end gap-1.5">
         {margin !== null && (
-          <span className={`font-extrabold ${margin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-            {margin.toFixed(1)}%
+          <span className={`font-bold ${margin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+            %{margin.toFixed(1)}
           </span>
         )}
         <span
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide ${BAND_STYLE[band]}`}
+          className={`rounded-md border px-1.5 py-0.2 text-[9px] font-bold tracking-wide ${BAND_STYLE[band]}`}
         >
           {MARGIN_LABEL[band]}
         </span>
@@ -143,15 +131,15 @@ export function SelectCell({
   product: CatalogProduct;
   selected: boolean;
   onToggle: (id: string) => void;
-}) {
+  }) {
   return (
-    <td className="whitespace-nowrap px-4 py-3">
+    <td className="whitespace-nowrap px-2 py-2 text-center w-8">
       <input
         type="checkbox"
         aria-label={`${p.name} seç`}
         checked={selected}
         onChange={() => onToggle(p.id)}
-        className="size-4 cursor-pointer rounded border-slate-300 text-slate-900"
+        className="size-3.5 cursor-pointer rounded border-slate-300 text-slate-900"
       />
     </td>
   );

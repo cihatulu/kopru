@@ -1,17 +1,18 @@
 import { otherParty, type Edge } from '../domain/counterparty';
+import { Button } from '@/components/ui/Button';
 
 interface Props {
   requests: Edge[];
   myOrgId: string;
+  onShowCredentials?: (edge: Edge) => void;
 }
 
 /**
  * Gönderdiğimiz, karşı tarafın onayını bekleyen bağlantı istekleri.
  *
- * Yalnız bilgilendirme — bu listede eylem yoktur. İstek ancak karşı taraf
- * abone olduğunda beklemeye düşer; misafir taraf için ilişki anında kurulur.
+ * Misafir taraf için giriş bilgileri/şifre yenileme eylemi sunulur.
  */
-export function OutgoingRequests({ requests, myOrgId }: Props) {
+export function OutgoingRequests({ requests, myOrgId, onShowCredentials }: Props) {
   if (requests.length === 0) return null;
 
   return (
@@ -26,7 +27,7 @@ export function OutgoingRequests({ requests, myOrgId }: Props) {
           return (
             <li
               key={edge.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4 shadow-sm"
             >
               <div className="min-w-0">
                 <p className="font-medium text-slate-900">{party.companyName}</p>
@@ -37,9 +38,21 @@ export function OutgoingRequests({ requests, myOrgId }: Props) {
                     : 'Giriş bilgileriyle sisteme ilk kez girdiğinde otomatik olarak onaylanacaktır.'}
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                Onay Bekliyor
-              </span>
+              <div className="flex items-center gap-2.5">
+                {!party.isSubscriber && onShowCredentials && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold"
+                    onClick={() => onShowCredentials(edge)}
+                  >
+                    🔑 Giriş Bilgileri / Şifre
+                  </Button>
+                )}
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  Onay Bekliyor
+                </span>
+              </div>
             </li>
           );
         })}

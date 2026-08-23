@@ -78,3 +78,4 @@ export { SupplierTable } from './components/SupplierTable';
 export { SupplierHeader } from './components/SupplierHeader';
 export { SupplierTabs } from './components/SupplierTabs';
 export type { SupplierTab } from './components/SupplierTabs';
+export { GuestCredentialsModal } from './components/GuestCredentialsModal';

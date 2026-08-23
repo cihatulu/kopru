@@ -9,7 +9,7 @@ import {
 import { useToggleCatalogPermission } from './useCatalogPermission';
 import { isIncomingRequest, isOutgoingRequest, type Edge, type Party } from '../domain/counterparty';
 
-export type SupplierDialog = 'none' | 'add' | 'invite' | 'edit' | 'password';
+export type SupplierDialog = 'none' | 'add' | 'invite' | 'edit' | 'password' | 'guestCredentials';
 
 interface EditValues {
   companyName: string;
@@ -76,6 +76,10 @@ export function useCounterpartyActions(myOrgId: string) {
     openPassword: (edge: Edge, party: Party) => {
       setTarget({ edge, party });
       setDialog('password');
+    },
+    openGuestCredentials: (edge: Edge, party: Party) => {
+      setTarget({ edge, party });
+      setDialog('guestCredentials');
     },
     askDelete: setDeleteTargetId,
     cancelDelete: () => setDeleteTargetId(null),
