@@ -44,9 +44,19 @@ export function Modal({
   children,
 }: Props) {
   const [width, setWidth] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const panelRef  = useRef<HTMLDivElement>(null);
   const resizeState = useRef<{ side: 'left' | 'right'; startX: number; startWidth: number } | null>(null);
   const nodeRef   = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window));
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (closeDisabled) return;
@@ -107,6 +117,7 @@ export function Modal({
     >
       <Draggable
         nodeRef={nodeRef}
+        disabled={isMobile}
         cancel="input,textarea,button,select,option,a,[role='button'],.cancel-drag,.overflow-x-auto,table,thead,tbody,tr,th,td"
         bounds="parent"
       >
@@ -123,7 +134,7 @@ export function Modal({
           className={
             (panelClassName ??
               'max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-100/80 text-left') +
-            ' no-scrollbar cursor-move relative'
+            (isMobile ? ' relative touch-pan-y' : ' no-scrollbar cursor-move relative')
           }
         >
           {/* Kenar tutamaçları — yalnız resizable modallarda */}
