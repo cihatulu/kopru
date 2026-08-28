@@ -6,6 +6,8 @@ export { useAuthSession, useAuthListener } from './api/useAuthSession';
 export type { SessionUser, SessionOrg } from './api/useAuthSession';
 export { useLogin, useLogout, LoginError } from './api/useLogin';
 export type { LoginRequest } from './api/useLogin';
+export { useChangeSelfPassword, ChangePasswordError } from './api/useChangeSelfPassword';
+export type { ChangeSelfPasswordInput } from './api/useChangeSelfPassword';
 
 export { LOGIN_TABS, tabById, usesEmail, isGuestTab } from './domain/portals';
 export type { Portal, LoginMode, LoginTab, TabId } from './domain/portals';
@@ -14,3 +16,4 @@ export type { LoginForm } from './domain/loginSchema';
 
 export { LoginTabs } from './components/LoginTabs';
 export { LoginFormFields } from './components/LoginFormFields';
+export { ChangePasswordModal } from './components/ChangePasswordModal';

@@ -9,6 +9,7 @@ import type { LedgerEntry, LedgerItemSnapshot } from '../domain/ledgerEntry';
  */
 function ItemLine({ item }: { item: LedgerItemSnapshot }) {
   const diff = item.priceDifference;
+  const unitTotal = (item.unitPrice ?? 0) + (diff ?? 0);
 
   return (
     <li className="text-slate-800 font-medium">
@@ -20,8 +21,16 @@ function ItemLine({ item }: { item: LedgerItemSnapshot }) {
           x{item.quantity}
         </span>
         {item.unitPrice !== undefined && item.unitPrice > 0 && (
-          <span className="text-slate-500 text-[11px] ml-auto font-mono">
-            {formatMoney(item.unitPrice)} / Adet
+          <span className="text-slate-600 text-[11px] ml-auto font-mono font-semibold">
+            {diff ? (
+              <>
+                <span className="text-slate-400">{formatMoney(item.unitPrice)}</span>
+                <span className={diff > 0 ? 'text-amber-600 ml-1' : 'text-emerald-600 ml-1'}>
+                  ({diff > 0 ? '+' : ''}{formatMoney(diff)}) =
+                </span>{' '}
+              </>
+            ) : null}
+            {formatMoney(unitTotal)} / Adet
           </span>
         )}
       </div>

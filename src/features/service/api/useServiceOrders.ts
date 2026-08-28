@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type { OrderStatus } from '@/features/orders';
 import type { SshOrderSummary } from '../domain/sshDraft';
 
@@ -12,7 +13,7 @@ const COLUMNS = `
   created_at,
   relationship_id,
   manufacturer:manufacturer_org_id(company_name),
-  order_items(id, product_id, quantity, supplier_unit_price, product_snapshot),
+  order_items(id, product_id, quantity, supplier_unit_price, price_difference, custom_description, product_snapshot),
   ssh_requests(id, status),
   return_requests(id, status, items)
 `;
@@ -40,6 +41,9 @@ export interface ServiceOrderItem {
   code: string;
   quantity: number;
   unitPrice: number;
+  baseUnitPrice: number;
+  priceDifference: number;
+  customDescription: string | null;
 }
 
 export interface ServiceOrder extends SshOrderSummary {
@@ -82,13 +86,18 @@ function toOrder(raw: unknown): ServiceOrder {
         const itemId = str(i.id);
         const originalQty = Number(i.quantity ?? 1);
         const returnedQty = returnedQtys[itemId] || 0;
+        const baseUnitPrice = Number(i.supplier_unit_price ?? 0);
+        const priceDifference = Number(i.price_difference ?? 0);
         return {
           id: itemId,
           productId: str(i.product_id),
           name: str(snap.name) || 'Ürün',
           code: str(snap.code),
           quantity: Math.max(0, originalQty - returnedQty),
-          unitPrice: Number(i.supplier_unit_price ?? 0),
+          unitPrice: baseUnitPrice + priceDifference,
+          baseUnitPrice,
+          priceDifference,
+          customDescription: typeof i.custom_description === 'string' ? i.custom_description : null,
         };
       })
       .filter((item) => item.quantity > 0),
@@ -103,16 +112,35 @@ function toOrder(raw: unknown): ServiceOrder {
  * siparişe ne servis ne iade açılabilir.
  */
 export function useServiceOrders(myOrgId: string, statuses?: OrderStatus[]) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+  const kind = org?.kind;
+
   return useQuery({
-    queryKey: ['service', 'orders', myOrgId, statuses ?? 'all'],
+    queryKey: ['service', 'orders', myOrgId, isSubscriber, activeSponsorId, statuses ?? 'all'],
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<ServiceOrder[]> => {
-      let q = supabase.from('orders').select(COLUMNS).order('created_at', { ascending: false });
+      let q = supabase.from('orders').select(COLUMNS);
+
+      if (!isSubscriber && activeSponsorId) {
+        if (kind === 'manufacturer') {
+          q = q.eq('manufacturer_org_id', myOrgId).eq('retailer_org_id', activeSponsorId);
+        } else {
+          q = q.eq('retailer_org_id', myOrgId).eq('manufacturer_org_id', activeSponsorId);
+        }
+      } else if (myOrgId) {
+        q = q.or(`manufacturer_org_id.eq.${myOrgId},retailer_org_id.eq.${myOrgId}`);
+      }
+
       q = statuses ? q.in('status', statuses) : q.neq('status', 'cancelled');
+      q = q.order('created_at', { ascending: false });
 
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []).map(toOrder);
     },
+    enabled: !!myOrgId,
   });
 }

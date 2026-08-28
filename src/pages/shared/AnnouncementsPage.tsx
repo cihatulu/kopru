@@ -42,7 +42,9 @@ export default function AnnouncementsPage() {
   // Aynı perakendeci birden çok ilişkiden gelebilir; kimliğe göre tekilleştirilir.
   const retailers = useMemo(() => {
     if (!myOrgId) return [];
-    const edges = (counterparties.data?.pages.flat() ?? []).filter((e) => e.status === 'active');
+    const edges = (counterparties.data?.pages.flat() ?? []).filter(
+      (e) => e.status === 'active' && (e.manufacturerOrgId === myOrgId || e.retailer.id === myOrgId),
+    );
     const byId = new Map(
       edges.map((e) => {
         const p = otherParty(e, myOrgId);

@@ -27,8 +27,10 @@ export default function CatalogPage() {
     ? edges.find((e) => e.manufacturerOrgId === paramManufacturerId || e.id === paramManufacturerId)
     : undefined;
 
+  const supplierOrgIds = useMemo(() => edges.map((e) => e.manufacturerOrgId), [edges]);
+
   const list = useProducts({
-    ...(selected ? { ownerOrgId: selected.manufacturerOrgId } : {}),
+    ...(selected ? { ownerOrgId: selected.manufacturerOrgId } : { ownerOrgIds: supplierOrgIds }),
     activeOnly: true,
   });
 
@@ -46,8 +48,10 @@ export default function CatalogPage() {
     [edges],
   );
 
-  // Gruplara, kategorilere veya tek ürüne göre süzme
+  // Gruplara, kategorilere, tek ürüne ve aktif tedarikçi izolasyonuna göre süzme
   const products = allProducts.filter((p) => {
+    // İzolasyon kuralı: Perakendeci katalogda YALNIZ aktif ilişkisi olan tedarikçilerin ürünlerini görebilir
+    if (!edges.some((e) => e.manufacturerOrgId === p.ownerOrgId)) return false;
     if (paramGroupId && paramGroupId !== 'yok' && p.groupId !== paramGroupId) return false;
     if (paramGroupId === 'yok' && p.groupId !== null) return false;
     if (paramCategory && paramCategory !== 'yok' && p.category !== paramCategory) return false;

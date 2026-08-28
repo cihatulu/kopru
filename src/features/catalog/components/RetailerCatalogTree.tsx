@@ -93,7 +93,12 @@ function ManufacturerBranch({
 
 export function RetailerCatalogTree() {
   const suppliers = useCounterparties();
-  const edges: Edge[] = (suppliers.data?.pages.flat() ?? []).filter((e) => e.status === 'active');
+  const rawEdges: Edge[] = (suppliers.data?.pages.flat() ?? []).filter((e) => e.status === 'active');
+
+  // Aynı üretici birden fazla kez listelenmesin (A20).
+  const edges: Edge[] = Array.from(
+    new Map(rawEdges.map((e) => [e.manufacturerOrgId, e])).values(),
+  ).sort((a, b) => a.manufacturer.companyName.localeCompare(b.manufacturer.companyName, 'tr'));
 
   const navigate = useNavigate();
   const [params] = useSearchParams();

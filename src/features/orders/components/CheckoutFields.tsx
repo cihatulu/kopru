@@ -64,8 +64,10 @@ export function CheckoutFields({
               'Numara girilirse, sipariş sonrası müşteriye WhatsApp ile takip linki gönderilir.',
             )}
             {text('email', 'Müşteri E-posta', 'Örn: ahmet@example.com')}
-            {text('province', 'İl', 'Örn: İstanbul')}
-            {text('district', 'İlçe', 'Örn: Kadıköy')}
+            <div className="grid grid-cols-2 gap-3">
+              {text('province', 'İl', 'Örn: İstanbul')}
+              {text('district', 'İlçe', 'Örn: Kadıköy')}
+            </div>
 
             <div>
               <label htmlFor="cart-address" className={LABEL}>
@@ -85,7 +87,7 @@ export function CheckoutFields({
 
         <div>
           <label htmlFor="cart-note" className={LABEL}>
-            Sipariş Açıklaması / Notu {OPT}
+            Sipariş Notu {OPT}
           </label>
           <textarea
             id="cart-note"

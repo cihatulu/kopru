@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import { filterOps, type ServiceFilters } from '../domain/filters';
 import { sshCode } from '../domain/sshCode';
 import {
@@ -92,11 +93,16 @@ function toSsh(raw: unknown, myOrgId: string): SshRequest {
 }
 
 /**
- * SSH talepleri — keyset sayfalama (A17). RLS kapsamı daraltır (A16).
+ * SSH talepleri — keyset sayfalama (A17).
  */
 export function useSshRequests(myOrgId: string, myKind: string, filters: ServiceFilters) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+
   return useInfiniteQuery({
-    queryKey: ['service', 'ssh', myOrgId, filters],
+    queryKey: ['service', 'ssh', myOrgId, isSubscriber, activeSponsorId, filters],
     staleTime: STALE_TIME.transactional,
     initialPageParam: undefined as Cursor | undefined,
     queryFn: async ({ pageParam }) => {
@@ -104,7 +110,24 @@ export function useSshRequests(myOrgId: string, myKind: string, filters: Service
 
       let q = supabase
         .from('ssh_requests')
-        .select(SSH_COLUMNS)
+        .select(SSH_COLUMNS);
+
+      // Misafir İzolasyonu (KÖPRÜ Altın Kuralı):
+      if (!isSubscriber && activeSponsorId) {
+        if (myKind === 'manufacturer') {
+          q = q.eq('manufacturer_org_id', myOrgId).eq('retailer_org_id', activeSponsorId);
+        } else {
+          q = q.eq('retailer_org_id', myOrgId).eq('manufacturer_org_id', activeSponsorId);
+        }
+      } else if (myOrgId) {
+        if (myKind === 'manufacturer') {
+          q = q.eq('manufacturer_org_id', myOrgId);
+        } else {
+          q = q.eq('retailer_org_id', myOrgId);
+        }
+      }
+
+      q = q
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(PAGE_SIZE);
@@ -122,5 +145,6 @@ export function useSshRequests(myOrgId: string, myKind: string, filters: Service
       return (data ?? []).map((raw) => toSsh(raw, myOrgId));
     },
     getNextPageParam: (last) => next(last, PAGE_SIZE),
+    enabled: !!myOrgId,
   });
 }

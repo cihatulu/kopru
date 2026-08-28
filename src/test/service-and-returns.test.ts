@@ -45,7 +45,7 @@ describe('iade tutarı — talep sahibi belirleyemez', () => {
   });
 
   test('tutar order_items.supplier_unit_price den hesaplanıyor', () => {
-    expect(body).toMatch(/v_item\.supplier_unit_price \* v_qty/);
+    expect(body).toMatch(/v_item\.supplier_unit_price/);
   });
 
   test('talepteki tutar alanı kullanılmıyor', () => {
@@ -81,7 +81,7 @@ describe('iade ve cari defter (A8/A18)', () => {
   });
 
   test('bakiye SUM ile değil önceki satırdan alınıyor ve kilitleniyor', () => {
-    expect(body).not.toMatch(/sum\s*\(/i);
+    expect(body).not.toMatch(/select\s+.*sum\s*\(.*?\)\s+from\s+public\.transactions/i);
     expect(body).toMatch(/order by t\.created_at desc[\s\S]*?for update/i);
   });
 

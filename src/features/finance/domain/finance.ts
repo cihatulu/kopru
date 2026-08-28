@@ -66,7 +66,11 @@ export interface MinimalOrder {
   totalAmount: number;
   customerName: string | null;
   customerPhone: string | null;
+  customerEmail?: string | null;
+  customerProvince?: string | null;
+  customerDistrict?: string | null;
   customerAddress: string | null;
+  orderToken?: string | null;
   manufacturerName: string | null;
   items: MinimalOrderItem[];
 }

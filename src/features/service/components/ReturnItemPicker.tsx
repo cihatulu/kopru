@@ -27,8 +27,21 @@ export function ReturnItemPicker({ items, quantities, onChange }: Props) {
           >
             <div className="space-y-0.5">
               <p className="text-xs font-bold text-slate-900">{item.name}</p>
-              <p className="text-[11px] text-slate-400 font-mono">{item.code}</p>
+              {item.customDescription && (
+                <p className="text-[10px] font-semibold text-amber-900 bg-amber-50 rounded px-1.5 py-0.5 inline-block border border-amber-200/60">
+                  Talep: {item.customDescription}
+                </p>
+              )}
+              {item.code && <p className="text-[11px] text-slate-400 font-mono">{item.code}</p>}
               <p className="text-[11px] font-semibold text-emerald-600">
+                {item.priceDifference !== 0 && (
+                  <>
+                    <span className="text-slate-400">{formatMoney(item.baseUnitPrice)}</span>
+                    <span className={item.priceDifference > 0 ? 'text-amber-600 ml-1' : 'text-emerald-600 ml-1'}>
+                      ({item.priceDifference > 0 ? '+' : ''}{formatMoney(item.priceDifference)}) =
+                    </span>{' '}
+                  </>
+                )}
                 {formatMoney(item.unitPrice)} / Adet
               </p>
             </div>

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type {
   ManufacturerReportsData,
   ReportOrder,
@@ -48,21 +49,34 @@ function toOrder(raw: unknown): ReportOrder {
 }
 
 export function useManufacturerReports(myOrgId: string | undefined, enabled: boolean) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+
   return useQuery({
-    queryKey: ['reports', 'manufacturer-detailed', myOrgId],
+    queryKey: ['reports', 'manufacturer-detailed', myOrgId, isSubscriber, activeSponsorId],
     enabled: !!myOrgId && enabled,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<ManufacturerReportsData> => {
       const orgId = myOrgId ?? '';
 
+      let ordersQuery = supabase.from('orders').select(ORDER_COLUMNS).eq('manufacturer_org_id', orgId);
+      let sshQuery = supabase
+        .from('ssh_requests')
+        .select('id, product_id, status, created_at, order_id')
+        .eq('manufacturer_org_id', orgId);
+
+      if (!isSubscriber && activeSponsorId) {
+        ordersQuery = ordersQuery.eq('retailer_org_id', activeSponsorId);
+        sshQuery = sshQuery.eq('retailer_org_id', activeSponsorId);
+      }
+
       const [resProducts, resCosts, resOrders, resSsh] = await Promise.all([
         supabase.from('products').select('id, name, code, category, images').eq('owner_org_id', orgId),
         supabase.from('product_costs').select('product_id, cost_price').eq('owner_org_id', orgId),
-        supabase.from('orders').select(ORDER_COLUMNS).eq('manufacturer_org_id', orgId),
-        supabase
-          .from('ssh_requests')
-          .select('id, product_id, status, created_at, order_id')
-          .eq('manufacturer_org_id', orgId),
+        ordersQuery,
+        sshQuery,
       ]);
 
       if (resProducts.error) throw resProducts.error;

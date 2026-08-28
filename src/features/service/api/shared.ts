@@ -10,7 +10,7 @@ export const SSH_COLUMNS =
 export const RETURN_COLUMNS =
   'id, status, reason, items, approved_amount, created_at, decided_at, order_id, ' +
   'manufacturer_org_id, retailer_org_id, relationship_id, ' +
-  'orders(order_no, order_items(id, supplier_unit_price, product_snapshot)), manufacturer:manufacturer_org_id(company_name), ' +
+  'orders(order_no, order_items(id, supplier_unit_price, price_difference, custom_description, product_snapshot)), manufacturer:manufacturer_org_id(company_name), ' +
   'retailer:retailer_org_id(company_name)';
 
 export type SshStatus = 'bekliyor' | 'inceleniyor' | 'parca_gonderildi' | 'tamamlandi' | 'iptal';

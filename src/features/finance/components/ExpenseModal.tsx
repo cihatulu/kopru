@@ -32,7 +32,12 @@ export function ExpenseModal({ onClose, onSubmit, isSubmitting, error }: Props) 
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit({ type: 'expense', method: 'cash', amount: Number(amount), description });
+            onSubmit({
+              type: 'expense',
+              method: 'cash',
+              amount: Math.round((Number(amount) || 0) * 100) / 100,
+              description,
+            });
           }}
           className="space-y-4"
         >
@@ -42,9 +47,11 @@ export function ExpenseModal({ onClose, onSubmit, isSubmitting, error }: Props) 
             </label>
             <input
               type="number"
+              step="0.01"
               className="input w-full"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              onWheel={(e) => e.currentTarget.blur()}
               placeholder="Örn: 1500"
               min="0"
               required

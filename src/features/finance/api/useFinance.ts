@@ -87,7 +87,7 @@ export function useAllOrders() {
         .select(
           // Müşteri carisi KATMAN 3'ten kurulur; kalem satış fiyatları da çekilir.
           `id, order_no, created_at, updated_at, parent_order_id, total_amount, status,
-           customer_name, customer_phone, customer_address,
+           customer_name, customer_phone, customer_email, customer_province, customer_district, customer_address, order_token,
            order_items(id, quantity, supplier_unit_price, product_snapshot,
                        order_item_retail_prices(retail_unit_price)),
            manufacturer:organizations!orders_manufacturer_org_id_fkey(company_name)`,
@@ -121,7 +121,11 @@ export function useAllOrders() {
           totalAmount: orderRetailTotal(o.order_items, Number(o.total_amount)),
           customerName: o.customer_name,
           customerPhone: o.customer_phone,
+          customerEmail: o.customer_email || null,
+          customerProvince: o.customer_province || null,
+          customerDistrict: o.customer_district || null,
           customerAddress: o.customer_address,
+          orderToken: o.order_token || null,
           manufacturerName: o.manufacturer?.company_name || null,
           items: orderItems,
         };

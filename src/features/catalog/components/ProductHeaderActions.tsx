@@ -24,16 +24,7 @@ const ACTIVITY_OPTIONS = [
 ] as const;
 
 /**
- * Başlık aksiyonları.
- *
- * Beş kontrol üç ayrı yükseklikteydi (36 / 44 / 44 ama farklı dolgu) ve
- * dördü kendi rengini seçmişti: koyu gri, beyaz, indigo, siyah. Şimdi
- * hepsi 36px ve TEK birincil eylem var — "Ürün Ekle". Gerisi yardımcı.
- *
- * "Ürün Ekle (4)" ve "Set Oluştur (1)" sayaçları düğmelerden alındı:
- * düğmenin dört ürün ekleyeceğini ima ediyorlardı ve aynı sayı hemen
- * altındaki "Toplam Ürün" kartında zaten yazıyor. "Gruba Ekle (0)"
- * sayacı KALDI — orada sayı seçili ürün adedi, yani eylemin kendisi.
+ * Başlık aksiyonları — Mobilde tam simetrik, eşit boyutlu 2 satırlı grid düzeni.
  */
 export function ProductHeaderActions({
   activity,
@@ -55,39 +46,63 @@ export function ProductHeaderActions({
       title="Ürün Yönetimi"
       description="Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin."
       actions={
-        <>
-          <Segmented
-            label="Ürün durumu"
-            options={ACTIVITY_OPTIONS}
-            value={activity}
-            onChange={onActivityChange}
-          />
+        <div className="flex flex-col gap-2 w-full sm:w-auto">
+          {/* 1. Satır: Aktif/Pasif Seçici (Sol) + Ürün Ekle Butonu (Sağ) — 2 Eşit Kolon */}
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:w-auto">
+            <div className="w-full">
+              <Segmented
+                label="Ürün durumu"
+                options={ACTIVITY_OPTIONS}
+                value={activity}
+                onChange={onActivityChange}
+              />
+            </div>
 
+            {!isGuest && (
+              <Button
+                size="sm"
+                onClick={onAddProduct}
+                className="w-full h-9 justify-center text-xs font-bold"
+              >
+                + Ürün Ekle
+              </Button>
+            )}
+          </div>
+
+          {/* 2. Satır: Grup ve Set İşlemleri — 3 Eşit Kolon */}
           {!isGuest && (
-            <>
+            <div className="grid grid-cols-3 gap-2 w-full sm:flex sm:items-center sm:w-auto">
               <Button
                 variant="secondary"
+                size="sm"
                 onClick={onAssignGroup}
                 disabled={selectedCount === 0}
                 title={selectedCount === 0 ? 'Önce tablodan ürün seçin' : undefined}
+                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
               >
-                Gruba Ekle ({selectedCount})
-              </Button>
-              <Button variant="secondary" onClick={onManageGroups}>
-                Grupları Yönet{groups.length > 0 ? ` (${groups.length})` : ''}
+                Gruba Ekle {selectedCount > 0 ? `(${selectedCount})` : ''}
               </Button>
               <Button
                 variant="secondary"
+                size="sm"
+                onClick={onManageGroups}
+                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
+              >
+                Gruplar{groups.length > 0 ? ` (${groups.length})` : ''}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={onCreateSet}
                 disabled={!canCreateSet}
                 title={canCreateSet ? undefined : 'Takım oluşturmak için en az 2 tek ürün seçin'}
+                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
               >
                 Set Oluştur
               </Button>
-              <Button onClick={onAddProduct}>Ürün Ekle</Button>
-            </>
+            </div>
           )}
-        </>
+        </div>
       }
     />
   );

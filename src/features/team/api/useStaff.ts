@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type { StaffMember, StaffRole } from '../domain/staff';
 
 interface DbUserRow {
@@ -25,14 +26,21 @@ interface DbUserRow {
  * `staff_scope`'un kendi RLS'ini devreye sokar ve sahibin gördüğü sayı ile
  * personelin gördüğü sayı sessizce ayrışırdı.
  */
-export function useStaff() {
+export function useStaff(orgIdParam?: string) {
+  const { data: session } = useAuthSession();
+  const orgId = orgIdParam ?? session?.org?.id;
+
   return useQuery({
-    queryKey: ['team', 'staff'],
+    queryKey: ['team', 'staff', orgId],
+    enabled: !!orgId,
     staleTime: STALE_TIME.session,
     queryFn: async (): Promise<StaffMember[]> => {
+      if (!orgId) return [];
+
       const { data, error } = await supabase
         .from('users')
         .select('id, user_code, full_name, email, phone, org_role, is_active, created_at, organizations!users_org_id_fkey(authorized_name)')
+        .eq('org_id', orgId)
         .order('created_at', { ascending: true });
       if (error) throw error;
 

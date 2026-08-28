@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import { filterOps, type ServiceFilters } from '../domain/filters';
 import {
   RETURN_COLUMNS,
@@ -20,6 +21,9 @@ export interface ReturnItemDetail {
   quantity: number;
   name: string;
   unitPrice: number;
+  baseUnitPrice?: number;
+  priceDifference?: number;
+  customDescription?: string | null;
   totalPrice: number;
 }
 
@@ -53,12 +57,18 @@ function toReturn(raw: unknown, myOrgId: string): ReturnRequest {
     const foundOrderItem = rawOrderItems.find((oi) => str(oi.id) === itemId);
     const snap = nested(foundOrderItem?.product_snapshot);
     const name = str(snap.name) || 'İade Ürün';
-    const unitPrice = Number(foundOrderItem?.supplier_unit_price ?? snap.supplier_price ?? 0);
+    const baseUnitPrice = Number(foundOrderItem?.supplier_unit_price ?? snap.supplier_price ?? 0);
+    const priceDifference = Number(foundOrderItem?.price_difference ?? 0);
+    const customDescription = typeof foundOrderItem?.custom_description === 'string' ? foundOrderItem.custom_description : null;
+    const unitPrice = baseUnitPrice + priceDifference;
     return {
       orderItemId: itemId,
       quantity: qty,
       name,
       unitPrice,
+      baseUnitPrice,
+      priceDifference,
+      customDescription,
       totalPrice: unitPrice * qty,
     };
   });
@@ -85,8 +95,13 @@ function toReturn(raw: unknown, myOrgId: string): ReturnRequest {
 
 /** İade talepleri — keyset sayfalama (A17), filtreler sorgu anahtarında. */
 export function useReturnRequests(myOrgId: string, myKind: string, filters: ServiceFilters) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+
   return useInfiniteQuery({
-    queryKey: ['service', 'returns', myOrgId, filters],
+    queryKey: ['service', 'returns', myOrgId, isSubscriber, activeSponsorId, filters],
     staleTime: STALE_TIME.transactional,
     initialPageParam: undefined as Cursor | undefined,
     queryFn: async ({ pageParam }) => {
@@ -94,7 +109,24 @@ export function useReturnRequests(myOrgId: string, myKind: string, filters: Serv
 
       let q = supabase
         .from('return_requests')
-        .select(RETURN_COLUMNS)
+        .select(RETURN_COLUMNS);
+
+      // Misafir İzolasyonu (KÖPRÜ Altın Kuralı):
+      if (!isSubscriber && activeSponsorId) {
+        if (myKind === 'manufacturer') {
+          q = q.eq('manufacturer_org_id', myOrgId).eq('retailer_org_id', activeSponsorId);
+        } else {
+          q = q.eq('retailer_org_id', myOrgId).eq('manufacturer_org_id', activeSponsorId);
+        }
+      } else if (myOrgId) {
+        if (myKind === 'manufacturer') {
+          q = q.eq('manufacturer_org_id', myOrgId);
+        } else {
+          q = q.eq('retailer_org_id', myOrgId);
+        }
+      }
+
+      q = q
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(PAGE_SIZE);
@@ -109,5 +141,6 @@ export function useReturnRequests(myOrgId: string, myKind: string, filters: Serv
       return (data ?? []).map((raw) => toReturn(raw, myOrgId));
     },
     getNextPageParam: (last) => next(last, PAGE_SIZE),
+    enabled: !!myOrgId,
   });
 }

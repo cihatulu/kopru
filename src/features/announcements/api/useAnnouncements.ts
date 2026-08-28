@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import { PAGE_SIZE, STALE_TIME, ORG_KIND } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 
 // Gömme ipucu KISIT ADIYLA verilir: `announcements` → `organizations` yabancı
 // anahtarı A15 gereği bileşiktir ((owner_org_id, owner_kind) → (id, kind)) ve
@@ -60,19 +61,37 @@ function isDismissed(raw: unknown): boolean {
   return (read as Row).dismissed === true;
 }
 
-/** Duyurular — RLS hem sahibi hem aktif müşteriyi kapsar. Keyset sayfalama (A17). */
+/** Duyurular — Keyset sayfalama (A17). */
 export function useAnnouncements() {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const orgId = org?.id;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+  const kind = org?.kind;
+
   return useInfiniteQuery({
-    queryKey: ['announcements'],
+    queryKey: ['announcements', orgId, isSubscriber, activeSponsorId, kind],
     staleTime: STALE_TIME.transactional,
     initialPageParam: undefined as { createdAt: string; id: string } | undefined,
     queryFn: async ({ pageParam }) => {
       let q = supabase
         .from('announcements')
-        .select(COLUMNS)
+        .select(COLUMNS);
+
+      if (kind === ORG_KIND.manufacturer) {
+        // Üretici yalnız kendi duyurularını görür
+        q = q.eq('owner_org_id', orgId ?? '');
+      } else if (!isSubscriber && activeSponsorId) {
+        // Misafir perakendeci yalnız sponsoru olan üreticinin duyurularını görür
+        q = q.eq('owner_org_id', activeSponsorId);
+      }
+
+      q = q
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(PAGE_SIZE);
+
       if (pageParam) {
         q = q.or(
           `created_at.lt.${pageParam.createdAt},and(created_at.eq.${pageParam.createdAt},id.lt.${pageParam.id})`,
@@ -88,5 +107,6 @@ export function useAnnouncements() {
       const l = last[last.length - 1];
       return l ? { createdAt: l.createdAt, id: l.id } : undefined;
     },
+    enabled: !!orgId,
   });
 }

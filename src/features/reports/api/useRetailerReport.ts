@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type { DateRange, RetailerReportOrder } from '../domain/retailerReport';
 
 // Açık kolon listesi (kilitli kural 19). `salesperson_user_id` → `users` tek
@@ -70,25 +71,35 @@ function toOrder(raw: unknown): RetailerReportOrder {
 
 /**
  * Perakendecinin dönem raporu.
- *
- * Kapsamı RLS belirler (A16); ayrıca org süzgeci yazılmaz. Bitiş günü DAHİL
- * olsun diye ertesi günün başına kadar sorgulanır.
  */
 export function useRetailerReport(range: DateRange, enabled: boolean) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const orgId = org?.id;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+
   return useQuery({
-    queryKey: ['reports', 'retailer-period', range.start, range.end],
-    enabled,
+    queryKey: ['reports', 'retailer-period', orgId, isSubscriber, activeSponsorId, range.start, range.end],
+    enabled: enabled && !!orgId,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<RetailerReportOrder[]> => {
       const endExclusive = new Date(`${range.end}T00:00:00Z`);
       endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('orders')
         .select(COLUMNS)
+        .eq('retailer_org_id', orgId ?? '')
         .gte('created_at', `${range.start}T00:00:00Z`)
         .lt('created_at', endExclusive.toISOString())
         .order('created_at', { ascending: false });
+
+      if (!isSubscriber && activeSponsorId) {
+        q = q.eq('manufacturer_org_id', activeSponsorId);
+      }
+
+      const { data, error } = await q;
 
       if (error) throw error;
       return (data ?? []).map(toOrder);

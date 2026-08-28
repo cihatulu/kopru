@@ -55,7 +55,7 @@ export function CustomerManager({
   const respond = useRespondToConnection();
   const del = useDeleteCounterparty();
 
-  const all = list.data?.pages.flat() ?? [];
+  const all = (list.data?.pages.flat() ?? []).filter((e) => e.manufacturerOrgId === myOrgId);
   const incoming = all.filter((e) => isIncomingRequest(e, myOrgId));
   const outgoing = all.filter((e) => isOutgoingRequest(e, myOrgId));
   // Bekleyen istekler üstteki bölümde ayrıca gösteriliyor; tabloda tekrar etmez.

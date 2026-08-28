@@ -54,11 +54,32 @@ export function ReturnDetailModal({ request, myOrgId, busyId, onClose, onDecide 
             <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-2">
               {request.items && request.items.length > 0 ? (
                 request.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 pb-1.5">
-                    <div>
+                  <div key={idx} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0">
+                    <div className="space-y-0.5">
                       <span className="font-bold text-slate-800 block">{item.name}</span>
-                      <span className="text-[11px] text-slate-400">
-                        {item.quantity} adet {item.unitPrice > 0 && `× ${formatMoney(item.unitPrice)}`}
+                      {item.customDescription && (
+                        <p className="text-[10px] font-semibold text-amber-900 bg-amber-50 rounded px-1.5 py-0.5 inline-block border border-amber-200/60">
+                          Talep: {item.customDescription}
+                        </p>
+                      )}
+                      <span className="text-[11px] text-slate-500 block">
+                        {item.quantity} adet{' '}
+                        {item.unitPrice > 0 && (
+                          <>
+                            ×{' '}
+                            {item.priceDifference ? (
+                              <span className="font-mono">
+                                {formatMoney(item.baseUnitPrice ?? item.unitPrice)}
+                                <span className={item.priceDifference > 0 ? 'text-amber-600 ml-1 font-bold' : 'text-emerald-600 ml-1 font-bold'}>
+                                  ({item.priceDifference > 0 ? '+' : ''}{formatMoney(item.priceDifference)})
+                                </span>{' '}
+                                = {formatMoney(item.unitPrice)}
+                              </span>
+                            ) : (
+                              formatMoney(item.unitPrice)
+                            )}
+                          </>
+                        )}
                       </span>
                     </div>
                     <span className="font-black text-slate-900 tabular-nums text-xs">

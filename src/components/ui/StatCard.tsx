@@ -7,10 +7,10 @@ import type { ReactNode } from 'react';
   Renk yalnız DURUMU ve ANLAMI (neutral / attention / positive / negative) taşır.
 */
 export const STAT_SURFACE =
-  'flex min-w-0 flex-col rounded-2xl border bg-white p-4 sm:p-5 text-left shadow-xs hover:shadow-md transition-all duration-200';
+  'flex min-w-0 flex-col rounded-2xl border bg-white p-4 sm:p-5 text-left shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] hover:shadow-md hover:shadow-slate-200/80 hover:-translate-y-0.5 transition-all duration-200';
 
-/** Seçilebilir olmayan kartların kenarlığı. */
-export const STAT_BORDER = 'border-slate-200/80 hover:border-slate-300';
+/** Seçilebilir olmayan kartların kenarlığı (Daha belirgin ve 3 boyutlu derinlik). */
+export const STAT_BORDER = 'border-slate-200/90 hover:border-slate-300 ring-1 ring-slate-900/[0.04]';
 
 interface Props {
   label: string;

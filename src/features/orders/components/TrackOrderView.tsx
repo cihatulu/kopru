@@ -76,10 +76,12 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   const activeSources = sources.filter((s) => s.status !== 'cancelled');
   const activeOriginal = aggregate(activeSources, 'original');
   const effectiveTotal = linesTotal(activeOriginal);
-  const paid = order.payments
-    .filter(isCustomerPayment)
-    .reduce((sum, p) => sum + Number(p.amount), 0);
-  const balance = effectiveTotal - paid;
+  const paid = Math.round(
+    order.payments
+      .filter(isCustomerPayment)
+      .reduce((sum, p) => sum + Number(p.amount), 0) * 100,
+  ) / 100;
+  const balance = Math.round((effectiveTotal - paid) * 100) / 100;
   const changed = remaining.length !== original.length ||
     remaining.some((r, i) => r.quantity !== original[i]?.quantity);
 
@@ -321,7 +323,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                               <span className="font-mono text-slate-400 text-[10px]">{formatDateTime(h.created_at)}</span>
                             </div>
                             {h.note && (
-                              <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px]">
+                              <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px] break-words break-all [overflow-wrap:anywhere]">
                                 {h.note}
                               </p>
                             )}
@@ -334,7 +336,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                   {s.note && (!s.history || s.history.length === 0) && (
                     <div className="mt-2 text-xs bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-2">
                       <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px] block mb-0.5">Açıklama / Sevk Kodu</span>
-                      <p className="text-slate-650 leading-relaxed font-medium whitespace-pre-line">{s.note}</p>
+                      <p className="text-slate-650 leading-relaxed font-medium whitespace-pre-line break-words break-all [overflow-wrap:anywhere]">{s.note}</p>
                     </div>
                   )}
                 </div>
@@ -361,10 +363,10 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                     : 'bg-blue-500 ring-blue-100';
 
               return (
-                <div key={`${h.created_at}-${i}`} className="relative">
+                <div key={`${h.created_at}-${i}`} className="relative min-w-0">
                   <span className={`absolute -left-[31px] top-1.5 size-2.5 rounded-full ${dotColor} ring-4`} />
                   
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] font-bold text-slate-400 font-mono">
                       {formatDateTime(h.created_at)}
                     </span>
@@ -379,7 +381,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                       )}
                     </div>
                     {h.note && (
-                      <p className="mt-1 text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2.5 leading-relaxed whitespace-pre-line font-medium">
+                      <p className="mt-1 text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2.5 leading-relaxed whitespace-pre-line font-medium break-words break-all [overflow-wrap:anywhere]">
                         {h.note}
                       </p>
                     )}

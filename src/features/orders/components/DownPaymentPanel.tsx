@@ -62,6 +62,7 @@ export function DownPaymentPanel({ disabled, method, amount, onMethodChange, onA
             min="0"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
+            onWheel={(e) => e.currentTarget.blur()}
             placeholder="Örn: 5000"
             className={FIELD}
           />

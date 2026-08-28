@@ -32,7 +32,11 @@ export function PageHeader({ title, description, actions, children }: Props) {
           varsayılanına bırakılır — burada boyut dayatmak, çağrı yerinin
           `size` vermesini anlamsız kılardı.
         */}
-        {actions !== undefined && <div className="flex items-center gap-2">{actions}</div>}
+        {actions !== undefined && (
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+            {actions}
+          </div>
+        )}
       </div>
       {children !== undefined && <div className="mt-4">{children}</div>}
     </div>

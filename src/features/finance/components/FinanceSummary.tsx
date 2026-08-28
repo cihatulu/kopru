@@ -5,11 +5,26 @@ import type { FinanceTab } from '../api/useFinancePage';
 // Sınıf adları TAM yazılır: Tailwind kaynağı statik tarar, `bg-${tone}-50`
 // gibi bir kurgu üretim derlemesinde hiç oluşmaz.
 const TONE = {
-  blue: { box: 'bg-blue-50/50 border-blue-100/50', label: 'text-blue-600' },
-  emerald: { box: 'bg-emerald-50/50 border-emerald-100/50', label: 'text-emerald-600' },
-  red: { box: 'bg-red-50/50 border-red-100/50', label: 'text-red-600' },
-  neutral: { box: 'bg-slate-50 border-slate-200', label: 'text-slate-500' },
-  orange: { box: 'bg-orange-50/50 border-orange-100/50', label: 'text-orange-600' },
+  blue: {
+    box: 'bg-white border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] hover:shadow-md hover:shadow-slate-200/80 transition-all',
+    label: 'text-blue-600',
+  },
+  emerald: {
+    box: 'bg-white border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] hover:shadow-md hover:shadow-slate-200/80 transition-all',
+    label: 'text-emerald-600',
+  },
+  red: {
+    box: 'bg-white border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] hover:shadow-md hover:shadow-slate-200/80 transition-all',
+    label: 'text-red-600',
+  },
+  neutral: {
+    box: 'bg-white border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] hover:shadow-md hover:shadow-slate-200/80 transition-all',
+    label: 'text-slate-500',
+  },
+  orange: {
+    box: 'bg-white border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_4px_-1px_rgba(0,0,0,0.04)] ring-1 ring-slate-900/[0.04] hover:shadow-md hover:shadow-slate-200/80 transition-all',
+    label: 'text-orange-600',
+  },
 } as const;
 
 interface CardProps {
@@ -21,12 +36,12 @@ interface CardProps {
 }
 
 const Card = ({ tone, label, value, hint, big }: CardProps) => (
-  <div className={`p-4 rounded-xl border ${TONE[tone].box}`}>
-    <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${TONE[tone].label}`}>{label}</p>
-    <p className={`${big ? 'text-2xl font-black' : 'text-xl font-bold'} text-slate-900`}>
+  <div className={`p-4 sm:p-5 rounded-2xl border ${TONE[tone].box}`}>
+    <p className={`text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${TONE[tone].label}`}>{label}</p>
+    <p className={`${big ? 'text-2xl sm:text-3xl font-black' : 'text-xl sm:text-2xl font-black'} text-slate-900 font-mono tracking-tight`}>
       {formatMoney(value)}
     </p>
-    {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
+    {hint && <p className="text-[11px] font-medium text-slate-400 mt-1.5">{hint}</p>}
   </div>
 );
 

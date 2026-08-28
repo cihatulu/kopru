@@ -10,7 +10,7 @@ import { navFor } from './navigation';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-/** retici ve perakendeci panellerinin ortak iskeleti  sol men + st ubuk. */
+/** Üretici ve perakendeci panellerinin ortak iskeleti — sol menü + üst çubuk. */
 export default function PanelLayout() {
   const { data: user } = useAuthSession();
   const org = user?.org;
@@ -29,7 +29,7 @@ export default function PanelLayout() {
   return <ManufacturerPanel />;
 }
 
-/** Perakendeci paneli  CartProvider icinde calisir. */
+/** Perakendeci paneli — CartProvider içinde çalışır. */
 function RetailerPanel() {
   const { data: user } = useAuthSession();
   const logout = useLogout();
@@ -45,7 +45,7 @@ function RetailerPanel() {
   const items = navFor(org.kind, org.enabledModules, user.orgRole, org.isSubscriber);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50">
       <Sidebar
         items={items}
         companyName={org.companyName}
@@ -54,7 +54,7 @@ function RetailerPanel() {
         badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <RetailerCatalogTree /> }}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         <TopBar
           panelLabel="Perakendeci Paneli"
           userName={user.fullName ?? org.companyName}
@@ -85,7 +85,7 @@ function RetailerPanel() {
   );
 }
 
-/** Uretici paneli. */
+/** Üretici paneli. */
 function ManufacturerPanel() {
   const { data: user } = useAuthSession();
   const logout = useLogout();
@@ -108,7 +108,7 @@ function ManufacturerPanel() {
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50">
       <Sidebar
         items={items}
         companyName={org.companyName}
@@ -117,7 +117,7 @@ function ManufacturerPanel() {
         badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <CatalogTree ownerOrgId={org.id} /> }}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         <TopBar
           panelLabel="Üretici Paneli"
           userName={user.fullName ?? org.companyName}

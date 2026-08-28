@@ -37,7 +37,9 @@ export default function CounterpartiesPage() {
   const org = user?.org;
   if (!org) return null;
 
-  const edges: Edge[] = list.data?.pages.flat() ?? [];
+  const edges: Edge[] = (list.data?.pages.flat() ?? []).filter(
+    (e) => e.retailer.id === org.id || e.manufacturerOrgId === org.id,
+  );
   const incoming = edges.filter((e) => isIncomingRequest(e, org.id));
 
   const closeDialog = () => {

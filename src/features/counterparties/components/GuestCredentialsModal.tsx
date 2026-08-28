@@ -3,7 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ORG_KIND, PASSWORD_MIN_LENGTH, PASSWORD_REGEX, type OrgKind } from '@/constants';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
-import type { OrgParty } from '../domain/counterparty';
+import type { Party } from '../domain/counterparty';
 
 function generateRandomPassword(): string {
   const letters = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -19,7 +19,7 @@ function generateRandomPassword(): string {
 }
 
 interface Props {
-  party: OrgParty;
+  party: Party;
   myVknTc: string;
   myKind?: OrgKind;
   pending: boolean;
@@ -45,7 +45,6 @@ export function GuestCredentialsModal({
   const sponsorLabel = isRetailer ? 'Sizi Ekleyen Perakendecinin VKN\'si:' : 'Sizi Ekleyen Üreticinin VKN\'si:';
   const sponsorShort = isRetailer ? 'Perakendeci VKN:' : 'Üretici VKN:';
   const targetNoun = isRetailer ? 'üreticinin' : 'perakendecinin';
-  const targetNounCap = isRetailer ? 'Üretici' : 'Perakendeci';
   const loginPath = isRetailer ? '/m' : '/r';
 
   const strong = password.length >= PASSWORD_MIN_LENGTH && PASSWORD_REGEX.test(password);

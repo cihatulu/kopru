@@ -6,7 +6,7 @@ export default function SshPage() {
   const { data: user } = useAuthSession();
   const orgId = user?.org?.id ?? '';
   const edges: Edge[] = (useCounterparties().data?.pages.flat() ?? []).filter(
-    (e) => e.status === 'active',
+    (e) => e.status === 'active' && (e.manufacturerOrgId === orgId || e.retailer.id === orgId),
   );
 
   if (!user?.org) return null;

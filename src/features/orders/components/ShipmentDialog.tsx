@@ -25,8 +25,10 @@ export function ShipmentDialog({ order, pending, errorMessage, onClose, onShip }
 
   const isFull = order.items.every((i) => (quantities[i.id] ?? 0) === i.quantity);
   const nothing = order.items.every((i) => (quantities[i.id] ?? 0) <= 0);
+  
+  const unitTotal = (i: (typeof order.items)[0]) => i.supplierUnitPrice + (i.priceDifference ?? 0);
   const shippedTotal = order.items.reduce(
-    (sum, i) => sum + i.supplierUnitPrice * (quantities[i.id] ?? 0),
+    (sum, i) => sum + unitTotal(i) * (quantities[i.id] ?? 0),
     0,
   );
 
@@ -46,13 +48,28 @@ export function ShipmentDialog({ order, pending, errorMessage, onClose, onShip }
         </p>
       </div>
 
-      <ul className="space-y-3">
+      <ul className="space-y-3 divide-y divide-slate-100">
         {order.items.map((i) => (
-          <li key={i.id} className="flex items-center justify-between gap-3">
+          <li key={i.id} className="flex items-center justify-between gap-3 pt-2.5 first:pt-0">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-900">{i.name}</p>
-              <p className="text-xs text-slate-500">
+              <p className="truncate text-sm font-bold text-slate-900">{i.name}</p>
+              {i.customDescription && (
+                <p className="text-[10px] font-semibold text-amber-900 bg-amber-50 rounded px-1.5 py-0.5 inline-block mt-0.5 border border-amber-200/60">
+                  Talep: {i.customDescription}
+                </p>
+              )}
+              <p className="text-xs text-slate-500 mt-0.5">
                 Sipariş: {formatQuantity(i.quantity)} · {formatMoney(i.supplierUnitPrice)}
+                {i.priceDifference !== 0 && (
+                  <span className={`font-bold ml-1 ${i.priceDifference > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    ({i.priceDifference > 0 ? '+' : ''}{formatMoney(i.priceDifference)})
+                  </span>
+                )}
+                {i.priceDifference !== 0 && (
+                  <span className="font-bold text-slate-800 ml-1">
+                    = {formatMoney(unitTotal(i))}
+                  </span>
+                )}
               </p>
             </div>
             <input
@@ -68,7 +85,7 @@ export function ShipmentDialog({ order, pending, errorMessage, onClose, onShip }
                 }))
               }
               aria-label={`${i.name} sevk miktarı`}
-              className="input w-24 py-1.5 text-sm"
+              className="input w-24 py-1.5 text-sm font-bold text-center"
             />
           </li>
         ))}
@@ -88,8 +105,8 @@ export function ShipmentDialog({ order, pending, errorMessage, onClose, onShip }
       </div>
 
       <div className="flex justify-between border-t border-slate-200 pt-3 text-sm">
-        <span className="text-slate-500">Bu sevkiyatın tutarı</span>
-        <span className="font-bold text-slate-900">{formatMoney(shippedTotal)}</span>
+        <span className="text-slate-500 font-medium">Bu sevkiyatın tutarı</span>
+        <span className="font-extrabold text-slate-900 text-base">{formatMoney(shippedTotal)}</span>
       </div>
 
       <p className="text-xs leading-relaxed text-slate-400">

@@ -39,7 +39,7 @@ export function useCheckout(
   const [error, setError] = useState<string | null>(null);
 
   const target = resolveCartTarget(lines, suppliers);
-  const downPayment = Number(form.paymentAmount);
+  const downPayment = Math.round((Number(form.paymentAmount) || 0) * 100) / 100;
   const needsPayment = isSubscriber && !form.allowNoPayment;
   const canSubmit =
     target.ok &&

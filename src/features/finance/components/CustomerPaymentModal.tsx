@@ -74,7 +74,7 @@ export function CustomerPaymentModal({
 
     onSubmit({
       orderId,
-      amount: Number(vals.amount),
+      amount: Math.round((Number(vals.amount) || 0) * 100) / 100,
       manufacturerId: method === 'pos_manufacturer' ? vals.manufacturerId : undefined,
       description: vals.description || (mode === 'payment' ? 'Müşteri hesabı tahsilatı' : 'Müşteri hesabı iadesi'),
     });
@@ -132,6 +132,7 @@ export function CustomerPaymentModal({
               required
               value={vals.amount}
               onChange={(e) => setVals({ ...vals, amount: e.target.value })}
+              onWheel={(e) => e.currentTarget.blur()}
               placeholder="0,00"
               className="input w-full"
             />

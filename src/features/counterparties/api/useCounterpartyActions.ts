@@ -40,7 +40,8 @@ export function useCounterpartyActions(myOrgId: string) {
   const toggleCatalog = useToggleCatalogPermission();
   const del = useDeleteCounterparty();
 
-  const edges = list.data?.pages.flat() ?? [];
+  const rawEdges = list.data?.pages.flat() ?? [];
+  const edges = rawEdges.filter((e) => e.retailer.id === myOrgId || e.manufacturerOrgId === myOrgId);
   const incoming = edges.filter((e) => isIncomingRequest(e, myOrgId));
   const outgoing = edges.filter((e) => isOutgoingRequest(e, myOrgId));
   const active = edges.filter((e) => e.status === 'active');

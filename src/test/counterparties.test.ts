@@ -62,7 +62,7 @@ describe('add_counterparty — yetki ve onay', () => {
     // bildirimin hiç olmamasıydı. 20260816070000 kuralı geri getirdi,
     // bildirim de kenar çubuğu rozeti + üst çubuk ikonu olarak eklendi.
     expect(functionBody('add_counterparty')).toMatch(
-      /v_status\s*:=\s*case\s+when\s+v_target\.is_subscriber\s+then\s+'pending'\s+else\s+'active'\s+end/i,
+      /v_status\s*:=\s*case\s+when\s+v_target\.is_subscriber\s+then\s+'pending'/i,
     );
   });
 

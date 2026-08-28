@@ -4,7 +4,7 @@
  * CatalogPage, CartPage ve TopBar bu bağlamı tüketerek tutarlı bir
  * sepet deneyimi sunar. Yalnız perakendeci panelinde kullanılır.
  */
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import {
   addLine,
   cartManufacturerName,
@@ -15,6 +15,7 @@ import {
   type CartLine,
   type CartTotals,
 } from '@/features/orders';
+import { useAuthSession } from '@/features/auth';
 import { CartConflictDialog } from '../components/CartConflictDialog';
 
 interface CartContextValue {
@@ -41,9 +42,23 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: user } = useAuthSession();
+  const orgId = user?.org?.id;
+  const prevOrgIdRef = useRef(orgId);
+
   const [lines, setLines] = useState<CartLine[]>([]);
   const [supplierId, setSupplierId] = useState<string | null>(null);
   const [conflict, setConflict] = useState<CartLine | null>(null);
+
+  // Kullanıcı / organizasyon değiştiğinde sepeti sıfırla (başka firmanın sepeti sızmasın)
+  useEffect(() => {
+    if (prevOrgIdRef.current && prevOrgIdRef.current !== orgId) {
+      setLines([]);
+      setSupplierId(null);
+      setConflict(null);
+    }
+    prevOrgIdRef.current = orgId;
+  }, [orgId]);
 
   const totals = cartTotals(lines);
 

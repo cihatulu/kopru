@@ -259,11 +259,11 @@ Deno.serve(async (req) => {
     if (mode === 'guest') {
       const { data: sponsor } = await admin
         .from('organizations')
-        .select('id, kind')
+        .select('id, kind, is_active')
         .eq('vkn_tc', sponsorVkn)
         .maybeSingle();
 
-      if (!sponsor || sponsor.kind === org.kind) {
+      if (!sponsor || !sponsor.is_active || sponsor.kind === org.kind) {
         sponsorOk = false;
       } else {
         const mfr = org.kind === 'manufacturer' ? org.id : sponsor.id;
@@ -296,7 +296,21 @@ Deno.serve(async (req) => {
             sponsorOk = false;
           }
         } else {
-          sponsorOk = false;
+          const { error: insErr } = await admin
+            .from('relationships')
+            .insert({
+              manufacturer_org_id: mfr,
+              retailer_org_id: rtl,
+              status: 'active',
+              activated_at: new Date().toISOString(),
+            });
+
+          if (!insErr) {
+            sponsorOk = true;
+            sponsorOrgId = sponsor.id;
+          } else {
+            sponsorOk = false;
+          }
         }
       }
     }

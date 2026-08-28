@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { PAGE_SIZE, STALE_TIME, type RelationshipStatus } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type { Edge, Party } from '../domain/counterparty';
 
 // Açık kolon listesi (kilitli kural 19). İki uç da çekilir; "karşı taraf"
@@ -50,12 +51,28 @@ function toEdge(raw: unknown): Edge {
   };
 }
 
-async function fetchPage(cursor?: Cursor): Promise<Edge[]> {
-  // RLS zaten yalnız benim taraf olduğum kenarları döndürür (A16) —
-  // burada ayrıca org filtresi yazmaya gerek yok.
+async function fetchPage(
+  targetOrgId?: string,
+  isSubscriber?: boolean,
+  activeSponsorId?: string | null,
+  cursor?: Cursor,
+): Promise<Edge[]> {
   let q = supabase
     .from('relationships')
-    .select(EDGE_COLUMNS)
+    .select(EDGE_COLUMNS);
+
+  if (targetOrgId) {
+    if (isSubscriber === false && activeSponsorId) {
+      // Misafir yalnız oturum açtığı sponsor üreticiyi/perakendeciyi görür (A16).
+      q = q.or(
+        `and(retailer_org_id.eq.${targetOrgId},manufacturer_org_id.eq.${activeSponsorId}),and(manufacturer_org_id.eq.${targetOrgId},retailer_org_id.eq.${activeSponsorId})`,
+      );
+    } else {
+      q = q.or(`manufacturer_org_id.eq.${targetOrgId},retailer_org_id.eq.${targetOrgId}`);
+    }
+  }
+
+  q = q
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .limit(PAGE_SIZE);
@@ -72,16 +89,23 @@ async function fetchPage(cursor?: Cursor): Promise<Edge[]> {
 }
 
 /** Müşterilerim / Tedarikçilerim listesi — keyset sayfalama (A17). */
-export function useCounterparties() {
+export function useCounterparties(customOrgId?: string) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const orgId = customOrgId ?? org?.id;
+  const isSubscriber = org?.isSubscriber;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+
   return useInfiniteQuery({
-    queryKey: ['counterparties'],
+    queryKey: ['counterparties', orgId, isSubscriber, activeSponsorId],
     staleTime: STALE_TIME.transactional,
     initialPageParam: undefined as Cursor | undefined,
-    queryFn: ({ pageParam }) => fetchPage(pageParam),
+    queryFn: ({ pageParam }) => fetchPage(orgId, isSubscriber, activeSponsorId, pageParam),
     getNextPageParam: (lastPage) => {
       if (lastPage.length < PAGE_SIZE) return undefined;
       const last = lastPage[lastPage.length - 1];
       return last ? { createdAt: last.createdAt, id: last.id } : undefined;
     },
+    enabled: !!orgId,
   });
 }

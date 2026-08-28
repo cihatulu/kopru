@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { PAGE_SIZE, STALE_TIME } from '@/constants';
+import { PAGE_SIZE, STALE_TIME, ORG_KIND } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import type { Dimensions, SetLine, Variant } from '../domain/variants';
 
 // Açık kolon listesi (kilitli kural 19). Maliyet burada YOKTUR ve olamaz —
@@ -86,16 +87,31 @@ function toProduct(raw: unknown): CatalogProduct {
 interface Options {
   /** Belirli bir üreticinin kataloğu (perakendeci görünümü). Boşsa RLS kapsamı. */
   ownerOrgId?: string;
+  /** Birden fazla tedarikçinin kataloğu (perakendeci tüm üreticiler görünümü). */
+  ownerOrgIds?: string[];
   search?: string;
   activeOnly?: boolean;
 }
 
 /** Ürün listesi — keyset sayfalama (A17). */
 export function useProducts(opts: Options = {}) {
+  const { data: session } = useAuthSession();
+  const org = session?.org;
+  const isSubscriber = org?.isSubscriber ?? true;
+  const activeSponsorId = session?.sponsorOrgId || org?.createdByOrgId;
+  const kind = org?.kind;
+
+  // Misafir perakendeci YALNIZCA oturum açtığı sponsor üreticinin ürünlerini görebilir.
+  const targetOwnerOrgId =
+    !isSubscriber && activeSponsorId && kind === ORG_KIND.retailer
+      ? activeSponsorId
+      : opts.ownerOrgId;
+
   return useInfiniteQuery({
-    queryKey: ['catalog', 'products', opts],
+    queryKey: ['catalog', 'products', targetOwnerOrgId, opts.ownerOrgIds, opts.search, opts.activeOnly],
     staleTime: STALE_TIME.catalog,
     initialPageParam: undefined as { createdAt: string; id: string } | undefined,
+    enabled: !(opts.ownerOrgIds && opts.ownerOrgIds.length === 0),
     queryFn: async ({ pageParam }) => {
       let q = supabase
         .from('products')
@@ -104,7 +120,11 @@ export function useProducts(opts: Options = {}) {
         .order('id', { ascending: false })
         .limit(PAGE_SIZE);
 
-      if (opts.ownerOrgId) q = q.eq('owner_org_id', opts.ownerOrgId);
+      if (targetOwnerOrgId) {
+        q = q.eq('owner_org_id', targetOwnerOrgId);
+      } else if (opts.ownerOrgIds && opts.ownerOrgIds.length > 0) {
+        q = q.in('owner_org_id', opts.ownerOrgIds);
+      }
       if (opts.activeOnly) q = q.eq('is_active', true);
       if (opts.search?.trim()) {
         const s = opts.search.trim();

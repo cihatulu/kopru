@@ -231,21 +231,10 @@ async function apiAs(token, path, init = {}) {
   return t ? JSON.parse(t) : null;
 }
 
-async function adminToken() {
-  const r = await fetch(`${BASE}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: { apikey: PUB, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
-  });
-  const j = await r.json();
-  if (!r.ok) throw new Error(`admin girişi: ${JSON.stringify(j).slice(0, 200)}`);
-  return j.access_token;
-}
-
-async function uyeYap(orgId, subdomain, token) {
+async function uyeYap(orgId, subdomain) {
   const r = await fetch(`${BASE}/rest/v1/rpc/upgrade_org_to_subscriber`, {
     method: 'POST',
-    headers: { apikey: PUB, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { apikey: SR, Authorization: `Bearer ${SR}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ p_org_id: orgId, p_plan: 'pro', p_subdomain: subdomain }),
   });
   const t = await r.text();
@@ -376,10 +365,8 @@ async function dogrula({ mu, mp }) {
   kontrol('Hepsi bir perakendeciye kapsanmış',
     oncePr.every((p) => p.managed_by_retailer_org_id !== null), `${oncePr.length} ürün`);
 
-  const token = await adminToken();
-
   log('\n=== 6. Misafir ÜRETİCİ üye yapılıyor ===');
-  await uyeYap(mu.id, 'test-misafir-uretici', token);
+  await uyeYap(mu.id, 'test-misafir-uretici');
   const [muSon] = await api(`organizations?id=eq.${mu.id}&select=is_subscriber`);
   kontrol('Üyelik açıldı', muSon.is_subscriber === true);
 
@@ -419,7 +406,7 @@ async function dogrula({ mu, mp }) {
   kontrol('Cari hareketler duruyor', cari.length === 10, `${cari.length} hareket`);
 
   log('\n=== 8. Misafir PERAKENDECİ üye yapılıyor ===');
-  await uyeYap(mp.id, 'test-misafir-perakende', token);
+  await uyeYap(mp.id, 'test-misafir-perakende');
   const [mpSon] = await api(`organizations?id=eq.${mp.id}&select=is_subscriber`);
   kontrol('Üyelik açıldı', mpSon.is_subscriber === true);
   const pOrders = await api(`orders?retailer_org_id=eq.${mp.id}&select=id`);

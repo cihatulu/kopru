@@ -165,6 +165,7 @@ export default function TedarikcilerPage() {
           }
           onClose={a.close}
           onSubmit={async (newPassword) => {
+            if (!a.target) return;
             await a.resetPassword.mutateAsync({
               orgId: a.target.party.id,
               newPassword,
