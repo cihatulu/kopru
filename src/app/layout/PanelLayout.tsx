@@ -45,7 +45,7 @@ function RetailerPanel() {
   const items = navFor(org.kind, org.enabledModules, user.orgRole, org.isSubscriber);
 
   return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50">
+    <div className="flex min-h-screen w-full bg-slate-50">
       <Sidebar
         items={items}
         companyName={org.companyName}
@@ -54,7 +54,7 @@ function RetailerPanel() {
         badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <RetailerCatalogTree /> }}
       />
-      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
           panelLabel="Perakendeci Paneli"
           userName={user.fullName ?? org.companyName}
@@ -77,7 +77,7 @@ function RetailerPanel() {
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}
         />
-        <main className="flex-1 overflow-x-hidden px-4 py-6 md:px-8">
+        <main className="flex-1 px-4 py-6 md:px-8">
           <Outlet />
         </main>
       </div>
@@ -108,7 +108,7 @@ function ManufacturerPanel() {
   );
 
   return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50">
+    <div className="flex min-h-screen w-full bg-slate-50">
       <Sidebar
         items={items}
         companyName={org.companyName}
@@ -117,7 +117,7 @@ function ManufacturerPanel() {
         badges={{ announcements: unreadCount, connections: pendingConnections }}
         slots={{ 'catalog-tree': <CatalogTree ownerOrgId={org.id} /> }}
       />
-      <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
           panelLabel="Üretici Paneli"
           userName={user.fullName ?? org.companyName}
@@ -138,7 +138,7 @@ function ManufacturerPanel() {
           onMenu={() => setMenuOpen(true)}
           onLogout={() => logout.mutate()}
         />
-        <main className="flex-1 overflow-x-hidden px-4 py-6 md:px-8">
+        <main className="flex-1 px-4 py-6 md:px-8">
           <Outlet />
         </main>
       </div>
