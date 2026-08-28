@@ -31,24 +31,27 @@ const PRODUCT_COLUMNS =
 const STOCK_COLUMNS = 'product_id, quantity, unit, updated_at';
 
 /**
- * Perakendecinin stok listesi: tedarikçilerinin ürünleri + kendi depo adedi.
- *
- * ÜRETİCİ ADI ürünle birlikte gömülmez. Sebep: `products.owner_org_id`
- * organizations'a bileşik anahtarla (`id, kind`) bağlı ve PostgREST bileşik
- * kısıtı tek kolonluk ipuçtan çözemez (bkz. ERROR_PROTOCOLS §21). Üretici
- * adları ilişki listesinden ayrıca okunup eşlenir.
+ * Perakendecinin stok listesi: TÜM tedarikçilerinin ürünleri + varsa kendi
+ * mağaza stoğu.
  *
  * İki sorgu, tek gömme değil: stok kaydı OLMAYAN ürün de listelenmeli ve
  * "kaydı yok" ile "sıfır adet" ayrımı korunmalı.
  */
 export function useRetailerStockList(search: string) {
+  const { data: user } = useAuthSession();
+  const orgId = user?.org?.id;
+
   return useQuery({
-    queryKey: ['stock', 'retailer-list', search],
+    queryKey: ['stock', 'retailer-list', search, orgId],
+    enabled: !!orgId,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<RetailerStockRow[]> => {
+      if (!orgId) return [];
+
       const { data: edges, error: edgeError } = await supabase
         .from('relationships')
         .select('manufacturer_org_id, can_edit_catalog, manufacturer:organizations!relationships_manufacturer_org_id_manufacturer_kind_fkey(company_name, is_subscriber)')
+        .eq('retailer_org_id', orgId)
         .eq('status', 'active');
       if (edgeError) throw edgeError;
 

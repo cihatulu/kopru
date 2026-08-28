@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-describe('Üretici Stok İzolasyonu (Katı Güvenlik Yasası)', () => {
+describe('Üretici ve Perakendeci Stok İzolasyonu (Katı Güvenlik Yasası)', () => {
   it('useStockList sorgusunda owner_org_id filtresi zorunludur', () => {
     const filePath = resolve(__dirname, '../features/stock/api/useStockList.ts');
     const content = readFileSync(filePath, 'utf-8');
@@ -19,5 +19,13 @@ describe('Üretici Stok İzolasyonu (Katı Güvenlik Yasası)', () => {
 
     expect(content).toContain('useStockList(search, orgId)');
     expect(content).toContain('useProductGroups(orgId)');
+  });
+
+  it('useRetailerStockList sorgusunda relationships retailer_org_id filtresi zorunludur', () => {
+    const filePath = resolve(__dirname, '../features/stock/api/useRetailerStockList.ts');
+    const content = readFileSync(filePath, 'utf-8');
+
+    expect(content).toContain(".eq('retailer_org_id', orgId)");
+    expect(content).toContain('if (!orgId) return [];');
   });
 });
