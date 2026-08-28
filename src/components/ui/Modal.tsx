@@ -59,6 +59,21 @@ export function Modal({
   }, []);
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    
+    document.body.style.overflow = 'hidden';
+    if (isMobile) {
+      document.body.style.touchAction = 'none';
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isMobile]);
+
+  useEffect(() => {
     if (closeDisabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -108,8 +123,9 @@ export function Modal({
   return (
     <div
       className={
-        backdropClassName ??
-        'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4'
+        (backdropClassName ??
+          'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4') +
+        ' overscroll-contain'
       }
       onMouseDown={(e) => {
         if (!closeDisabled && e.target === e.currentTarget) onClose();
@@ -134,7 +150,9 @@ export function Modal({
           className={
             (panelClassName ??
               'max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-100/80 text-left') +
-            (isMobile ? ' relative touch-pan-y' : ' no-scrollbar cursor-move relative')
+            (isMobile
+              ? ' relative touch-pan-y overscroll-contain'
+              : ' no-scrollbar cursor-move relative overscroll-contain')
           }
         >
           {/* Kenar tutamaçları — yalnız resizable modallarda */}
