@@ -1,9 +1,40 @@
--- KÖPRÜ — İade onaylandığında order_status_logs kaydına 'returned' yazılması
--- ve mevcut 'delivered' olarak yazılmış iade loglarının düzeltilmesi.
+-- KÖPRÜ — İade onaylandığında order_status_logs kaydına 'returned' yazılması,
+-- iade log notuna ürün adı, adedi ve birim fiyatının eklenmesi,
+-- ve public sipariş takibinde iade edilen ürünlerin detaylı dökümü.
 
 update public.order_status_logs
    set to_status = 'returned'
  where note like '%İade onaylandı%' and to_status = 'delivered';
+
+-- Public sipariş takibinde iade edilen ürünlerin dökümü
+create or replace function public.track_order_returns(p_order_id uuid)
+returns jsonb
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'productId', oi.product_id,
+        'orderItemId', oi.id,
+        'name', coalesce(oi.product_snapshot->>'name', p.name, 'Ürün'),
+        'quantity', (item->>'quantity')::numeric,
+        'unit_price', coalesce(rp.unit_price, oi.supplier_unit_price + oi.price_difference),
+        'total_price', round(coalesce(rp.unit_price, oi.supplier_unit_price + oi.price_difference) * (item->>'quantity')::numeric, 2),
+        'custom_description', oi.custom_description
+      )
+    ),
+    '[]'::jsonb
+  )
+  from public.return_requests rr
+  cross join lateral jsonb_array_elements(coalesce(rr.items, '[]'::jsonb)) as item
+  join public.order_items oi on oi.id = (item->>'order_item_id')::uuid
+  left join public.products p on p.id = oi.product_id
+  left join public.order_item_retail_prices rp on rp.order_item_id = oi.id
+  where rr.order_id = p_order_id and rr.status = 'approved';
+$$;
 
 create or replace function public.confirm_return_atomic(
   p_return_id uuid,
@@ -28,6 +59,8 @@ declare
   v_returned_qty numeric(14,3) := 0;
   v_target_status public.order_status := 'returned';
   v_snapshot jsonb := '[]'::jsonb;
+  v_items_summary text;
+  v_log_note text;
 begin
   select * into v_req from public.return_requests
    where id = p_return_id and status = 'pending'
@@ -93,6 +126,16 @@ begin
   join public.order_items oi on oi.id = (ri.value->>'order_item_id')::uuid
   left join public.products p on p.id = oi.product_id;
 
+  -- Detaylı iade notu oluşturma (Ürün Adı, Adet, Birim Fiyat)
+  select string_agg(
+    (ri.value->>'quantity')::text || ' Adet ' || coalesce(oi.product_snapshot->>'name', p.name, 'Ürün') ||
+    ' (Birim: ' || (oi.supplier_unit_price + oi.price_difference)::text || ' TL)',
+    ', '
+  ) into v_items_summary
+  from jsonb_array_elements(v_req.items) ri
+  join public.order_items oi on oi.id = (ri.value->>'order_item_id')::uuid
+  left join public.products p on p.id = oi.product_id;
+
   -- A8: mevcut borç kaydına DOKUNULMAZ; dengeleyici credit eklenir.
   select t.balance_after into v_prev
     from public.transactions t
@@ -139,15 +182,17 @@ begin
      set status = v_target_status
    where id = v_req.order_id;
 
+  v_log_note := case
+    when v_returned_qty < v_total_qty then 'Kısmi iade onaylandı: '
+    else 'İade onaylandı: '
+  end || coalesce(v_items_summary, '') || ' — Toplam: ' || v_amount::text || ' TL';
+
   insert into public.order_status_logs (
     order_id, from_status, to_status, actor_user_id, actor_org_id, note
   ) values (
     v_req.order_id, v_order.status, 'returned'::public.order_status,
     public.get_my_user_id(), v_me,
-    case
-      when v_returned_qty < v_total_qty then 'Kısmi iade onaylandı: ' || v_amount::text || ' TL'
-      else 'İade onaylandı: ' || v_amount::text || ' TL'
-    end
+    v_log_note
   );
 
   return v_req;
@@ -155,5 +200,6 @@ end;
 $$;
 
 grant execute on function public.confirm_return_atomic(uuid, boolean, text) to authenticated;
+grant execute on function public.track_order_returns(uuid) to anon, authenticated;
 
 notify pgrst, 'reload schema';

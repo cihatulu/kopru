@@ -301,14 +301,77 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                       </div>
                     </div>
                   ) : (
-                    <ul className="divide-y divide-slate-50">
-                      {s.items.map((item, idx) => (
-                        <li key={`${item.productId ?? item.name}-${idx}`} className="flex justify-between text-xs py-1.5">
-                          <span className="font-semibold text-slate-700">{item.name}</span>
-                          <span className="font-bold text-slate-800">{item.quantity} adet</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div>
+                      <ul className="divide-y divide-slate-50">
+                        {s.items.map((item, idx) => {
+                          const retItem = s.returned_items?.find(
+                            (r) => (r.productId && r.productId === item.productId) || (r.name && r.name === item.name)
+                          );
+                          const retQty = retItem?.quantity ?? 0;
+                          const deliveredQty = Math.max(0, item.quantity - retQty);
+
+                          return (
+                            <li key={`${item.productId ?? item.name}-${idx}`} className="py-2 text-xs">
+                              <div className="flex justify-between items-center">
+                                <span className="font-semibold text-slate-800">{item.name}</span>
+                                <span className="font-bold text-slate-900">{item.quantity} adet sevk</span>
+                              </div>
+                              {retQty > 0 && (
+                                <div className="mt-1.5 flex items-center justify-between bg-amber-50/80 border border-amber-200/70 rounded-lg px-2.5 py-1.5 text-[11px]">
+                                  <span className="font-bold text-amber-900 flex items-center gap-1">
+                                    <span>↩</span> {retQty} Adet İade Edildi
+                                  </span>
+                                  <span className="font-semibold text-slate-600">
+                                    Kalan Teslim: <strong className="text-emerald-700">{deliveredQty} adet</strong>
+                                  </span>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      {/* İade Edilen Ürün Dökümü */}
+                      {s.returned_items && s.returned_items.length > 0 && (
+                        <div className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/40 p-3">
+                          <span className="font-bold text-amber-900 uppercase tracking-wider text-[9px] block mb-2">
+                            İade Edilen Ürün ve Fiyat Detayı
+                          </span>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="border-b border-amber-200/60 text-[10px] font-bold uppercase text-amber-800/80">
+                                  <th className="pb-1.5 text-left">Ürün</th>
+                                  <th className="pb-1.5 text-center">İade Adedi</th>
+                                  <th className="pb-1.5 text-right">Birim Fiyat</th>
+                                  <th className="pb-1.5 text-right">İade Tutarı</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-amber-100">
+                                {s.returned_items.map((r, rIdx) => {
+                                  const rName = r.name || s.items.find((i) => i.productId === r.productId)?.name || 'Ürün';
+                                  const rUnitPrice = r.unit_price ?? (s.items.find((i) => i.productId === r.productId)?.unit_price ?? 0);
+                                  const rTotal = r.total_price ?? (rUnitPrice * r.quantity);
+
+                                  return (
+                                    <tr key={rIdx} className="text-[11px]">
+                                      <td className="py-1.5 font-semibold text-slate-800 pr-2">{rName}</td>
+                                      <td className="py-1.5 text-center font-bold text-amber-900 whitespace-nowrap">{r.quantity} Adet</td>
+                                      <td className="py-1.5 text-right text-slate-600 whitespace-nowrap">
+                                        {rUnitPrice > 0 ? formatMoney(rUnitPrice) : '—'}
+                                      </td>
+                                      <td className="py-1.5 text-right font-bold text-amber-950 whitespace-nowrap">
+                                        {rTotal > 0 ? formatMoney(rTotal) : '—'}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   {s.history && s.history.length > 0 && (

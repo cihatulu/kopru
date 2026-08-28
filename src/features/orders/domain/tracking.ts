@@ -20,7 +20,11 @@ export interface TrackedItem {
 export interface TrackedReturnLine {
   productId?: string;
   orderItemId?: string;
+  name?: string;
   quantity: number;
+  unit_price?: number;
+  total_price?: number;
+  custom_description?: string | null;
 }
 
 export interface TrackedLog {
