@@ -46,30 +46,30 @@ export function ProductHeaderActions({
       title="Ürün Yönetimi"
       description="Katalog ürünlerini, set takımlarını ve ürün gruplarını yönetin."
       actions={
-        <div className="flex flex-col gap-2 w-full sm:w-auto">
-          {/* 1. Satır: Aktif/Pasif Seçici (Sol) + Ürün Ekle Butonu (Sağ) — 2 Eşit Kolon */}
-          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:w-auto">
-            <div className="w-full">
-              <Segmented
-                label="Ürün durumu"
-                options={ACTIVITY_OPTIONS}
-                value={activity}
-                onChange={onActivityChange}
-              />
-            </div>
+        <div className="flex flex-col gap-2.5 w-full sm:w-auto">
+          {/* 1. Satır: Mobilde Üstte Aktif/Pasif Tabları (Tam Genişlik), Masaüstünde Yan Yana */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+            <Segmented
+              label="Ürün durumu"
+              options={ACTIVITY_OPTIONS}
+              value={activity}
+              onChange={onActivityChange}
+              fullWidth
+              className="sm:w-auto"
+            />
 
             {!isGuest && (
               <Button
                 size="sm"
                 onClick={onAddProduct}
-                className="w-full h-9 justify-center text-xs font-bold"
+                className="w-full sm:w-auto h-9 justify-center text-xs font-bold shrink-0"
               >
                 + Ürün Ekle
               </Button>
             )}
           </div>
 
-          {/* 2. Satır: Grup ve Set İşlemleri — 3 Eşit Kolon */}
+          {/* 2. Satır: Grup ve Set İşlemleri — Mobilde 3 Eşit Buton */}
           {!isGuest && (
             <div className="grid grid-cols-3 gap-2 w-full sm:flex sm:items-center sm:w-auto">
               <Button
@@ -78,7 +78,7 @@ export function ProductHeaderActions({
                 onClick={onAssignGroup}
                 disabled={selectedCount === 0}
                 title={selectedCount === 0 ? 'Önce tablodan ürün seçin' : undefined}
-                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
+                className="w-full sm:w-auto h-9 justify-center text-[11px] sm:text-xs px-2 text-center truncate font-semibold"
               >
                 Gruba Ekle {selectedCount > 0 ? `(${selectedCount})` : ''}
               </Button>
@@ -86,7 +86,7 @@ export function ProductHeaderActions({
                 variant="secondary"
                 size="sm"
                 onClick={onManageGroups}
-                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
+                className="w-full sm:w-auto h-9 justify-center text-[11px] sm:text-xs px-2 text-center truncate font-semibold"
               >
                 Gruplar{groups.length > 0 ? ` (${groups.length})` : ''}
               </Button>
@@ -96,7 +96,7 @@ export function ProductHeaderActions({
                 onClick={onCreateSet}
                 disabled={!canCreateSet}
                 title={canCreateSet ? undefined : 'Takım oluşturmak için en az 2 tek ürün seçin'}
-                className="w-full h-9 justify-center text-[11px] px-1 text-center truncate font-semibold"
+                className="w-full sm:w-auto h-9 justify-center text-[11px] sm:text-xs px-2 text-center truncate font-semibold"
               >
                 Set Oluştur
               </Button>

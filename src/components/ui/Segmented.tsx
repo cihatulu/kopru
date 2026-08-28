@@ -9,6 +9,8 @@ interface Props<T extends string> {
   options: readonly Option<T>[];
   value: T;
   onChange: (value: T) => void;
+  fullWidth?: boolean;
+  className?: string;
 }
 
 /**
@@ -21,12 +23,21 @@ interface Props<T extends string> {
  * `radiogroup` değil `tablist` de değil: seçenekler bir görünüm süzgeci,
  * form değeri değil. `aria-pressed` en doğrusunu anlatıyor.
  */
-export function Segmented<T extends string>({ label, options, value, onChange }: Props<T>) {
+export function Segmented<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  fullWidth = false,
+  className = '',
+}: Props<T>) {
   return (
     <div
       role="group"
       aria-label={label}
-      className="inline-flex h-9 shrink-0 items-center rounded-lg bg-slate-100 p-0.5"
+      className={`${
+        fullWidth ? 'flex w-full' : 'inline-flex shrink-0'
+      } h-9 items-center rounded-lg bg-slate-100 p-0.5 ${className}`}
     >
       {options.map((o) => (
         <button
@@ -34,12 +45,13 @@ export function Segmented<T extends string>({ label, options, value, onChange }:
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`inline-flex h-8 items-center rounded-md px-3 text-xs font-semibold whitespace-nowrap
-            transition-colors ${
-              value === o.value
-                ? 'bg-white text-slate-900 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
+          className={`${
+            fullWidth ? 'flex-1 justify-center' : 'inline-flex'
+          } h-8 items-center rounded-md px-3 text-xs font-semibold whitespace-nowrap transition-colors ${
+            value === o.value
+              ? 'bg-white text-slate-900 shadow-2xs'
+              : 'text-slate-500 hover:text-slate-900'
+          }`}
         >
           {o.label}
         </button>
