@@ -117,27 +117,39 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
             <p className="text-xs italic text-slate-400 py-2">Tarihçe kaydı bulunmuyor.</p>
           ) : (
             <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-              {detail.history.map((h, idx) => (
-                <div key={h.id || idx} className="relative text-xs min-w-0">
-                  <div className="absolute -left-5 top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-white ring-1 ring-slate-400" />
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-slate-500 font-medium">
-                      {formatDateTime(h.createdAt)}
-                    </span>
-                    <OrderStatusBadge status={h.toStatus} />
-                    {h.shipmentBadge && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-700 border border-brand-200">
-                        {h.shipmentBadge}
+              {detail.history.map((h, idx) => {
+                const isReturn = h.toStatus === 'returned' || h.note?.includes('İade');
+                const badgeStatus = isReturn ? 'returned' : h.toStatus;
+                return (
+                  <div key={h.id || idx} className="relative text-xs min-w-0">
+                    <div
+                      className={`absolute -left-5 top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white ring-1 ${
+                        isReturn
+                          ? 'bg-red-500 ring-red-400'
+                          : h.toStatus === 'delivered'
+                            ? 'bg-emerald-500 ring-emerald-400'
+                            : 'bg-slate-300 ring-slate-400'
+                      }`}
+                    />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-slate-500 font-medium">
+                        {formatDateTime(h.createdAt)}
                       </span>
+                      <OrderStatusBadge status={badgeStatus} />
+                      {h.shipmentBadge && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-700 border border-brand-200">
+                          {h.shipmentBadge}
+                        </span>
+                      )}
+                    </div>
+                    {h.note && (
+                      <p className="mt-1.5 text-slate-700 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed font-normal break-words break-all [overflow-wrap:anywhere] whitespace-pre-wrap">
+                        {h.note}
+                      </p>
                     )}
                   </div>
-                  {h.note && (
-                    <p className="mt-1.5 text-slate-700 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed font-normal break-words break-all [overflow-wrap:anywhere] whitespace-pre-wrap">
-                      {h.note}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

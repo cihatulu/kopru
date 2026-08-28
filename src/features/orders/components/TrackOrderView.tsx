@@ -315,20 +315,32 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                     <div className="mt-3 pt-3 border-t border-slate-100">
                       <span className="font-bold text-slate-400 uppercase tracking-wider text-[9px] block mb-2.5">Geçmiş ve İşlem Notları</span>
                       <div className="relative pl-4 border-l border-slate-100 ml-1 space-y-3">
-                        {s.history.map((h, idx) => (
-                          <div key={idx} className="relative text-xs">
-                            <span className="absolute -left-[21px] top-1.5 size-1.5 rounded-full bg-slate-350" />
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-slate-700">{ORDER_STATUS_META[h.status]?.label ?? h.status}</span>
-                              <span className="font-mono text-slate-400 text-[10px]">{formatDateTime(h.created_at)}</span>
+                        {s.history.map((h, idx) => {
+                          const isReturn = h.status === 'returned' || h.note?.includes('İade');
+                          const isCancel = h.status === 'cancelled';
+                          const statusLabel = isReturn
+                            ? (h.note?.includes('Kısmi') ? 'Kısmi İade' : 'İade Edildi')
+                            : isCancel
+                              ? 'İptal Edildi'
+                              : (ORDER_STATUS_META[h.status]?.label ?? h.status);
+
+                          return (
+                            <div key={idx} className="relative text-xs">
+                              <span className={`absolute -left-[21px] top-1.5 size-1.5 rounded-full ${isReturn || isCancel ? 'bg-red-500' : 'bg-slate-350'}`} />
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`font-bold ${isReturn || isCancel ? 'text-red-700' : 'text-slate-700'}`}>
+                                  {statusLabel}
+                                </span>
+                                <span className="font-mono text-slate-400 text-[10px]">{formatDateTime(h.created_at)}</span>
+                              </div>
+                              {h.note && (
+                                <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px] break-words break-all [overflow-wrap:anywhere]">
+                                  {h.note}
+                                </p>
+                              )}
                             </div>
-                            {h.note && (
-                              <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px] break-words break-all [overflow-wrap:anywhere]">
-                                {h.note}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -353,14 +365,20 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
           </h3>
           <div className="relative pl-6 border-l-2 border-slate-100 ml-3 space-y-6">
             {history.map((h, i) => {
+              const isReturnLog = h.status === 'returned' || h.note?.includes('İade');
+              const isCancelLog = h.status === 'cancelled';
               const meta = ORDER_STATUS_META[h.status];
-              const dotColor = h.status === 'cancelled' || h.status === 'returned'
+              const dotColor = isReturnLog || isCancelLog
                 ? 'bg-red-500 ring-red-100'
                 : h.status === 'delivered'
                   ? 'bg-emerald-500 ring-emerald-100'
                   : h.status === 'shipped' || h.status === 'partially_shipped'
                     ? 'bg-purple-500 ring-purple-100'
                     : 'bg-blue-500 ring-blue-100';
+
+              const displayLabel = isReturnLog
+                ? (h.note?.includes('Kısmi') ? 'Kısmi İade' : 'İade Edildi')
+                : (meta?.label ?? h.status);
 
               return (
                 <div key={`${h.created_at}-${i}`} className="relative min-w-0">
@@ -371,8 +389,8 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                       {formatDateTime(h.created_at)}
                     </span>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-800">
-                        {meta?.label ?? h.status}
+                      <span className={`text-xs font-bold ${isReturnLog || isCancelLog ? 'text-red-700' : 'text-slate-800'}`}>
+                        {displayLabel}
                       </span>
                       {h.order_no && (
                         <span className="font-mono text-[10px] font-semibold text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 leading-tight">
