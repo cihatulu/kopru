@@ -131,40 +131,43 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
               )}
 
               {/* Kart Aksiyonları: Teslim Al & Detay */}
-              <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
-                {!isMfr && (o.status === 'shipped' || o.status === 'partially_shipped') ? (
-                  <Button
-                    variant="success"
-                    size="sm"
-                    disabled={updatingOrderId === o.id}
-                    onClick={() => onUpdateStatus(o.id, 'delivered')}
-                    className="w-full justify-center"
-                  >
-                    Teslim Aldım
-                  </Button>
-                ) : (
-                  <div />
-                )}
+              {(() => {
+                const canDeliver = !isMfr && (o.status === 'shipped' || o.status === 'partially_shipped');
+                return (
+                  <div className={`pt-3 border-t border-slate-100 ${canDeliver ? 'grid grid-cols-2 gap-2' : 'flex justify-end'}`}>
+                    {canDeliver && (
+                      <Button
+                        variant="success"
+                        size="sm"
+                        disabled={updatingOrderId === o.id}
+                        onClick={() => onUpdateStatus(o.id, 'delivered')}
+                        className="w-full justify-center text-xs font-bold"
+                      >
+                        Teslim Aldım
+                      </Button>
+                    )}
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  aria-expanded={isExpanded}
-                  onClick={() => setExpandedOrderId(isExpanded ? null : o.id)}
-                  className="gap-1.5 ml-auto text-xs"
-                >
-                  {isExpanded ? 'Detayı Gizle' : 'Detayları Gör'}
-                  <svg
-                    className={`size-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </Button>
-              </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      aria-expanded={isExpanded}
+                      onClick={() => setExpandedOrderId(isExpanded ? null : o.id)}
+                      className={`gap-1.5 text-xs font-semibold ${canDeliver ? 'w-full justify-center' : 'ml-auto'}`}
+                    >
+                      {isExpanded ? 'Detayı Gizle' : 'Detayları Gör'}
+                      <svg
+                        className={`size-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </Button>
+                  </div>
+                );
+              })()}
 
               {/* Genişletilmiş Detay (Açılır Kutu) */}
               {isExpanded && (
