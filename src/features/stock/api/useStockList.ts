@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 
 export interface StockVariant {
   name: string;
@@ -44,26 +45,25 @@ const PRODUCT_COLUMNS =
 const STOCK_COLUMNS = 'product_id, quantity, unit, updated_at';
 
 /**
- * Stok listesi: TÜM ürünler + varsa stok kaydı.
+ * Stok listesi: YALNIZCA ilgili üreticiye ait TÜM ürünler + varsa stok kaydı.
  *
- * PASİF ÜRÜNLER DE LİSTELENİR. Stok Yönetimi katalog değildir: Excel'den
- * gelen tanınmayan satır stok kaydı oluşturur ama ürünü pasif bırakır —
- * "stoğu olup katalogda görünmeyen ürün" olağandır. Liste `is_active` süzseydi
- * kullanıcı yüklediği stoğu hiçbir yerde göremezdi (gerçekten yaşandı).
- *
- * İki sorgu, tek gömme değil. Sebep: gömme yapıldığında stok kaydı OLMAYAN
- * ürünler de dönmeli (dış birleşim) ama asıl mesele şu — "kaydı yok" ile
- * "sıfır adet" farklı durumlar. Tek sorguda ikisi de `null` gelir ve ayrım
- * kaybolur; burada `quantity: null` olarak korunuyor.
+ * PASİF ÜRÜNLER DE LİSTELENİR.
  */
-export function useStockList(search: string) {
+export function useStockList(search: string, ownerOrgId?: string) {
+  const { data: user } = useAuthSession();
+  const orgId = ownerOrgId || user?.org?.id;
+
   return useQuery({
-    queryKey: ['stock', 'list', search],
+    queryKey: ['stock', 'list', search, orgId],
+    enabled: !!orgId,
     staleTime: STALE_TIME.transactional,
     queryFn: async (): Promise<StockRow[]> => {
+      if (!orgId) return [];
+
       let q = supabase
         .from('products')
         .select(PRODUCT_COLUMNS)
+        .eq('owner_org_id', orgId)
         .order('name', { ascending: true })
         .limit(500);
 

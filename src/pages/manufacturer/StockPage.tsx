@@ -21,10 +21,15 @@ import {
   type BulkStockResult,
 } from '@/features/stock';
 
+import { useAuthSession } from '@/features/auth';
+
 const PER_PAGE = 10;
 
 /** Üretici Stok Yönetimi — YALNIZ KOMPOZİSYON (A20). */
 export default function StockPage() {
+  const { data: user } = useAuthSession();
+  const orgId = user?.org?.id;
+
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -32,8 +37,8 @@ export default function StockPage() {
   const [applied, setApplied] = useState<BulkStockResult | null>(null);
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
-  const list = useStockList(search);
-  const groupsQuery = useProductGroups();
+  const list = useStockList(search, orgId);
+  const groupsQuery = useProductGroups(orgId);
   const setStock = useSetProductStock();
   const bulk = useBulkUpdateStock();
 
