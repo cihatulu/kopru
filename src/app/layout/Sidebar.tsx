@@ -64,11 +64,11 @@ export function Sidebar({ items, companyName, open, onClose, badges, slots }: Pr
         doldurur hem uzun sayfalarda menüyü görünür tutar.
       */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex h-full w-64 shrink-0 flex-col bg-slate-900 transition-transform duration-300 md:sticky md:top-0 md:h-screen md:translate-x-0 ${
-          open ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-30 flex h-screen w-64 shrink-0 flex-col bg-slate-900 transition-transform duration-300 ${
+          open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="px-4 py-5">
+        <div className="px-4 py-5 shrink-0">
           <div className="rounded-xl bg-white px-4 py-4 text-center">
             <span className="block truncate text-base font-extrabold tracking-tight text-slate-900">
               {companyName}

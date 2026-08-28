@@ -45,7 +45,7 @@ function RetailerPanel() {
   const items = navFor(org.kind, org.enabledModules, user.orgRole, org.isSubscriber);
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50">
+    <div className="min-h-screen w-full bg-slate-50 md:pl-64">
       <Sidebar
         items={items}
         companyName={org.companyName}
@@ -108,7 +108,7 @@ function ManufacturerPanel() {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50">
+    <div className="min-h-screen w-full bg-slate-50 md:pl-64">
       <Sidebar
         items={items}
         companyName={org.companyName}
