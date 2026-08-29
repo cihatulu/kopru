@@ -71,15 +71,27 @@ export function ProductBasicFields({ form, groups, groupId, categories, isRetail
         <legend className="px-1 text-xs font-bold uppercase tracking-wider text-slate-600">
           Ürün ölçüleri (cm)
         </legend>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Genişlik (en)" error={e.width?.message}>
-            <input className="input" type="number" step="0.1" placeholder="cm" {...register('width')} />
+        <div className="grid grid-cols-3 gap-3 items-end">
+          <Field
+            label="Genişlik (En)"
+            error={e.width?.message}
+            labelClassName="min-h-[2.25rem] flex items-end justify-center text-center pb-1"
+          >
+            <input className="input text-center font-medium" type="number" step="0.1" placeholder="cm" {...register('width')} />
           </Field>
-          <Field label="Derinlik (boy)" error={e.depth?.message}>
-            <input className="input" type="number" step="0.1" placeholder="cm" {...register('depth')} />
+          <Field
+            label="Derinlik (Boy)"
+            error={e.depth?.message}
+            labelClassName="min-h-[2.25rem] flex items-end justify-center text-center pb-1"
+          >
+            <input className="input text-center font-medium" type="number" step="0.1" placeholder="cm" {...register('depth')} />
           </Field>
-          <Field label="Yükseklik" error={e.height?.message}>
-            <input className="input" type="number" step="0.1" placeholder="cm" {...register('height')} />
+          <Field
+            label="Yükseklik (Yük.)"
+            error={e.height?.message}
+            labelClassName="min-h-[2.25rem] flex items-end justify-center text-center pb-1"
+          >
+            <input className="input text-center font-medium" type="number" step="0.1" placeholder="cm" {...register('height')} />
           </Field>
         </div>
       </fieldset>
@@ -88,11 +100,13 @@ export function ProductBasicFields({ form, groups, groupId, categories, isRetail
         <Field
           label={isRetailer ? "Alış maliyeti (₺)" : "Maliyet fiyatı (₺)"}
           error={isRetailer ? e.supplierPrice?.message : e.costPrice?.message}
+          labelClassName="min-h-[1.5rem] flex items-end"
         >
           <input
-            className="input"
+            className="input font-medium"
             type="number"
             step="0.01"
+            placeholder="₺0,00"
             {...register(isRetailer ? 'supplierPrice' : 'costPrice')}
           />
           <p className="mt-1 text-xs text-slate-500">
@@ -102,19 +116,21 @@ export function ProductBasicFields({ form, groups, groupId, categories, isRetail
         <Field
           label="Satış fiyatı (₺)"
           error={isRetailer ? e.costPrice?.message : e.supplierPrice?.message}
+          labelClassName="min-h-[1.5rem] flex items-end"
         >
           <input
-            className="input"
+            className="input font-medium"
             type="number"
             step="0.01"
+            placeholder="₺0,00"
             {...register(isRetailer ? 'costPrice' : 'supplierPrice')}
           />
           <p className="mt-1 text-xs text-slate-500">
             {isRetailer ? "Müşterilerinize perakende satış fiyatınız." : "Perakendecinin göreceği fiyat."}
           </p>
         </Field>
-        <Field label="Genel stok adedi" error={e.stock?.message}>
-          <input className="input" type="number" step="1" {...register('stock')} />
+        <Field label="Genel stok adedi" error={e.stock?.message} labelClassName="min-h-[1.5rem] flex items-end">
+          <input className="input font-medium" type="number" step="1" placeholder="0" {...register('stock')} />
           <p className="mt-1 text-xs text-slate-500">Boşsa stok değişmez.</p>
         </Field>
       </div>
@@ -125,16 +141,18 @@ export function ProductBasicFields({ form, groups, groupId, categories, isRetail
 function Field({
   label,
   error,
+  labelClassName,
   children,
 }: {
   label: string;
   error?: string | undefined;
+  labelClassName?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="label">{label}</span>
-      {children}
+    <label className="flex flex-col justify-between h-full">
+      <span className={`label ${labelClassName ?? ''}`}>{label}</span>
+      <div className="flex-1 flex flex-col justify-end">{children}</div>
       {error && <p className="field-error">{error}</p>}
     </label>
   );
