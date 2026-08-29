@@ -25,8 +25,11 @@ export function getSubdomain(host = window.location.hostname): string | null {
 
 /**
  * Admin paneli yalnız rezerve subdomain'den açılır.
- * İki eski projede de aynı kural vardı; korunuyor.
+ * Geliştirme ve Vercel ortamlarında esnek erişim sağlanır.
  */
-export function isAdminHost(host?: string): boolean {
+export function isAdminHost(host = window.location.hostname): boolean {
+  if (host.includes('vercel.app') || host === 'localhost' || host === '127.0.0.1') {
+    return true;
+  }
   return getSubdomain(host) === RESERVED_ADMIN_SUBDOMAIN;
 }
