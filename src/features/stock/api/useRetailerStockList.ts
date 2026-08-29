@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
+import { useAuthSession } from '@/features/auth';
 import { managedManufacturerIds, type CatalogEdge } from '../domain/managedCatalogs';
 
 export interface RetailerStockRow {

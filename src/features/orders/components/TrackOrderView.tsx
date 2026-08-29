@@ -10,6 +10,7 @@ import {
   sourcesOf,
   stepIndexOf,
   type AggregatedLine,
+  type TrackedItem,
   type TrackedOrder,
   type TrackedShipment,
 } from '../domain/tracking';
@@ -93,8 +94,8 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   const parentStatuses = ['shipped', 'delivered', 'cancelled', 'returned'] as const;
   if (parentStatuses.includes(order.status as typeof parentStatuses[number])) {
     // Çocuklara taşınmayan (kalan veya iptal edilen) ürünleri miktar bazında hesapla
-    const parentItemsToShow = original
-      .map((r) => {
+    const parentItemsToShow: TrackedItem[] = original
+      .map((r): TrackedItem | null => {
         const prodId = r.key.split('|')[0] || null;
         // Bu ürünün aktif (iptal edilmemiş) çocuk sevkiyatlarda sevk edilen toplam adedini bul
         const childShippedQty = childShipments.reduce((sum, s) => {
@@ -160,6 +161,24 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
         <TrackSteps activeIndex={activeIndex} />
       )}
 
+      {/* Sipariş Temel Bilgileri */}
+      <div className={CARD}>
+        <div className="flex flex-wrap justify-between gap-2 text-sm">
+          <span className="text-slate-500">Sipariş No</span>
+          <span className="font-mono font-bold text-slate-900">{order.order_no}</span>
+        </div>
+        <div className="flex flex-wrap justify-between gap-2 text-sm mt-2">
+          <span className="text-slate-500">Sipariş Tarihi</span>
+          <span className="text-slate-700">{formatDateTime(order.created_at)}</span>
+        </div>
+        {order.customer_name && (
+          <div className="flex flex-wrap justify-between gap-2 text-sm mt-2">
+            <span className="text-slate-500">Müşteri</span>
+            <span className="text-slate-700">{order.customer_name}</span>
+          </div>
+        )}
+      </div>
+
       {/* Sipariş Özeti ve Fiyat Kırılımı */}
       <div className="space-y-4">
         {changed && (
@@ -173,6 +192,38 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
 
         {changed && <Lines title="Kalan / Güncel Ürünler" lines={remaining} />}
       </div>
+
+      {originalTotal > 0 && (
+        <div className={CARD}>
+          {effectiveTotal !== originalTotal && (
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-slate-400">Sipariş Tutarı</span>
+              <span className="font-semibold text-slate-400 line-through">{formatMoney(originalTotal)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">{effectiveTotal !== originalTotal ? 'İptal Sonrası Tutar' : 'Sipariş Tutarı'}</span>
+            <span className="font-semibold text-slate-800">{formatMoney(effectiveTotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm mt-2">
+            <span className="text-slate-500">Ödenen</span>
+            <span className="font-semibold text-emerald-600">{formatMoney(paid)}</span>
+          </div>
+          <div className="flex justify-between text-sm mt-2 border-t border-slate-100 pt-2">
+            <span className="font-bold text-slate-800">Kalan Bakiye</span>
+            <span className="font-bold text-slate-900">{formatMoney(balance)}</span>
+          </div>
+        </div>
+      )}
+
+      {order.note && (
+        <div className={CARD}>
+          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            Sipariş Notu
+          </h3>
+          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{order.note}</p>
+        </div>
+      )}
 
       {/* Sevkiyatlar ve İptaller Bölümü */}
       {allShipments.length > 0 && (
