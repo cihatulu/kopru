@@ -48,11 +48,9 @@ describe('validateStaffForm', () => {
     expect(validateStaffForm(form({ passwordConfirm: 'baska123' }), false)).toMatch(/uyuşmuyor/);
   });
 
-  test('düzenlemede şifre sorulmaz, kullanıcı kodu doğrulanır', () => {
+  test('düzenlemede şifre sorulmaz, ad soyad yeterlidir', () => {
     expect(validateStaffForm(form({ password: '', passwordConfirm: '' }), true)).toBeNull();
-    expect(validateStaffForm(form({ userCode: 'ab' }), true)).toMatch(/3/);
-    expect(validateStaffForm(form({ userCode: '12345' }), true)).toMatch(/rakamlardan/);
-    expect(validateStaffForm(form({ userCode: 'Ayse01' }), true)).toMatch(/küçük harf/);
+    expect(validateStaffForm(form({ userCode: '12345' }), true)).toBeNull();
   });
 });
 

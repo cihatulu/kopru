@@ -171,7 +171,13 @@ export function StaffDialog({ staff, retailers, vkn, initialScope, pending, onCl
           onToggle={toggleRetailer}
         />
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        {error && (
+          <div role="alert" className="bg-red-50 text-red-600 p-3.5 rounded-xl text-xs font-semibold border border-red-100 shadow-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 sticky bottom-0 bg-white/95 backdrop-blur-xs pb-1">
           <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>
             İptal
           </Button>

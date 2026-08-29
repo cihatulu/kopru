@@ -76,7 +76,7 @@ export function useStaffActions(myVkn: string) {
       {
         userId: staff.id,
         fullName: values.fullName,
-        userCode: values.userCode,
+        // userCode personelde değiştirilmez (VKN'dir); Edge function'a gönderilmemelidir.
         ...(values.email ? { email: values.email } : {}),
         ...(values.phone ? { phone: values.phone } : {}),
         // Rol korunur. 'owner' güncellenebilir rol değil — hiç gönderilmez.

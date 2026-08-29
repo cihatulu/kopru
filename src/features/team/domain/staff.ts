@@ -96,17 +96,6 @@ export function validateStaffForm(v: StaffFormInput, isEdit: boolean): string | 
   if (!v.fullName.trim()) return 'Ad Soyad alanı zorunludur.';
 
   if (isEdit) {
-    const code = v.userCode.trim();
-    if (!code) return 'Kullanıcı Kodu alanı zorunludur.';
-    if (code.length < 3 || code.length > 20) {
-      return 'Kullanıcı kodu en az 3 ve en fazla 20 karakter olmalıdır.';
-    }
-    if (/^\d+$/.test(code)) {
-      return 'Kullanıcı kodu sadece rakamlardan oluşamaz, en az bir harf içermelidir.';
-    }
-    if (/[^a-z0-9]/.test(code)) {
-      return 'Kullanıcı kodu sadece İngilizce küçük harf ve rakam içerebilir.';
-    }
     return null;
   }
 
