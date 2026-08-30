@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Spinner';
 import { formatDate } from '@/lib/format';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
-import type { OrderRow, OrderItemRow } from '../domain/orderMapping';
+import { useOrderDetail } from '../api/useOrderDetail';
 import { useScheduleCustomerDelivery } from '../api/useOrderMutations';
 
 interface Props {
-  order: OrderRow & { items?: OrderItemRow[] };
+  orderId: string;
+  orgId: string;
   onClose: () => void;
   onSuccess?: () => void;
 }
@@ -18,40 +20,77 @@ const TIME_SLOTS = [
   { label: '17:00 - 21:00 (Akşam)', value: '17:00 - 21:00' },
 ];
 
-export function CustomerDeliveryModal({ order, onClose, onSuccess }: Props) {
+export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Props) {
+  const { data: order, isPending: isLoadingDetail, isError } = useOrderDetail(orderId, orgId);
   const scheduleMutation = useScheduleCustomerDelivery();
 
-  const [customerName, setCustomerName] = useState(order.customerName || '');
-  const [customerPhone, setCustomerPhone] = useState(order.customerPhone || '');
-  const [customerAddress, setCustomerAddress] = useState(order.customerAddress || '');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
 
   // Yarının tarihi varsayılan
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const defaultDateStr = tomorrow.toISOString().split('T')[0] ?? '';
 
-  const [deliveryDate, setDeliveryDate] = useState(
-    order.latestDelivery?.deliveryDate || defaultDateStr,
-  );
-  const [timeSlot, setTimeSlot] = useState(
-    order.latestDelivery?.timeSlot || '13:00 - 17:00',
-  );
-  const [customTimeSlot, setCustomTimeSlot] = useState(
-    TIME_SLOTS.some((s) => s.value === (order.latestDelivery?.timeSlot || '13:00 - 17:00'))
-      ? ''
-      : order.latestDelivery?.timeSlot || '',
-  );
-  const [notes, setNotes] = useState(order.latestDelivery?.notes || '');
+  const [deliveryDate, setDeliveryDate] = useState(defaultDateStr);
+  const [timeSlot, setTimeSlot] = useState('13:00 - 17:00');
+  const [customTimeSlot, setCustomTimeSlot] = useState('');
+  const [notes, setNotes] = useState('');
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
 
-  // Ürün kalemleri ve teslim edilecek miktarlar (Varsayılan hepsi tam seçili)
-  const items = order.items && order.items.length > 0
-    ? order.items
-    : [{ id: '1', name: 'Sipariş Ürünleri', code: '', quantity: 1, productId: null, supplierUnitPrice: 0, totalPrice: 0, customDescription: null, priceDifference: 0, returnedQty: 0 }];
+  // Sipariş detayı yüklendiğinde formu gerçek verilerle doldur
+  useEffect(() => {
+    if (order) {
+      setCustomerName(order.customerName || '');
+      setCustomerPhone(order.customerPhone || '');
+      setCustomerAddress(order.customerAddress || '');
 
-  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>(() =>
-    Object.fromEntries(items.map((i) => [i.id, i.quantity])),
-  );
+      if (order.latestDelivery) {
+        setDeliveryDate(order.latestDelivery.deliveryDate || defaultDateStr);
+        const slot = order.latestDelivery.timeSlot || '13:00 - 17:00';
+        if (TIME_SLOTS.some((s) => s.value === slot)) {
+          setTimeSlot(slot);
+          setCustomTimeSlot('');
+        } else {
+          setTimeSlot('custom');
+          setCustomTimeSlot(slot);
+        }
+        setNotes(order.latestDelivery.notes || '');
+      }
 
+      // Kalem miktarlarını tam adet olarak seçili başlat
+      const initialQty: Record<string, number> = {};
+      for (const item of order.items) {
+        initialQty[item.id] = item.quantity;
+      }
+      setSelectedQuantities(initialQty);
+    }
+  }, [order, defaultDateStr]);
+
+  if (isLoadingDetail) {
+    return (
+      <Modal label="Teslimat Yükleniyor" onClose={onClose} panelClassName="max-w-md w-full rounded-2xl bg-white p-8 shadow-2xl text-center">
+        <div className="flex flex-col items-center justify-center gap-3 py-6">
+          <Spinner />
+          <p className="text-sm font-semibold text-slate-700">Sipariş detayları ve ürün kalemleri yükleniyor...</p>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (isError || !order) {
+    return (
+      <Modal label="Hata" onClose={onClose} panelClassName="max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="space-y-4 text-center">
+          <p className="text-sm font-bold text-red-600">Sipariş detayları yüklenemedi.</p>
+          <Button variant="secondary" size="sm" onClick={onClose}>Kapat</Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  const items = order.items;
   const activeTimeSlot = customTimeSlot.trim() || timeSlot;
 
   const totalItemsToDeliver = items.reduce(
@@ -92,7 +131,7 @@ export function CustomerDeliveryModal({ order, onClose, onSuccess }: Props) {
       onSuccess?.();
       onClose();
     } catch {
-      // Hata zaten mutation state'inde
+      // Hata mutation state'inde gösterilir
     }
   };
 
@@ -257,7 +296,7 @@ export function CustomerDeliveryModal({ order, onClose, onSuccess }: Props) {
           </div>
         </div>
 
-        {/* 3. Teslim Edilecek Kalemler (Kısmi Teslimat Desteği) */}
+        {/* 3. Teslim Edilecek Kalemler (Gerçek Sipariş Ürünleri) */}
         {items.length > 0 && (
           <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2.5 shadow-xs">
             <div className="flex items-center justify-between">
@@ -294,8 +333,13 @@ export function CustomerDeliveryModal({ order, onClose, onSuccess }: Props) {
                       {item.code && (
                         <p className="text-[11px] font-mono text-slate-400">{item.code}</p>
                       )}
+                      {item.customDescription && (
+                        <p className="text-[10px] font-semibold text-amber-900 bg-amber-50 rounded px-1.5 py-0.5 inline-block mt-0.5 border border-amber-200/60">
+                          Özel Talep: {item.customDescription}
+                        </p>
+                      )}
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Sipariş Adedi: <span className="font-bold text-slate-700">{item.quantity}</span>
+                        Sipariş Adedi: <span className="font-bold text-slate-800">{item.quantity} Adet</span>
                       </p>
                     </div>
 

@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/Button';
 import { TD as TD_BASE, TH, THEAD, TH_NUM } from '@/components/ui/Table';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { OrderStatus } from '../domain/status';
 import type { OrderRow } from '../domain/orderMapping';
 import type { OrgKind } from '@/constants';
+import { useFinanceTransactions } from '@/features/finance';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { OrderStatusCell } from './OrderStatusCell';
 import { OrderExpandedDetail } from './OrderExpandedDetail';
@@ -33,7 +34,20 @@ const EDITABLE: readonly OrderStatus[] = [
 export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOrderId }: Props) {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, OrderStatus>>({});
-  const [deliveryOrder, setDeliveryOrder] = useState<OrderRow | null>(null);
+  const [deliveryOrderId, setDeliveryOrderId] = useState<string | null>(null);
+
+  const { data: transactions } = useFinanceTransactions();
+
+  // Sipariş bazında müşteriden tahsil edilen tutarlar (income)
+  const paidByOrderId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of transactions ?? []) {
+      if (t.type === 'income' && t.order_id) {
+        map.set(t.order_id, (map.get(t.order_id) ?? 0) + Number(t.amount || 0));
+      }
+    }
+    return map;
+  }, [transactions]);
 
   if (orders.length === 0) {
     return (
@@ -133,27 +147,47 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
               )}
 
               {/* Nihai Müşteriye Teslimat & Montaj Butonu (Mağaza Görünümü) */}
-              {!isMfr && (o.status === 'delivered' || o.latestDelivery) && (
-                <div className="pt-2.5 pb-1 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setDeliveryOrder(o)}
-                    className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
-                      o.latestDelivery
-                        ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
-                        : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                    }`}
-                  >
-                    <span>🚚</span>
-                    <span className="truncate">
-                      {o.latestDelivery
-                        ? `Müşteri Randevusu: ${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
-                        : 'Nihai Müşteriye Teslimat Başlat'}
-                    </span>
-                    <span className="text-[10px] opacity-75 shrink-0">✏️</span>
-                  </button>
-                </div>
-              )}
+              {!isMfr && (o.status === 'delivered' || o.latestDelivery) && (() => {
+                const paidAmount = (paidByOrderId.get(o.id) ?? 0) + (o.parentOrderId ? (paidByOrderId.get(o.parentOrderId) ?? 0) : 0);
+                const remainingDebt = Math.max(0, Math.round((o.totalAmount - paidAmount) * 100) / 100);
+                const hasDebt = remainingDebt > 0;
+
+                return (
+                  <div className="pt-2.5 pb-1 border-t border-slate-100">
+                    {hasDebt ? (
+                      <button
+                        type="button"
+                        disabled
+                        title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
+                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-amber-50/90 border border-amber-300 text-amber-900 opacity-80 cursor-not-allowed shadow-xs select-none"
+                      >
+                        <span>🔒</span>
+                        <span className="truncate">
+                          {formatMoney(remainingDebt)} Borç Var (Teslimat Kilitli)
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryOrderId(o.id)}
+                        className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
+                          o.latestDelivery
+                            ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
+                            : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                        }`}
+                      >
+                        <span>🚚</span>
+                        <span className="truncate">
+                          {o.latestDelivery
+                            ? `Müşteri Randevusu: ${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
+                            : 'Nihai Müşteriye Teslimat Başlat'}
+                        </span>
+                        <span className="text-[10px] opacity-75 shrink-0">✏️</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Kart Aksiyonları: Teslim Al & Detay */}
               {(() => {
@@ -258,30 +292,48 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                     </td>
 
                     {/* Nihai Müşteriye Teslimat Sütunu (Mağaza Görünümü) */}
-                    {!isMfr && (
-                      <td className={TD}>
-                        {o.status === 'delivered' || o.latestDelivery ? (
-                          <button
-                            type="button"
-                            onClick={() => setDeliveryOrder(o)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
-                              o.latestDelivery
-                                ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
-                                : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                            }`}
-                          >
-                            <span>🚚</span>
-                            <span>
-                              {o.latestDelivery
-                                ? `${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
-                                : 'Teslimat Başlat'}
-                            </span>
-                          </button>
-                        ) : (
-                          <span className="text-xs text-slate-400 font-medium">—</span>
-                        )}
-                      </td>
-                    )}
+                    {!isMfr && (() => {
+                      const paidAmount = (paidByOrderId.get(o.id) ?? 0) + (o.parentOrderId ? (paidByOrderId.get(o.parentOrderId) ?? 0) : 0);
+                      const remainingDebt = Math.max(0, Math.round((o.totalAmount - paidAmount) * 100) / 100);
+                      const hasDebt = remainingDebt > 0;
+
+                      return (
+                        <td className={TD}>
+                          {o.status === 'delivered' || o.latestDelivery ? (
+                            hasDebt ? (
+                              <button
+                                type="button"
+                                disabled
+                                title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50/90 border border-amber-300 text-amber-900 opacity-80 cursor-not-allowed shadow-xs select-none"
+                              >
+                                <span>🔒</span>
+                                <span>{formatMoney(remainingDebt)} Borç Var</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setDeliveryOrderId(o.id)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
+                                  o.latestDelivery
+                                    ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
+                                    : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                                }`}
+                              >
+                                <span>🚚</span>
+                                <span>
+                                  {o.latestDelivery
+                                    ? `${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
+                                    : 'Teslimat Başlat'}
+                                </span>
+                              </button>
+                            )
+                          ) : (
+                            <span className="text-xs text-slate-400 font-medium">—</span>
+                          )}
+                        </td>
+                      );
+                    })()}
 
                     <td className={`${TD} text-right pr-8`}>
                       <div className="flex justify-end gap-2 items-center">
@@ -332,10 +384,11 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
       </div>
 
       {/* Nihai Müşteri Teslimat ve Montaj Modalı */}
-      {deliveryOrder && (
+      {deliveryOrderId && (
         <CustomerDeliveryModal
-          order={deliveryOrder}
-          onClose={() => setDeliveryOrder(null)}
+          orderId={deliveryOrderId}
+          orgId={myOrgId}
+          onClose={() => setDeliveryOrderId(null)}
         />
       )}
     </div>
