@@ -26,6 +26,8 @@ export default function LoginPage() {
   const login = useLogin();
   const [tabId, setTabId] = useState<TabId>('member-manufacturer');
   const [applyKind, setApplyKind] = useState<OrgKind | null>(null);
+  const [openManufacturer, setOpenManufacturer] = useState(false);
+  const [openRetailer, setOpenRetailer] = useState(false);
 
   if (isLoading) return <PageLoader />;
   if (user) return <Navigate to={roleHomePath(user)} replace />;
@@ -50,9 +52,6 @@ export default function LoginPage() {
       : login.isError
         ? 'Giriş bilgileri hatalı.'
         : undefined;
-
-  const [openManufacturer, setOpenManufacturer] = useState(false);
-  const [openRetailer, setOpenRetailer] = useState(false);
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center bg-[#090D16] px-4 py-8 overflow-x-hidden font-sans">
