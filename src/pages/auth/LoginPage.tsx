@@ -60,30 +60,27 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute -bottom-40 right-1/4 size-[500px] rounded-full bg-emerald-600/10 blur-[130px]" />
 
       {/* Üst Logo ve Marka Başlığı */}
-      <div className="relative z-10 mb-3 sm:mb-6 text-center">
+      <div className="relative z-10 mb-3 sm:mb-5 text-center">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-0.5 text-[10px] sm:text-xs font-semibold text-slate-300 shadow-inner backdrop-blur-md">
           <span className="size-1.5 sm:size-2 rounded-full bg-emerald-400 animate-pulse" />
           B2B Mobilya Ekosistemi
         </div>
-        <h1 className="mt-1.5 sm:mt-2.5 text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+        <h1 className="mt-1.5 sm:mt-2 text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-2">
           <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
             KÖPRÜ
           </span>
         </h1>
-        <p className="mt-0.5 text-[11px] sm:text-sm font-medium text-slate-400">
-          Mobilya operasyon, katalog ve sipariş yönetim platformu
-        </p>
       </div>
 
-      {/* 3 Kolonlu Vitrin Izgarası */}
-      <div className="relative z-10 flex w-full max-w-6xl flex-col items-center justify-center gap-3 sm:gap-5 lg:flex-row lg:items-start">
+      {/* Dikey Hizalı Giriş & Başvuru Kolonu (Web ve Mobil Uyumlu) */}
+      <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center gap-3 sm:gap-4 mx-auto">
         
-        {/* Sol Taraf: Üye Üretici Başvuru Butonu & Akordeonu */}
-        <div className="w-full max-w-lg lg:w-72 xl:w-80 flex flex-col rounded-2xl border border-blue-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
+        {/* Üst: Üye Üretici Başvuru Butonu & Akordeonu */}
+        <div className="w-full flex flex-col rounded-2xl border border-blue-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
           <button
             type="button"
             onClick={() => setOpenManufacturer(!openManufacturer)}
-            className="w-full p-2.5 sm:p-4 flex items-center justify-between text-left font-black text-xs sm:text-sm text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 transition-colors cursor-pointer select-none"
+            className="w-full p-3 sm:p-3.5 flex items-center justify-between text-left font-black text-xs sm:text-sm text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 transition-colors cursor-pointer select-none"
           >
             <span>MOBİLYA ÜRETİCİSİYSEN TIKLA!</span>
             <svg
@@ -135,7 +132,7 @@ export default function LoginPage() {
         </div>
 
         {/* Orta: Giriş Formu Kartı */}
-        <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-slate-900/85 backdrop-blur-2xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/10 transition-all">
+        <div className="w-full overflow-hidden rounded-3xl bg-slate-900/85 backdrop-blur-2xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/10 transition-all">
           <LoginTabs
             active={tabId}
             onSelect={(id) => {
@@ -155,12 +152,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Sağ Taraf: Üye Perakendeci Başvuru Butonu & Akordeonu */}
-        <div className="w-full max-w-lg lg:w-72 xl:w-80 flex flex-col rounded-2xl border border-emerald-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
+        {/* Alt: Üye Perakendeci Başvuru Butonu & Akordeonu */}
+        <div className="w-full flex flex-col rounded-2xl border border-emerald-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
           <button
             type="button"
             onClick={() => setOpenRetailer(!openRetailer)}
-            className="w-full p-2.5 sm:p-4 flex items-center justify-between text-left font-black text-xs sm:text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors cursor-pointer select-none"
+            className="w-full p-3 sm:p-3.5 flex items-center justify-between text-left font-black text-xs sm:text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors cursor-pointer select-none"
           >
             <span>MOBİLYA MAĞAZASIYSAN TIKLA!</span>
             <svg
