@@ -78,18 +78,18 @@ export function OrderExpandedDetail({ orderId, orgId }: { orderId: string; orgId
             </h4>
             <div className="space-y-2.5">
               {detail.shipments.map((s) => (
-                <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <div>
-                    <p className="font-bold text-xs text-slate-800">{s.shipmentNo}</p>
-                    <p className="font-mono text-[10px] text-slate-400">{formatDateTime(s.createdAt)}</p>
+                <div
+                  key={s.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-100"
+                >
+                  <div className="flex items-center justify-between sm:block min-w-0">
+                    <span className="font-bold text-xs text-slate-800">{s.shipmentNo}</span>
+                    <span className="sm:hidden font-extrabold text-xs text-slate-900">{formatMoney(s.totalAmount)}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-extrabold text-xs text-slate-900">{formatMoney(s.totalAmount)}</span>
-                    {/*
-                      Rozet SABİT "Sevk Edildi" yazıyordu; iptal edilmiş sevkiyat
-                      da sevk edilmiş görünüyordu. Veri zaten doğruydu, ekran
-                      onu okumuyordu.
-                    */}
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                    <span className="font-mono text-[10px] text-slate-400">{formatDateTime(s.createdAt)}</span>
+                    <span className="hidden sm:inline font-extrabold text-xs text-slate-900">{formatMoney(s.totalAmount)}</span>
                     <OrderStatusBadge status={s.status} />
                   </div>
                 </div>
