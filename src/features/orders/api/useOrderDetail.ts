@@ -103,11 +103,11 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         }
       }
 
-      // Müşteri teslimatları — daha önce planlanan ürün miktarları
+      // Müşteri teslimatları — SADECE bu sipariş/sevkiyat için planlanan ürün miktarları
       const deliveriesRes = await supabase
         .from('customer_deliveries')
         .select('id, delivery_date, time_slot, status, customer_name, customer_phone, customer_address, notes, items, created_at')
-        .in('order_id', [orderId ?? '', ...shipments.map((s) => s.id)])
+        .eq('order_id', orderId ?? '')
         .neq('status', 'cancelled')
         .order('created_at', { ascending: false });
 
