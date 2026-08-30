@@ -8,6 +8,7 @@ import type { OrgKind } from '@/constants';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { OrderStatusCell } from './OrderStatusCell';
 import { OrderExpandedDetail } from './OrderExpandedDetail';
+import { CustomerDeliveryModal } from './CustomerDeliveryModal';
 
 interface Props {
   orders: OrderRow[];
@@ -32,6 +33,7 @@ const EDITABLE: readonly OrderStatus[] = [
 export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOrderId }: Props) {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, OrderStatus>>({});
+  const [deliveryOrder, setDeliveryOrder] = useState<OrderRow | null>(null);
 
   if (orders.length === 0) {
     return (
@@ -130,6 +132,29 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                 </div>
               )}
 
+              {/* Nihai Müşteriye Teslimat & Montaj Butonu (Mağaza Görünümü) */}
+              {!isMfr && (o.status === 'delivered' || o.latestDelivery) && (
+                <div className="pt-2.5 pb-1 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryOrder(o)}
+                    className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
+                      o.latestDelivery
+                        ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
+                        : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                    }`}
+                  >
+                    <span>🚚</span>
+                    <span className="truncate">
+                      {o.latestDelivery
+                        ? `Müşteri Randevusu: ${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
+                        : 'Nihai Müşteriye Teslimat Başlat'}
+                    </span>
+                    <span className="text-[10px] opacity-75 shrink-0">✏️</span>
+                  </button>
+                </div>
+              )}
+
               {/* Kart Aksiyonları: Teslim Al & Detay */}
               {(() => {
                 const canDeliver = !isMfr && (o.status === 'shipped' || o.status === 'partially_shipped');
@@ -191,6 +216,7 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
               <th className={TH}>{isMfr ? 'Perakendeci' : 'Tedarikçi'}</th>
               <th className={TH}>Son Kullanıcı</th>
               <th className={TH}>Durum</th>
+              {!isMfr && <th className={TH}>Müşteri Sevkiyatı</th>}
               <th className={`${TH_NUM} pr-8`}>İşlemler</th>
             </tr>
           </thead>
@@ -230,6 +256,33 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                         <OrderStatusBadge status={o.status} />
                       )}
                     </td>
+
+                    {/* Nihai Müşteriye Teslimat Sütunu (Mağaza Görünümü) */}
+                    {!isMfr && (
+                      <td className={TD}>
+                        {o.status === 'delivered' || o.latestDelivery ? (
+                          <button
+                            type="button"
+                            onClick={() => setDeliveryOrder(o)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer select-none ${
+                              o.latestDelivery
+                                ? 'border border-blue-200 bg-blue-50/80 text-blue-800 hover:bg-blue-100'
+                                : 'border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                            }`}
+                          >
+                            <span>🚚</span>
+                            <span>
+                              {o.latestDelivery
+                                ? `${formatDate(o.latestDelivery.deliveryDate)} (${o.latestDelivery.timeSlot})`
+                                : 'Teslimat Başlat'}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium">—</span>
+                        )}
+                      </td>
+                    )}
+
                     <td className={`${TD} text-right pr-8`}>
                       <div className="flex justify-end gap-2 items-center">
                         {!isMfr && (o.status === 'shipped' || o.status === 'partially_shipped') && (
@@ -266,7 +319,7 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
 
                   {isExpanded && (
                     <tr className="bg-slate-50/30">
-                      <td colSpan={7} className="px-6 py-6 border-t border-slate-100">
+                      <td colSpan={isMfr ? 7 : 8} className="px-6 py-6 border-t border-slate-100">
                         <OrderExpandedDetail orderId={o.id} orgId={myOrgId} />
                       </td>
                     </tr>
@@ -277,6 +330,14 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
           </tbody>
         </table>
       </div>
+
+      {/* Nihai Müşteri Teslimat ve Montaj Modalı */}
+      {deliveryOrder && (
+        <CustomerDeliveryModal
+          order={deliveryOrder}
+          onClose={() => setDeliveryOrder(null)}
+        />
+      )}
     </div>
   );
 }

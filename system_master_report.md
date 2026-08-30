@@ -519,3 +519,22 @@ Giriş ve karşılama ekranının teknik standartları:
      * **Mobilde:** `api.whatsapp.com/send` protokolü çağrılarak tarayıcı ara ekranı bypass edilir ve doğrudan **telefondaki yerel WhatsApp uygulaması** açılır.
      * **Masaüstünde:** Doğrudan WhatsApp Web tarayıcı sohbeti açılır.
    * Başvuru formu gönderildiğinde ve WhatsApp açıldığında, onay penceresinde gereksiz tekrarları önlemek adına tek bir şık **"Kapat"** butonu yer alır.
+
+---
+
+## 14. 🚚 NİHAİ MÜŞTERİYE TESLİMAT & MONTAJ RANDEVUSU MİMARİSİ (`CustomerDeliveryModal`)
+
+Fabrikadan mağazaya teslim edilen (`status = 'delivered'`) mobilya siparişlerinin son tüketiciye ulaştırılma sürecini yöneten operasyonel akış:
+
+1. **Mağaza Paneli Sipariş Tablosu Entegrasyonu (`OrderTable`):**
+   * Perakendeci görünümünde (`/r/siparisler`), `DURUM` ile `İŞLEMLER` arasına **Müşteri Sevkiyatı** sütunu eklenmiştir.
+   * Sipariş mağazaya ulaştığında yeşil **`🚚 Teslimat Başlat`** butonu belirir; randevu planlandığında ise mavi **`📅 02 Eyl (14:00 - 18:00)`** rozeti olarak güncellenir ve tekrar tıklanarak düzenlenebilir.
+2. **Kapsamlı Randevu ve Adres Düzenleme Modalı (`CustomerDeliveryModal`):**
+   * **İletişim & Adres:** Siparişten hazır gelen Müşteri Adı, Telefonu ve Açık Adresi mağaza yetkilisi tarafından doğrudan form üzerinden güncellenebilir (Veritabanında `orders` tablosuna da yansır).
+   * **Tarih & Saat:** Takvimden teslimat günü ve hazır saat dilimleri (`09:00 - 12:00`, `13:00 - 17:00`, `17:00 - 21:00` veya özel saat) seçilir.
+   * **Kısmi Teslimat Desteği:** Varsayılan olarak tüm ürünler ve tam adetleri seçili gelir; istenirse kalem bazında adet stepper'ı (`[ − ] [ 1 ] [ + ]`) ile kısmi teslimat ayrıştırılabilir.
+   * **Montaj Notu:** Kat, asansör veya bina girişine dair ekibe özel notlar girilebilir.
+3. **Tek Tıkla WhatsApp Randevu Bildirimi:**
+   * Modal içindeki **`💬 WhatsApp Randevu Bildirimi`** butonu sayesinde müşteriye tek tıkla teslimat günü, saat aralığı ve adres bilgilerini içeren şık ve kurumsal bir randevu mesajı iletilir.
+4. **Canlı Müşteri Sipariş Takip Linki Entegrasyonu (`TrackOrderView` & `/takip/:token`):**
+   * Mağaza teslimatı planladığı anda son müşterinin takip ekranında en üstte belirgin yeşil/mavi **`🚚 Evinize Teslimat & Montaj Planlandı`** kartı açılır; tarih, saat aralığı, güncel adres ve montaj notları müşteriye şeffafça sunulur. Zaman çizelgesine de log olarak işlenir.

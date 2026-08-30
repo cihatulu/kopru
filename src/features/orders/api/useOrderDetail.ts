@@ -20,7 +20,8 @@ const ORDER_DETAIL_COLUMNS =
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name), ' +
   'customer_phone, customer_address, note, order_token, ' +
   'order_items(id, product_id, quantity, supplier_unit_price, total_price, product_snapshot, custom_description, price_difference, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price))), ' +
-  'return_requests(approved_amount, status, items)';
+  'return_requests(approved_amount, status, items), ' +
+  'customer_deliveries(id, delivery_date, time_slot, status, customer_name, customer_phone, customer_address, notes, items, created_at)';
 
 export function useOrderDetail(orderId: string | null, myOrgId: string) {
   return useQuery({

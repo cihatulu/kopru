@@ -15,6 +15,19 @@ export const num = (v: unknown): number => Number(v ?? 0);
 export const nullable = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 export const nested = (v: unknown): Row => (v && typeof v === 'object' ? (v as Row) : {});
 
+export interface CustomerDeliverySummary {
+  id: string;
+  deliveryDate: string;
+  timeSlot: string;
+  status: 'planned' | 'shipped' | 'delivered' | 'cancelled';
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  notes: string | null;
+  items: Array<{ order_item_id?: string; name: string; quantity: number }>;
+  createdAt: string;
+}
+
 export interface OrderRow {
   id: string;
   orderNo: string;
@@ -27,7 +40,11 @@ export interface OrderRow {
   relationshipId: string;
   counterpartyName: string;
   customerName: string | null;
+  customerPhone?: string | null;
+  customerAddress?: string | null;
   parentOrderId: string | null;
+  customerDeliveries?: CustomerDeliverySummary[];
+  latestDelivery?: CustomerDeliverySummary | null;
 }
 
 export interface OrderItemRow {
@@ -192,6 +209,24 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
     totalAmount = round2(totalAmount - returnedTotal);
   }
 
+  const rawDeliveries = Array.isArray(r.customer_deliveries) ? r.customer_deliveries : [];
+  const customerDeliveries: CustomerDeliverySummary[] = rawDeliveries.map((rawD) => {
+    const d = nested(rawD);
+    return {
+      id: str(d.id),
+      deliveryDate: str(d.delivery_date),
+      timeSlot: str(d.time_slot),
+      status: (d.status ?? 'planned') as 'planned' | 'shipped' | 'delivered' | 'cancelled',
+      customerName: str(d.customer_name),
+      customerPhone: str(d.customer_phone),
+      customerAddress: str(d.customer_address),
+      notes: nullable(d.notes),
+      items: Array.isArray(d.items) ? (d.items as Array<{ order_item_id?: string; name: string; quantity: number }>) : [],
+      createdAt: str(d.created_at),
+    };
+  });
+  const latestDelivery = customerDeliveries[0] ?? null;
+
   return {
     id: str(r.id),
     orderNo: str(r.order_no),
@@ -204,7 +239,11 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
     relationshipId: str(r.relationship_id),
     counterpartyName: str(other.company_name) || '—',
     customerName: nullable(r.customer_name),
+    customerPhone: nullable(r.customer_phone),
+    customerAddress: nullable(r.customer_address),
     parentOrderId: nullable(r.parent_order_id),
+    customerDeliveries,
+    latestDelivery,
   };
 }
 

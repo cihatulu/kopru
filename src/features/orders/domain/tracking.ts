@@ -54,6 +54,19 @@ export interface TrackedPayment {
   created_at: string;
 }
 
+export interface TrackedCustomerDelivery {
+  id: string;
+  delivery_date: string;
+  time_slot: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+  notes?: string | null;
+  status: 'planned' | 'shipped' | 'delivered' | 'cancelled';
+  items?: Array<{ order_item_id?: string; name: string; quantity: number }>;
+  created_at: string;
+}
+
 export interface TrackedOrder {
   order_no: string;
   status: OrderStatus;
@@ -66,6 +79,7 @@ export interface TrackedOrder {
   history: TrackedLog[];
   shipments: TrackedShipment[];
   payments: TrackedPayment[];
+  customer_deliveries?: TrackedCustomerDelivery[];
 }
 
 export interface AggregatedLine {

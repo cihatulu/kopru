@@ -11,8 +11,9 @@ export {
   useAdvanceOrderStatus,
   useShipOrder,
   useCancelOrder,
+  useScheduleCustomerDelivery,
 } from './api/useOrderMutations';
-export type { PlaceOrderInput } from './api/useOrderMutations';
+export type { PlaceOrderInput, ScheduleCustomerDeliveryInput } from './api/useOrderMutations';
 
 export {
   ORDER_STATUS_META,
@@ -83,6 +84,7 @@ export { CartSummaryCard } from './components/CartSummaryCard';
 export { CheckoutFields } from './components/CheckoutFields';
 export { DownPaymentPanel } from './components/DownPaymentPanel';
 export { OrderPlacedDialog } from './components/OrderPlacedDialog';
+export { CustomerDeliveryModal } from './components/CustomerDeliveryModal';
 export { SalespersonSelect } from './components/SalespersonSelect';
 export type { SalespersonOption } from './components/SalespersonSelect';
 export { ShipmentDialog } from './components/ShipmentDialog';

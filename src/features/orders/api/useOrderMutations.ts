@@ -145,3 +145,39 @@ export function useCancelOrder() {
     onSuccess: invalidate,
   });
 }
+
+export interface ScheduleCustomerDeliveryInput {
+  orderId: string;
+  deliveryDate: string;
+  timeSlot: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  notes?: string | undefined;
+  items: Array<{ orderItemId?: string; name: string; quantity: number }>;
+}
+
+export function useScheduleCustomerDelivery() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: ScheduleCustomerDeliveryInput) => {
+      const { data, error } = await supabase.rpc('schedule_customer_delivery', rpcArgs({
+        p_order_id: input.orderId,
+        p_delivery_date: input.deliveryDate,
+        p_time_slot: input.timeSlot,
+        p_customer_name: input.customerName,
+        p_customer_phone: input.customerPhone,
+        p_customer_address: input.customerAddress,
+        p_notes: input.notes ?? undefined,
+        p_items: input.items.map((i) => ({
+          order_item_id: i.orderItemId,
+          name: i.name,
+          quantity: i.quantity,
+        })),
+      }));
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: invalidate,
+  });
+}
