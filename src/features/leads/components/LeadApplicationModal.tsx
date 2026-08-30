@@ -46,17 +46,23 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
 
     try {
       // 1. Veritabanına kaydetmeyi dene (arka planda)
-      await (supabase.rpc as any)('submit_lead_application', {
+      const { error: rpcError } = await (supabase.rpc as any)('submit_lead_application', {
         p_company_name: companyName.trim(),
         p_vkn_tc: vknTc.trim() || null,
         p_kind: kind,
         p_city: fullLocation || null,
         p_phone: phone.trim(),
         p_email: email.trim() || null,
-      }).catch((rpcErr: any) => {
-        console.warn('Lead application RPC notice:', rpcErr);
       });
 
+      if (rpcError) {
+        console.warn('Lead application RPC notice:', rpcError);
+      }
+    } catch (rpcErr) {
+      console.warn('Lead application notice:', rpcErr);
+    }
+
+    try {
       // 2. WhatsApp mesajı hazırla
       const msgLines = [
         `Merhaba, KÖPRÜ B2B platformuna ${roleTitle} olarak katılmak istiyoruz.`,
