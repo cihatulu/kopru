@@ -19,7 +19,7 @@ export function LoginTabs({ active, onSelect }: Props) {
     <div
       role="tablist"
       aria-label="Giriş tipi"
-      className="grid grid-cols-5 border-b border-white/10 bg-slate-950/40 p-1 gap-1"
+      className="grid grid-cols-5 border-b border-slate-200/80 bg-slate-50/80 p-1.5 gap-1"
     >
       {LOGIN_TABS.map((tab) => {
         const isActive = tab.id === active;
@@ -32,20 +32,20 @@ export function LoginTabs({ active, onSelect }: Props) {
             type="button"
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
-            className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
               isActive
-                ? 'bg-white/10 text-blue-400 font-extrabold shadow-inner border border-white/10'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
+                ? 'bg-white text-blue-600 font-extrabold shadow-sm border border-slate-200/70 ring-1 ring-blue-500/10'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent'
             }`}
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth={1.8}
+              strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-blue-400' : ''}`}
+              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-blue-600' : 'text-slate-400'}`}
               aria-hidden="true"
             >
               <path d={ICONS[tab.id]} />
