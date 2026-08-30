@@ -38,6 +38,7 @@ export {
   EMPTY_PERIOD,
   currentMonth,
   previousMonth,
+  currentYear,
   isPeriodActive,
   isPeriodInverted,
   isSummaryConsistent,

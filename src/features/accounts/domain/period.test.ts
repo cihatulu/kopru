@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   EMPTY_PERIOD,
   currentMonth,
+  currentYear,
   isPeriodActive,
   isPeriodInverted,
   isSummaryConsistent,
@@ -74,6 +75,13 @@ describe('hızlı dönem seçimleri', () => {
     expect(previousMonth(new Date('2026-01-10T10:00:00Z'))).toEqual({
       from: '2025-12-01',
       to: '2025-12-31',
+    });
+  });
+
+  test('bu yıl 1 ocak - 31 aralık aralığıdır', () => {
+    expect(currentYear(new Date('2026-08-15T10:00:00Z'))).toEqual({
+      from: '2026-01-01',
+      to: '2026-12-31',
     });
   });
 });

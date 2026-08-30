@@ -63,6 +63,14 @@ export function previousMonth(now: Date = new Date()): Period {
   return { from: iso(first), to: iso(last) };
 }
 
+/** Bu yıl — 1 Ocak'tan 31 Aralık'a kadar olan tüm yıl aralığı. */
+export function currentYear(now: Date = new Date()): Period {
+  const y = now.getUTCFullYear();
+  const first = new Date(Date.UTC(y, 0, 1));
+  const last = new Date(Date.UTC(y, 11, 31));
+  return { from: iso(first), to: iso(last) };
+}
+
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
