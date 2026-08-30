@@ -152,19 +152,19 @@ export function LedgerTable({
             );
           })}
 
-          {/* Mobilde Önceki / Sonraki Sayfa Butonları */}
+          {/* Mobilde Önceki / Sonraki Sayfa Butonları (Yan Yana Sabit Düzen) */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-200/80 bg-slate-50/50 p-3 rounded-xl">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-200/80 bg-slate-50/50 p-2.5 sm:p-3 rounded-xl flex-nowrap">
               <button
                 type="button"
                 disabled={validPage <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors shrink-0 whitespace-nowrap cursor-pointer"
               >
-                ← Önceki Sayfa
+                ← Önceki
               </button>
 
-              <span className="text-xs font-extrabold text-slate-600 font-mono">
+              <span className="text-xs font-bold text-slate-700 font-mono px-2 py-1 bg-white border border-slate-200/70 rounded-lg shadow-2xs shrink-0 tabular-nums">
                 {validPage} / {totalPages}
               </span>
 
@@ -172,9 +172,9 @@ export function LedgerTable({
                 type="button"
                 disabled={validPage >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors shrink-0 whitespace-nowrap cursor-pointer"
               >
-                Sonraki Sayfa →
+                Sonraki →
               </button>
             </div>
           )}
