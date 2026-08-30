@@ -157,20 +157,19 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   // Ana sipariş iptal edildiyse de (kısmi sevk sonrası kalan kalem iptal edildiğinde),
   const parentStatuses = ['shipped', 'delivered', 'cancelled', 'returned'] as const;
   if (parentStatuses.includes(order.status as typeof parentStatuses[number])) {
-    // Çocuklara taşınmayan (kalan veya iptal edilen) ürünleri miktar bazında hesapla
+    // Çocuklara taşınan tüm ürünleri (sevk edilen ve iptal edilen çocuk sevkiyatlar) düşerek ana siparişte kalan gerçek adedi bul
     const parentItemsToShow: TrackedItem[] = original
       .map((r): TrackedItem | null => {
         const prodId = r.key.split('|')[0] || null;
-        // Bu ürünün aktif (iptal edilmemiş) çocuk sevkiyatlarda sevk edilen toplam adedini bul
-        const childShippedQty = childShipments.reduce((sum, s) => {
-          if (s.status === 'cancelled') return sum;
+        // Çocuk sevkiyatlara ayrılmış toplam adedi bul (çünkü çocukların kendi kartları var)
+        const childAllocatedQty = childShipments.reduce((sum, s) => {
           const match = s.items.find(
             (item) => (prodId && item.productId === prodId) || item.name === r.name
           );
           return sum + (match?.quantity ?? 0);
         }, 0);
 
-        const diffQty = r.quantity - childShippedQty;
+        const diffQty = r.quantity - childAllocatedQty;
         if (diffQty <= 0) return null;
 
         return {
