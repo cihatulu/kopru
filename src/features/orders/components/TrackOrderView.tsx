@@ -602,9 +602,10 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                         );
                       })()}
                     </div>
-                  )}
+                  );
+                })()}
 
-                  {s.history && s.history.length > 0 && (
+                {s.history && s.history.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-100">
                       <span className="font-bold text-slate-400 uppercase tracking-wider text-[9px] block mb-2.5">Geçmiş ve İşlem Notları</span>
                       <div className="relative pl-4 border-l border-slate-100 ml-1 space-y-3">
