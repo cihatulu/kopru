@@ -29,6 +29,10 @@ function cleanPublicNote(note: string | null | undefined): string | null {
   if (/^m[üu]şteri teslimat[ıi] planland[ıi]/i.test(trimmed)) {
     return null;
   }
+  // "105000", "140000.00 TL", "50000" gibi sadece rakam veya ham tutar içeren toptan maliyet notlarını gizle
+  if (/^\d+([.,]\d+)?(\s*(tl|₺|lira))?$/i.test(trimmed)) {
+    return null;
+  }
   // İç yazışma veya toptan maliyet sızmasını engelle
   if (/\b(maliyet|toptan|al[ıi]ş fiyat[ıi]|tedarik fiyat[ıi])\b/i.test(trimmed)) {
     return null;
@@ -153,7 +157,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
         note: order.note,
         created_at: order.updated_at || order.created_at,
         items: parentItemsToShow,
-        returned_items: [],
+        returned_items: order.returned_items ?? [],
         history: order.history.filter((h) =>
           h.status === 'shipped' ||
           h.status === 'delivered' ||
@@ -370,66 +374,85 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                       </ul>
 
                       {/* İade Edilen Ürün Dökümü */}
-                      {s.returned_items && s.returned_items.length > 0 && (
-                        <div className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/40 p-3">
-                          <span className="font-bold text-amber-900 uppercase tracking-wider text-[9px] block mb-2">
-                            İade Edilen Ürün ve Fiyat Detayı
-                          </span>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="border-b border-amber-200/60 text-[10px] font-bold uppercase text-amber-800/80">
-                                  <th className="pb-1.5 text-left">Ürün</th>
-                                  <th className="pb-1.5 text-center">İade Adedi</th>
-                                  <th className="pb-1.5 text-right">Birim Fiyat</th>
-                                  <th className="pb-1.5 text-right">İade Tutarı</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-amber-100">
-                                {s.returned_items.map((r, rIdx) => {
-                                  const rOrderItemId = (r as Record<string, unknown>).order_item_id as string | undefined
-                                    || (r as Record<string, unknown>).orderItemId as string | undefined
-                                    || r.orderItemId;
+                      {s.returned_items && s.returned_items.length > 0 && (() => {
+                        const returnedList = (s.returned_items || []).map((r, rIdx) => {
+                          const rOrderItemId = (r as Record<string, unknown>).order_item_id as string | undefined
+                            || (r as Record<string, unknown>).orderItemId as string | undefined
+                            || r.orderItemId;
 
-                                  const matchedItem =
-                                    (r.productId ? s.items.find((i) => i.productId === r.productId) : undefined) ||
-                                    (r.productId ? order.items.find((i) => i.productId === r.productId) : undefined) ||
-                                    (rOrderItemId ? s.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
-                                    (rOrderItemId ? order.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
-                                    (r.name ? s.items.find((i) => i.name === r.name) : undefined) ||
-                                    (r.name ? order.items.find((i) => i.name === r.name) : undefined) ||
-                                    (s.items.length === 1 ? s.items[0] : undefined) ||
-                                    (order.items.length === 1 ? order.items[0] : undefined) ||
-                                    s.items[rIdx] ||
-                                    order.items[0];
+                          const matchedItem =
+                            (r.productId ? s.items.find((i) => i.productId === r.productId) : undefined) ||
+                            (r.productId ? order.items.find((i) => i.productId === r.productId) : undefined) ||
+                            (rOrderItemId ? s.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
+                            (rOrderItemId ? order.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
+                            (r.name ? s.items.find((i) => i.name === r.name) : undefined) ||
+                            (r.name ? order.items.find((i) => i.name === r.name) : undefined) ||
+                            (s.items.length === 1 ? s.items[0] : undefined) ||
+                            (order.items.length === 1 ? order.items[0] : undefined) ||
+                            s.items[rIdx] ||
+                            order.items[0];
 
-                                  const rName = r.name || matchedItem?.name || original[0]?.name || 'Ürün';
-                                  const fallbackUnitPrice = original.find((o) => o.name === rName)?.unitPrice ?? (original[0]?.unitPrice ?? 0);
-                                  const rUnitPrice = (r.unit_price && r.unit_price > 0)
-                                    ? r.unit_price
-                                    : (matchedItem?.unit_price && matchedItem.unit_price > 0 ? matchedItem.unit_price : fallbackUnitPrice);
-                                  const rTotal = (r.total_price && r.total_price > 0)
-                                    ? r.total_price
-                                    : (rUnitPrice * r.quantity);
+                          const rName = r.name || matchedItem?.name || original[rIdx]?.name || original[0]?.name || 'Ürün';
+                          const fallbackUnitPrice = original.find((o) => o.name === rName)?.unitPrice ?? (original[rIdx]?.unitPrice ?? (original[0]?.unitPrice ?? 0));
+                          const rUnitPrice = (r.unit_price && r.unit_price > 0)
+                            ? r.unit_price
+                            : (matchedItem?.unit_price && matchedItem.unit_price > 0 ? matchedItem.unit_price : fallbackUnitPrice);
+                          const rTotal = (r.total_price && r.total_price > 0)
+                            ? r.total_price
+                            : (rUnitPrice * r.quantity);
 
-                                  return (
+                          return { rName, rQuantity: r.quantity, rUnitPrice, rTotal };
+                        });
+
+                        const totalReturnInShipment = returnedList.reduce((sum, item) => sum + item.rTotal, 0);
+
+                        return (
+                          <div className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/40 p-3">
+                            <span className="font-bold text-amber-900 uppercase tracking-wider text-[9px] block mb-2">
+                              İade Edilen Ürün ve Fiyat Detayı
+                            </span>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="border-b border-amber-200/60 text-[10px] font-bold uppercase text-amber-800/80">
+                                    <th className="pb-1.5 text-left">Ürün</th>
+                                    <th className="pb-1.5 text-center">İade Adedi</th>
+                                    <th className="pb-1.5 text-right">Birim Fiyat</th>
+                                    <th className="pb-1.5 text-right">İade Tutarı</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-amber-100">
+                                  {returnedList.map((item, rIdx) => (
                                     <tr key={rIdx} className="text-[11px]">
-                                      <td className="py-1.5 font-semibold text-slate-800 pr-2">{rName}</td>
-                                      <td className="py-1.5 text-center font-bold text-amber-900 whitespace-nowrap">{r.quantity} Adet</td>
+                                      <td className="py-1.5 font-semibold text-slate-800 pr-2">{item.rName}</td>
+                                      <td className="py-1.5 text-center font-bold text-amber-900 whitespace-nowrap">{item.rQuantity} Adet</td>
                                       <td className="py-1.5 text-right text-slate-600 whitespace-nowrap">
-                                        {rUnitPrice > 0 ? formatMoney(rUnitPrice) : '—'}
+                                        {item.rUnitPrice > 0 ? formatMoney(item.rUnitPrice) : '—'}
                                       </td>
                                       <td className="py-1.5 text-right font-bold text-amber-950 whitespace-nowrap">
-                                        {rTotal > 0 ? formatMoney(rTotal) : '—'}
+                                        {item.rTotal > 0 ? formatMoney(item.rTotal) : '—'}
                                       </td>
                                     </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            {totalReturnInShipment > 0 && (
+                              <div className="mt-2.5 flex items-center justify-between border-t border-amber-200/80 pt-2 text-xs">
+                                <span className="font-bold text-slate-600">
+                                  İade Edilen Toplam Tutar:{' '}
+                                  <span className="font-mono text-red-600 font-bold">
+                                    {formatMoney(totalReturnInShipment)}
+                                  </span>
+                                </span>
+                                <span className="text-[11px] font-semibold text-slate-400">
+                                  Tahsil Edilmez (₺0,00)
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   )}
 
