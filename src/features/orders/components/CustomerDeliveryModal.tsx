@@ -96,6 +96,12 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
   const items = order.items;
   const activeTimeSlot = customTimeSlot.trim() || timeSlot;
 
+  const [successInfo, setSuccessInfo] = useState<{
+    message: string;
+    date: string;
+    timeSlot: string;
+  } | null>(null);
+
   const totalItemsToDeliver = items.reduce(
     (sum, i) => sum + (selectedQuantities[i.id] ?? 0),
     0,
@@ -131,8 +137,17 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
         items: deliveryItems,
       });
 
-      onSuccess?.();
-      onClose();
+      const itemDescriptions = deliveryItems
+        .map((i) => `${i.quantity} Adet ${i.name}`)
+        .join(', ');
+
+      const successMsg = `${itemDescriptions} sevkiyatı planlandı, müşteri ile mutabık kalındı.`;
+
+      setSuccessInfo({
+        message: successMsg,
+        date: deliveryDate,
+        timeSlot: activeTimeSlot,
+      });
     } catch (err) {
       console.error('Teslimat planlama hatası:', err);
     }
@@ -143,18 +158,95 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
 
     const formattedDate = deliveryDate ? formatDate(deliveryDate) : 'belirlenen tarihte';
     const trackingUrl = order.orderToken ? `${window.location.origin}/takip/${order.orderToken}` : '';
+
+    const selectedDeliveryItems = items
+      .filter((i) => (selectedQuantities[i.id] ?? 0) > 0)
+      .map((i) => `• ${selectedQuantities[i.id]} Adet ${i.name}`);
+
+    const itemsText = selectedDeliveryItems.length > 0
+      ? `📦 *Teslim Edilecek Ürünler:*\n${selectedDeliveryItems.join('\n')}\n\n`
+      : '';
+
     const message = `Merhaba Sayın ${customerName || 'Müşterimiz'},\n\n` +
       `${order.orderNo} numaralı mobilya siparişinizin adresinize teslimat & montaj randevusu planlanmıştır.\n\n` +
       `📅 *Teslimat Tarihi:* ${formattedDate}\n` +
       `⏰ *Saat Aralığı:* ${activeTimeSlot}\n` +
-      `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n` +
-      (notes.trim() ? `📝 *Not:* ${notes.trim()}\n` : '') +
-      (trackingUrl ? `\n🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '\n') +
+      `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n\n` +
+      itemsText +
+      (notes.trim() ? `📝 *Not:* ${notes.trim()}\n\n` : '') +
+      (trackingUrl ? `🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '') +
       `Siparişinizi iyi günlerde kullanmanızı dileriz.`;
 
     const url = buildWhatsAppLink({ phone: customerPhone, message });
     window.open(url, '_blank');
   };
+
+  if (successInfo) {
+    return (
+      <Modal
+        label="Teslimat Planlandı"
+        panelClassName="max-w-lg w-full rounded-3xl bg-white p-6 sm:p-8 shadow-2xl space-y-6 text-center"
+        onClose={() => {
+          onSuccess?.();
+          onClose();
+        }}
+      >
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-3xl shadow-sm border border-emerald-200">
+          ✓
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">
+            Sevkiyat & Montaj Planlandı
+          </h2>
+          <div className="rounded-2xl border-2 border-emerald-500/30 bg-emerald-50/80 p-4 text-emerald-950 text-sm font-bold leading-relaxed shadow-xs">
+            📢 {successInfo.message}
+          </div>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-xs text-slate-600 text-left space-y-2">
+          <div className="flex justify-between">
+            <span className="text-slate-400 font-bold uppercase tracking-wider">Planlanan Tarih:</span>
+            <span className="font-bold text-slate-800">{formatDate(successInfo.date)} ({successInfo.timeSlot})</span>
+          </div>
+          {customerName && (
+            <div className="flex justify-between">
+              <span className="text-slate-400 font-bold uppercase tracking-wider">Müşteri:</span>
+              <span className="font-semibold text-slate-800">{customerName}</span>
+            </div>
+          )}
+          {customerPhone && (
+            <div className="flex justify-between">
+              <span className="text-slate-400 font-bold uppercase tracking-wider">Telefon:</span>
+              <span className="font-mono font-semibold text-slate-800">{customerPhone}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+          {customerPhone && (
+            <button
+              type="button"
+              onClick={handleSendWhatsApp}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer select-none"
+            >
+              <span>💬 WhatsApp Bildirimi Gönder</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              onSuccess?.();
+              onClose();
+            }}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0f172b] hover:bg-[#1a2645] text-white text-xs sm:text-sm font-bold shadow-md cursor-pointer"
+          >
+            Tamam
+          </button>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
