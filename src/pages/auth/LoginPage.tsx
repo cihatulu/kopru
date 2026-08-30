@@ -51,80 +51,88 @@ export default function LoginPage() {
         ? 'Giriş bilgileri hatalı.'
         : undefined;
 
+  const [openManufacturer, setOpenManufacturer] = useState(false);
+  const [openRetailer, setOpenRetailer] = useState(false);
+
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center bg-[#090D16] px-4 py-10 overflow-hidden font-sans">
+    <main className="relative flex min-h-screen flex-col items-center justify-center bg-[#090D16] px-4 py-8 overflow-x-hidden font-sans">
       {/* Arka plan ortam ışığı (Ambient Glow) */}
       <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-blue-600/10 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 right-1/4 size-[500px] rounded-full bg-emerald-600/10 blur-[130px]" />
 
       {/* Üst Logo ve Marka Başlığı */}
-      <div className="relative z-10 mb-8 text-center">
+      <div className="relative z-10 mb-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-semibold text-slate-300 shadow-inner backdrop-blur-md">
           <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
           B2B Mobilya Ekosistemi
         </div>
-        <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+        <h1 className="mt-2.5 text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-2">
           <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
             KÖPRÜ
           </span>
         </h1>
-        <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-400">
+        <p className="mt-1 text-xs sm:text-sm font-medium text-slate-400">
           Mobilya operasyon, katalog ve sipariş yönetim platformu
         </p>
       </div>
 
       {/* 3 Kolonlu Vitrin Izgarası */}
-      <div className="relative z-10 flex w-full max-w-6xl flex-col items-center justify-center gap-6 lg:flex-row lg:items-stretch">
+      <div className="relative z-10 flex w-full max-w-6xl flex-col items-center justify-center gap-5 lg:flex-row lg:items-start">
         
-        {/* Sol Taraf: Üye Üretici Başvuru Kartı */}
-        <div className="relative group flex w-full max-w-sm lg:w-72 xl:w-80 flex-col justify-between rounded-3xl border border-white/10 bg-slate-900/70 p-6 sm:p-7 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-blue-500/40 hover:shadow-blue-500/10 hover:-translate-y-1">
-          <div className="pointer-events-none absolute -top-10 -left-10 size-28 rounded-full bg-blue-600/15 blur-2xl" />
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex size-12 items-center justify-center rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-400 shadow-inner">
-                <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <span className="rounded-full bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-blue-400">
-                Fabrika & Atölye
-              </span>
-            </div>
-
-            <h2 className="text-lg font-black text-white leading-snug">
-              Üye Üretici olmak ister misiniz?
-            </h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
-              Kendi mobilya markanızı dijitalleştirin, bayilerinizden anında sipariş toplayın ve fabrikanızı büyütün.
-            </p>
-
-            <ul className="mt-5 space-y-2 text-xs text-slate-300">
-              <li className="flex items-center gap-2">
-                <span className="text-blue-400 font-bold">✓</span>
-                <span>Sınırsız Dijital Ürün Kataloğu</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-blue-400 font-bold">✓</span>
-                <span>Anlık Bayi Siparişleri & Cari Takip</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-blue-400 font-bold">✓</span>
-                <span>Fuar & WhatsApp ile Müşteri Bağlama</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mt-7">
-            <button
-              type="button"
-              onClick={() => setApplyKind('manufacturer')}
-              className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-900/40 transition-all hover:from-blue-500 hover:to-indigo-500 active:scale-95"
+        {/* Sol Taraf: Üye Üretici Başvuru Butonu & Akordeonu */}
+        <div className="w-full max-w-lg lg:w-72 xl:w-80 flex flex-col rounded-2xl border border-blue-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
+          <button
+            type="button"
+            onClick={() => setOpenManufacturer(!openManufacturer)}
+            className="w-full p-4 flex items-center justify-between text-left font-black text-xs sm:text-sm text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 transition-colors cursor-pointer select-none"
+          >
+            <span>MOBİLYA ÜRETİCİSİYSEN TIKLA!</span>
+            <svg
+              className={`size-4 text-blue-400 transition-transform duration-200 shrink-0 ${
+                openManufacturer ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
             >
-              <span>Üretici Olarak Katıl</span>
-              <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
-            </button>
-          </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {openManufacturer && (
+            <div className="p-5 border-t border-white/10 text-left animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-xs leading-relaxed text-slate-300">
+                Kendi mobilya markanızı dijitalleştirin, bayilerinizden anında sipariş toplayın ve fabrikanızı büyütün.
+              </p>
+
+              <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-400 font-bold">✓</span>
+                  <span>Sınırsız Dijital Ürün Kataloğu</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-400 font-bold">✓</span>
+                  <span>Anlık Bayi Siparişleri & Cari Takip</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-400 font-bold">✓</span>
+                  <span>Fuar & WhatsApp ile Müşteri Bağlama</span>
+                </li>
+              </ul>
+
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={() => setApplyKind('manufacturer')}
+                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-blue-900/40 transition-all hover:from-blue-500 hover:to-indigo-500 active:scale-95"
+                >
+                  <span>Üretici Olarak Katıl</span>
+                  <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Orta: Giriş Formu Kartı */}
@@ -148,60 +156,65 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Sağ Taraf: Üye Perakendeci Başvuru Kartı */}
-        <div className="relative group flex w-full max-w-sm lg:w-72 xl:w-80 flex-col justify-between rounded-3xl border border-white/10 bg-slate-900/70 p-6 sm:p-7 text-left shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-500/40 hover:shadow-emerald-500/10 hover:-translate-y-1">
-          <div className="pointer-events-none absolute -top-10 -right-10 size-28 rounded-full bg-emerald-600/15 blur-2xl" />
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex size-12 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-inner">
-                <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">
-                Mağaza & Showroom
-              </span>
-            </div>
-
-            <h2 className="text-lg font-black text-white leading-snug">
-              Üye Perakendeci olmak ister misiniz?
-            </h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
-              Yüzlerce üretici kataloğuna tek tıkla erişin, özel toptan iskontolarla sipariş verin ve finansınızı yönetin.
-            </p>
-
-            <ul className="mt-5 space-y-2 text-xs text-slate-300">
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Tüm Fabrikaların Güncel Kataloğu</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Özel İskontolar & Sepetten Sipariş</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold">✓</span>
-                <span>Cari Hesap, SSH & Sevkiyat Takibi</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mt-7">
-            <button
-              type="button"
-              onClick={() => setApplyKind('retailer')}
-              className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/40 transition-all hover:from-emerald-500 hover:to-teal-500 active:scale-95"
+        {/* Sağ Taraf: Üye Perakendeci Başvuru Butonu & Akordeonu */}
+        <div className="w-full max-w-lg lg:w-72 xl:w-80 flex flex-col rounded-2xl border border-emerald-500/20 bg-slate-900/80 backdrop-blur-xl shadow-xl overflow-hidden transition-all duration-300">
+          <button
+            type="button"
+            onClick={() => setOpenRetailer(!openRetailer)}
+            className="w-full p-4 flex items-center justify-between text-left font-black text-xs sm:text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15 transition-colors cursor-pointer select-none"
+          >
+            <span>MOBİLYA MAĞAZASIYSAN TIKLA!</span>
+            <svg
+              className={`size-4 text-emerald-400 transition-transform duration-200 shrink-0 ${
+                openRetailer ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
             >
-              <span>Perakendeci Olarak Katıl</span>
-              <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
-            </button>
-          </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {openRetailer && (
+            <div className="p-5 border-t border-white/10 text-left animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-xs leading-relaxed text-slate-300">
+                Yüzlerce üretici kataloğuna tek tıkla erişin, özel toptan iskontolarla sipariş verin ve finansınızı yönetin.
+              </p>
+
+              <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">✓</span>
+                  <span>Tüm Fabrikaların Güncel Kataloğu</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">✓</span>
+                  <span>Özel İskontolar & Sepetten Sipariş</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-emerald-400 font-bold">✓</span>
+                  <span>Cari Hesap, SSH & Sevkiyat Takibi</span>
+                </li>
+              </ul>
+
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={() => setApplyKind('retailer')}
+                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-emerald-900/40 transition-all hover:from-emerald-500 hover:to-teal-500 active:scale-95"
+                >
+                  <span>Perakendeci Olarak Katıl</span>
+                  <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
 
-      <p className="relative z-10 mt-8 text-xs font-medium text-slate-500">© 2026 KÖPRÜ B2B Platformu</p>
+      <p className="relative z-10 mt-6 text-xs font-medium text-slate-500">© 2026 KÖPRÜ B2B Platformu</p>
 
       {applyKind && (
         <LeadApplicationModal
