@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
   LoginError,
@@ -28,6 +28,33 @@ export default function LoginPage() {
   const [applyKind, setApplyKind] = useState<OrgKind | null>(null);
   const [openManufacturer, setOpenManufacturer] = useState(false);
   const [openRetailer, setOpenRetailer] = useState(false);
+
+  const manufacturerRef = useRef<HTMLDivElement>(null);
+  const retailerRef = useRef<HTMLDivElement>(null);
+
+  // Sayfada başka bir yere tıklandığında açık akordeonları kapat
+  useEffect(() => {
+    if (!openManufacturer && !openRetailer) return;
+
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node;
+      const insideManufacturer = manufacturerRef.current?.contains(target);
+      const insideRetailer = retailerRef.current?.contains(target);
+
+      if (!insideManufacturer && !insideRetailer) {
+        setOpenManufacturer(false);
+        setOpenRetailer(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [openManufacturer, openRetailer]);
 
   if (isLoading) return <PageLoader />;
   if (user) return <Navigate to={roleHomePath(user)} replace />;
@@ -80,7 +107,7 @@ export default function LoginPage() {
         <div className="flex w-full flex-col items-center justify-center gap-2.5 sm:gap-3.5">
         
         {/* Üst: Üye Üretici Başvuru Butonu & Akordeonu */}
-        <div className="w-full flex flex-col rounded-2xl border border-orange-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
+        <div ref={manufacturerRef} className="w-full flex flex-col rounded-2xl border border-orange-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
           <button
             type="button"
             onClick={() => {
@@ -161,7 +188,7 @@ export default function LoginPage() {
         </div>
 
         {/* Alt: Üye Perakendeci Başvuru Butonu & Akordeonu */}
-        <div className="w-full flex flex-col rounded-2xl border border-emerald-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
+        <div ref={retailerRef} className="w-full flex flex-col rounded-2xl border border-emerald-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
           <button
             type="button"
             onClick={() => {
