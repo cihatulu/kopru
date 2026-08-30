@@ -59,10 +59,13 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
         setNotes(order.latestDelivery.notes || '');
       }
 
-      // Kalem miktarlarını tam adet olarak seçili başlat
+      // Kalem miktarlarını teslim edilebilir kalan adet olarak başlat
       const initialQty: Record<string, number> = {};
       for (const item of order.items) {
-        initialQty[item.id] = item.quantity;
+        const availableQty = item.remainingDeliveryQty !== undefined
+          ? item.remainingDeliveryQty
+          : Math.max(0, item.quantity - (item.returnedQty ?? 0) - (item.plannedQty ?? 0));
+        initialQty[item.id] = availableQty;
       }
       setSelectedQuantities(initialQty);
     }
@@ -303,35 +306,57 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
           <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2.5 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                <span>📦</span> Teslim Edilecek Ürünler ({totalItemsToDeliver} Adet)
+                <span>📦</span> Teslim Edilecek Ürünler ({totalItemsToDeliver} Adet Seçili)
               </h3>
               <button
                 type="button"
                 onClick={() =>
                   setSelectedQuantities(
-                    Object.fromEntries(items.map((i) => [i.id, i.quantity])),
+                    Object.fromEntries(
+                      items.map((i) => [
+                        i.id,
+                        i.remainingDeliveryQty !== undefined
+                          ? i.remainingDeliveryQty
+                          : Math.max(0, i.quantity - (i.returnedQty ?? 0) - (i.plannedQty ?? 0)),
+                      ])
+                    ),
                   )
                 }
                 className="text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
               >
-                Tümünü Seç
+                Kalanların Tümünü Seç
               </button>
             </div>
 
             <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
               {items.map((item) => {
+                const maxQty = item.remainingDeliveryQty !== undefined
+                  ? item.remainingDeliveryQty
+                  : Math.max(0, item.quantity - (item.returnedQty ?? 0) - (item.plannedQty ?? 0));
                 const qty = selectedQuantities[item.id] ?? 0;
                 const isSelected = qty > 0;
+                const isFullyPlanned = maxQty === 0;
 
                 return (
                   <div
                     key={item.id}
                     className={`flex items-center justify-between gap-3 p-3 text-xs transition-colors ${
-                      isSelected ? 'bg-white' : 'bg-slate-50/70 text-slate-400'
+                      isFullyPlanned
+                        ? 'bg-emerald-50/40 border-l-4 border-emerald-500'
+                        : isSelected
+                          ? 'bg-white'
+                          : 'bg-slate-50/70 text-slate-400'
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-slate-800 text-sm truncate">{item.name}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-slate-800 text-sm truncate">{item.name}</p>
+                        {isFullyPlanned && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                            ✓ Tamamı Planlandı
+                          </span>
+                        )}
+                      </div>
                       {item.code && (
                         <p className="text-[11px] font-mono text-slate-400">{item.code}</p>
                       )}
@@ -340,30 +365,47 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
                           Özel Talep: {item.customDescription}
                         </p>
                       )}
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Sipariş Adedi: <span className="font-bold text-slate-800">{item.quantity} Adet</span>
-                      </p>
+                      <div className="flex items-center gap-2.5 text-[11px] text-slate-500 mt-1 flex-wrap">
+                        <span>Sipariş: <strong className="text-slate-700">{item.quantity} Adet</strong></span>
+                        {(item.plannedQty ?? 0) > 0 && (
+                          <span className="text-blue-700 font-semibold">Önceki Plan: {item.plannedQty} Adet</span>
+                        )}
+                        {(item.returnedQty ?? 0) > 0 && (
+                          <span className="text-red-600 font-semibold">İade: {item.returnedQty} Adet</span>
+                        )}
+                        <span className="text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          Kalan Teslim Edilebilir: {maxQty} Adet
+                        </span>
+                      </div>
                     </div>
 
                     {/* Adet Stepper */}
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        type="button"
-                        disabled={qty <= 0}
-                        onClick={() => handleQuantityChange(item.id, qty - 1, item.quantity)}
-                        className="size-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-30 font-bold cursor-pointer select-none"
-                      >
-                        −
-                      </button>
-                      <span className="w-8 text-center font-bold text-sm font-mono">{qty}</span>
-                      <button
-                        type="button"
-                        disabled={qty >= item.quantity}
-                        onClick={() => handleQuantityChange(item.id, qty + 1, item.quantity)}
-                        className="size-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-30 font-bold cursor-pointer select-none"
-                      >
-                        +
-                      </button>
+                      {maxQty > 0 ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={qty <= 0}
+                            onClick={() => handleQuantityChange(item.id, qty - 1, maxQty)}
+                            className="size-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-30 font-bold cursor-pointer select-none"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center font-bold text-sm font-mono">{qty}</span>
+                          <button
+                            type="button"
+                            disabled={qty >= maxQty}
+                            onClick={() => handleQuantityChange(item.id, qty + 1, maxQty)}
+                            className="size-7 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-30 font-bold cursor-pointer select-none"
+                          >
+                            +
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100/60 px-2 py-1 rounded-lg">
+                          0 / 0
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

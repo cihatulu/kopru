@@ -64,6 +64,10 @@ export interface OrderItemRow {
   priceDifference: number;
   /** Onaylanmış iade adedi (yok ise 0). */
   returnedQty: number;
+  /** Daha önce nihai müşteri teslimatına planlanmış adet. */
+  plannedQty?: number;
+  /** Teslimata planlanabilir kalan net adet (quantity - returnedQty - plannedQty). */
+  remainingDeliveryQty?: number;
 }
 
 export interface OrderStatusLogItem {
@@ -257,7 +261,7 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
  * Perakendecide kayıtlı fiyat her şey dahildir, taban için fark geri çıkarılır;
  * üreticide `supplier_unit_price` zaten farksız durur.
  */
-export function toItem(raw: unknown, isRetailer: boolean, returnedQty = 0): OrderItemRow {
+export function toItem(raw: unknown, isRetailer: boolean, returnedQty = 0, plannedQty = 0): OrderItemRow {
   const i = nested(raw);
   const snap = nested(i.product_snapshot);
   const qty = num(i.quantity);
@@ -266,6 +270,8 @@ export function toItem(raw: unknown, isRetailer: boolean, returnedQty = 0): Orde
 
   const unitPrice =
     allIn !== undefined && allIn > 0 ? round2(allIn - diff) : num(i.supplier_unit_price);
+
+  const remainingDeliveryQty = Math.max(0, qty - returnedQty - plannedQty);
 
   return {
     id: str(i.id),
@@ -280,5 +286,7 @@ export function toItem(raw: unknown, isRetailer: boolean, returnedQty = 0): Orde
     customDescription: nullable(i.custom_description),
     priceDifference: num(i.price_difference),
     returnedQty,
+    plannedQty,
+    remainingDeliveryQty,
   };
 }

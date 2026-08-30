@@ -103,6 +103,32 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         }
       }
 
+      // Müşteri teslimatları — daha önce planlanan ürün miktarları
+      const deliveriesRes = await supabase
+        .from('customer_deliveries')
+        .select('id, delivery_date, time_slot, status, customer_name, customer_phone, customer_address, notes, items, created_at')
+        .in('order_id', [orderId ?? '', ...shipments.map((s) => s.id)])
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: false });
+
+      const plannedQtyMap = new Map<string, number>();
+      const plannedByNameMap = new Map<string, number>();
+      if (!deliveriesRes.error && deliveriesRes.data) {
+        for (const cd of deliveriesRes.data) {
+          const dItems = Array.isArray(cd.items) ? cd.items : [];
+          for (const di of dItems as Array<{ order_item_id?: string; name?: string; quantity: number }>) {
+            if (di.order_item_id) {
+              const prev = plannedQtyMap.get(di.order_item_id) ?? 0;
+              plannedQtyMap.set(di.order_item_id, prev + Number(di.quantity));
+            }
+            if (di.name) {
+              const prev = plannedByNameMap.get(di.name) ?? 0;
+              plannedByNameMap.set(di.name, prev + Number(di.quantity));
+            }
+          }
+        }
+      }
+
       const history = buildHistory(logsRes.data ?? [], shipments, orderId ?? '');
       if (history.length === 0 && r.created_at) {
         history.push({
@@ -122,8 +148,13 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
       const mappedItems = items.map((item) => {
         const i = item as Record<string, unknown>;
         const itemId = typeof i.id === 'string' ? i.id : '';
+        const snap = (i.product_snapshot && typeof i.product_snapshot === 'object')
+          ? (i.product_snapshot as Record<string, unknown>)
+          : {};
+        const itemName = typeof snap.name === 'string' ? snap.name : '';
         const returnedQty = returnedQtyMap.get(itemId) ?? 0;
-        return toItem(item, isRetailer, returnedQty);
+        const plannedQty = plannedQtyMap.get(itemId) ?? (itemName ? (plannedByNameMap.get(itemName) ?? 0) : 0);
+        return toItem(item, isRetailer, returnedQty, plannedQty);
       });
 
       // İade toplam tutarı (perakende fiyatı üzerinden)
@@ -143,6 +174,8 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         items: mappedItems,
         history,
         shipments,
+        customerDeliveries: deliveriesRes.data ?? [],
+        latestDelivery: (deliveriesRes.data?.[0] as unknown as typeof r.latestDelivery) ?? null,
         hasUnfulfilledBalance,
         returnTotalAmount,
       };
