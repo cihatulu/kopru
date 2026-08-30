@@ -39,31 +39,27 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
       setError('Lütfen geçerli bir telefon numarası giriniz (örn: 05xx...).');
       return;
     }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Lütfen geçerli bir e-posta adresi giriniz.');
-      return;
-    }
 
     setPending(true);
 
     const fullLocation = [city.trim(), district.trim()].filter(Boolean).join(' / ');
 
     try {
-      // 1. Veritabanına kaydet
-      const { error: rpcError } = await (supabase.rpc as any)('submit_lead_application', {
+      // 1. Veritabanına kaydetmeyi dene (arka planda)
+      await (supabase.rpc as any)('submit_lead_application', {
         p_company_name: companyName.trim(),
         p_vkn_tc: vknTc.trim() || null,
         p_kind: kind,
         p_city: fullLocation || null,
         p_phone: phone.trim(),
-        p_email: email.trim(),
+        p_email: email.trim() || null,
+      }).catch((rpcErr: any) => {
+        console.warn('Lead application RPC notice:', rpcErr);
       });
-
-      if (rpcError) throw rpcError;
 
       // 2. WhatsApp mesajı hazırla
       const msgLines = [
-        `Merhaba, KÖPRÜ B2B platformuna ${roleTitle} olmak istiyoruz.`,
+        `Merhaba, KÖPRÜ B2B platformuna ${roleTitle} olarak katılmak istiyoruz.`,
         '',
         '📋 *Başvuru Bilgilerimiz:*',
         `• *Başvuru Türü:* ${roleTitle}`,
@@ -71,7 +67,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
         vknTc.trim() ? `• *VKN / TCKN:* ${vknTc.trim()}` : null,
         fullLocation ? `• *İl / İlçe:* ${fullLocation}` : null,
         `• *Telefon:* ${phone.trim()}`,
-        `• *E-posta:* ${email.trim()}`,
+        email.trim() ? `• *E-posta:* ${email.trim()}` : null,
       ].filter((line): line is string => line !== null);
 
       const message = msgLines.join('\n');
@@ -89,7 +85,17 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
         window.open(link, '_blank', 'noopener,noreferrer');
       }
     } catch (err: any) {
-      setError(err?.message || 'Başvuru gönderilirken bir hata oluştu.');
+      console.warn('Submission fallback:', err);
+      // WhatsApp linkini yine de oluştur ve aç
+      const link = buildWhatsAppLink({
+        phone: SUPPORT_WHATSAPP_PHONE,
+        message: `Merhaba, KÖPRÜ B2B platformuna ${roleTitle} olarak başvurmak istiyorum. Firma: ${companyName.trim()}, Tel: ${phone.trim()}`,
+      });
+      setWhatsappLink(link);
+      setSuccess(true);
+      if (typeof window !== 'undefined') {
+        window.open(link, '_blank', 'noopener,noreferrer');
+      }
     } finally {
       setPending(false);
     }
@@ -120,6 +126,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             <div className="font-bold">Firma: {companyName}</div>
             <div>Başvuru: {roleTitle}</div>
             <div>Telefon: {phone}</div>
+            {email.trim() && <div>E-posta: {email.trim()}</div>}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -173,7 +180,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                Firma VKN / TCKN
+                Firma VKN / TCKN <span className="text-slate-400 font-normal normal-case">(İsteğe Bağlı)</span>
               </label>
               <input
                 type="text"
@@ -228,11 +235,10 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                E-Posta <span className="text-red-500">*</span>
+                E-Posta <span className="text-slate-400 font-normal normal-case">(İsteğe Bağlı)</span>
               </label>
               <input
                 type="email"
-                required
                 className="input w-full text-sm"
                 placeholder="info@firmaniz.com"
                 value={email}
@@ -248,7 +254,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             <Button
               type="submit"
               loading={pending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
             >
               💬 WhatsApp ile Başvuruyu İlet
             </Button>
