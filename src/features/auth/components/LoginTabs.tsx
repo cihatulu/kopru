@@ -34,7 +34,7 @@ export function LoginTabs({ active, onSelect }: Props) {
             onClick={() => onSelect(tab.id)}
             className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
               isActive
-                ? 'bg-white text-blue-600 font-extrabold shadow-sm border border-slate-200/70 ring-1 ring-blue-500/10'
+                ? 'bg-white text-[#c25730] font-extrabold shadow-sm border border-slate-200/70 ring-1 ring-[#d96b43]/15'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent'
             }`}
           >
@@ -45,7 +45,7 @@ export function LoginTabs({ active, onSelect }: Props) {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-blue-600' : 'text-slate-400'}`}
+              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-[#d96b43]' : 'text-slate-400'}`}
               aria-hidden="true"
             >
               <path d={ICONS[tab.id]} />

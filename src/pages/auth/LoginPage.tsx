@@ -59,7 +59,7 @@ export default function LoginPage() {
       className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-slate-100/70 px-3 py-4 sm:px-6 sm:py-6 overflow-y-auto no-scrollbar font-sans select-none"
     >
       {/* Arka plan yumuşak ortam ışığı */}
-      <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-blue-400/10 blur-[130px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-[#d96b43]/10 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 right-1/4 size-[500px] rounded-full bg-emerald-400/10 blur-[130px]" />
 
       <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center mx-auto my-auto">
@@ -70,7 +70,7 @@ export default function LoginPage() {
             B2B Mobilya Ekosistemi
           </div>
           <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center justify-center gap-2">
-            <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#d96b43] via-[#c85a32] to-[#b04720] bg-clip-text text-transparent">
               KÖPRÜ
             </span>
           </h1>
@@ -80,7 +80,7 @@ export default function LoginPage() {
         <div className="flex w-full flex-col items-center justify-center gap-2.5 sm:gap-3.5">
         
         {/* Üst: Üye Üretici Başvuru Butonu & Akordeonu */}
-        <div className="w-full flex flex-col rounded-2xl border border-blue-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
+        <div className="w-full flex flex-col rounded-2xl border border-orange-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
           <button
             type="button"
             onClick={() => {
@@ -88,11 +88,11 @@ export default function LoginPage() {
               setOpenManufacturer(next);
               if (next) setOpenRetailer(false);
             }}
-            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-blue-700 hover:text-blue-800 bg-blue-50/60 hover:bg-blue-50/90 transition-colors cursor-pointer select-none"
+            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-[#c25730] hover:text-[#b04720] bg-orange-50/70 hover:bg-orange-100/70 transition-colors cursor-pointer select-none"
           >
             <span>MOBİLYA ÜRETİCİSİYSEN TIKLA!</span>
             <svg
-              className={`size-4 text-blue-600 transition-transform duration-200 shrink-0 ${
+              className={`size-4 text-[#d96b43] transition-transform duration-200 shrink-0 ${
                 openManufacturer ? 'rotate-180' : ''
               }`}
               fill="none"
@@ -105,22 +105,22 @@ export default function LoginPage() {
           </button>
 
           {openManufacturer && (
-            <div className="p-3 sm:p-4 border-t border-slate-100 text-left bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-3 sm:p-4 border-t border-orange-100 text-left bg-white animate-in fade-in slide-in-from-top-2 duration-200">
               <p className="text-xs leading-relaxed text-slate-600 font-normal">
                 Kendi mobilya markanızı dijitalleştirin, bayilerinizden anında sipariş toplayın ve fabrikanızı büyütün.
               </p>
 
               <ul className="mt-2 space-y-1 text-xs text-slate-700 font-medium">
                 <li className="flex items-center gap-1.5">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-[#d96b43] font-bold">✓</span>
                   <span>Sınırsız Dijital Ürün Kataloğu</span>
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-[#d96b43] font-bold">✓</span>
                   <span>Anlık Bayi Siparişleri & Cari Takip</span>
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="text-blue-600 font-bold">✓</span>
+                  <span className="text-[#d96b43] font-bold">✓</span>
                   <span>Fuar & WhatsApp ile Müşteri Bağlama</span>
                 </li>
               </ul>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setApplyKind('manufacturer')}
-                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 active:scale-95"
+                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#d96b43] to-[#c25730] px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm shadow-[#d96b43]/25 transition-all hover:from-[#c25730] hover:to-[#b04720] active:scale-95"
                 >
                   <span>Üretici Olarak Katıl</span>
                   <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
