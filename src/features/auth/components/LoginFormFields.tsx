@@ -78,7 +78,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
             type="email"
             autoComplete="username"
             placeholder="admin@ornek.com"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#d96b43] focus:outline-none focus:ring-2 focus:ring-[#d96b43]/20 font-medium transition-all shadow-xs"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0c1527] focus:outline-none focus:ring-2 focus:ring-[#0c1527]/15 font-medium transition-all shadow-xs"
             {...register('email')}
           />
           {errors.email && <p className="mt-1.5 text-xs font-semibold text-red-600">{errors.email.message}</p>}
@@ -94,7 +94,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
               inputMode="numeric"
               autoComplete="username"
               placeholder="Vergi numaranız veya T.C. kimlik numaranız"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#d96b43] focus:outline-none focus:ring-2 focus:ring-[#d96b43]/20 font-medium transition-all shadow-xs"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0c1527] focus:outline-none focus:ring-2 focus:ring-[#0c1527]/15 font-medium transition-all shadow-xs"
               {...register('userCode')}
             />
             {errors.userCode && <p className="mt-1.5 text-xs font-semibold text-red-600">{errors.userCode.message}</p>}
@@ -120,7 +120,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
                 }}
                 className="sr-only"
               />
-              <svg className={`size-3.5 ${userType === 'owner' ? 'text-[#d96b43]' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className={`size-3.5 ${userType === 'owner' ? 'text-[#0c1527]' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <span>Yetkili Girişi</span>
@@ -144,7 +144,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
                 }}
                 className="sr-only"
               />
-              <svg className={`size-3.5 ${userType === 'staff' ? 'text-[#d96b43]' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className={`size-3.5 ${userType === 'staff' ? 'text-[#0c1527]' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Personel Girişi</span>
@@ -163,7 +163,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
           type="password"
           autoComplete="current-password"
           placeholder="••••••••"
-          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#d96b43] focus:outline-none focus:ring-2 focus:ring-[#d96b43]/20 font-medium transition-all shadow-xs"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0c1527] focus:outline-none focus:ring-2 focus:ring-[#0c1527]/15 font-medium transition-all shadow-xs"
           {...register('password')}
         />
         {errors.password && <p className="mt-1.5 text-xs font-semibold text-red-600">{errors.password.message}</p>}
@@ -182,7 +182,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
         type="submit"
         loading={pending}
         disabled={!email && !userType}
-        className="w-full py-3.5 text-sm font-black rounded-xl bg-gradient-to-r from-[#d96b43] via-[#c85a32] to-[#d96b43] hover:from-[#c85a32] hover:to-[#b04720] text-white shadow-lg shadow-[#d96b43]/25 active:scale-[0.98] transition-all cursor-pointer"
+        className="w-full py-3.5 text-sm font-black rounded-xl bg-[#0c1527] hover:bg-[#162238] active:bg-[#080d19] text-white shadow-lg shadow-slate-950/25 active:scale-[0.98] transition-all cursor-pointer"
       >
         Giriş Yap
       </Button>

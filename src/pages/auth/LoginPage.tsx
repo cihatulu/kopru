@@ -59,7 +59,7 @@ export default function LoginPage() {
       className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-slate-100/70 px-3 py-4 sm:px-6 sm:py-6 overflow-y-auto no-scrollbar font-sans select-none"
     >
       {/* Arka plan yumuşak ortam ışığı */}
-      <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-[#d96b43]/10 blur-[130px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-slate-800/10 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 right-1/4 size-[500px] rounded-full bg-emerald-400/10 blur-[130px]" />
 
       <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center mx-auto my-auto">
@@ -69,8 +69,8 @@ export default function LoginPage() {
             <span className="size-1.5 sm:size-2 rounded-full bg-emerald-500 animate-pulse" />
             B2B Mobilya Ekosistemi
           </div>
-          <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center justify-center gap-2">
-            <span className="bg-gradient-to-r from-[#d96b43] via-[#c85a32] to-[#b04720] bg-clip-text text-transparent">
+          <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center justify-center gap-2">
+            <span className="bg-gradient-to-r from-[#0c1527] via-[#1e293b] to-[#0c1527] bg-clip-text text-transparent">
               KÖPRÜ
             </span>
           </h1>
