@@ -742,7 +742,7 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
               >
                 <div className="flex items-center justify-between gap-2 border-b border-emerald-100 pb-3">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 text-lg">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 text-lg shadow-xs">
                       🚚
                     </span>
                     <div>
@@ -753,9 +753,14 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                             ? 'Adresinize Teslimat İçin Yola Çıktı'
                             : 'Adresinize Teslimat & Montaj Planlandı'}
                       </h3>
-                      <span className="text-[11px] font-semibold text-emerald-700">
-                        Plan No: #{deliv.id.slice(0, 8)}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                          Sipariş No: <span className="font-mono text-emerald-950">{deliv.order_no || order.order_no}</span>
+                        </span>
+                        <span className="text-[11px] font-semibold text-emerald-700">
+                          Plan No: #{deliv.id.slice(0, 8)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider">

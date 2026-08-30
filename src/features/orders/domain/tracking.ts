@@ -56,6 +56,7 @@ export interface TrackedPayment {
 
 export interface TrackedCustomerDelivery {
   id: string;
+  order_no?: string;
   delivery_date: string;
   time_slot: string;
   customer_name: string;
