@@ -430,9 +430,30 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                               </thead>
                               <tbody className="divide-y divide-amber-100">
                                 {s.returned_items.map((r, rIdx) => {
-                                  const rName = r.name || s.items.find((i) => i.productId === r.productId)?.name || 'Ürün';
-                                  const rUnitPrice = r.unit_price ?? (s.items.find((i) => i.productId === r.productId)?.unit_price ?? 0);
-                                  const rTotal = r.total_price ?? (rUnitPrice * r.quantity);
+                                  const rOrderItemId = (r as Record<string, unknown>).order_item_id as string | undefined
+                                    || (r as Record<string, unknown>).orderItemId as string | undefined
+                                    || r.orderItemId;
+
+                                  const matchedItem =
+                                    (r.productId ? s.items.find((i) => i.productId === r.productId) : undefined) ||
+                                    (r.productId ? order.items.find((i) => i.productId === r.productId) : undefined) ||
+                                    (rOrderItemId ? s.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
+                                    (rOrderItemId ? order.items.find((i) => (i as Record<string, unknown>).id === rOrderItemId || (i as Record<string, unknown>).orderItemId === rOrderItemId) : undefined) ||
+                                    (r.name ? s.items.find((i) => i.name === r.name) : undefined) ||
+                                    (r.name ? order.items.find((i) => i.name === r.name) : undefined) ||
+                                    (s.items.length === 1 ? s.items[0] : undefined) ||
+                                    (order.items.length === 1 ? order.items[0] : undefined) ||
+                                    s.items[rIdx] ||
+                                    order.items[0];
+
+                                  const rName = r.name || matchedItem?.name || original[0]?.name || 'Ürün';
+                                  const fallbackUnitPrice = original.find((o) => o.name === rName)?.unitPrice ?? (original[0]?.unitPrice ?? 0);
+                                  const rUnitPrice = (r.unit_price && r.unit_price > 0)
+                                    ? r.unit_price
+                                    : (matchedItem?.unit_price && matchedItem.unit_price > 0 ? matchedItem.unit_price : fallbackUnitPrice);
+                                  const rTotal = (r.total_price && r.total_price > 0)
+                                    ? r.total_price
+                                    : (rUnitPrice * r.quantity);
 
                                   return (
                                     <tr key={rIdx} className="text-[11px]">
