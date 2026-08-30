@@ -50,10 +50,10 @@ export function LoginTabs({ active, onSelect }: Props) {
             >
               <path d={ICONS[tab.id]} />
             </svg>
-            <div className="w-full flex flex-col items-center justify-center text-center text-[9px] min-[360px]:text-[9.5px] min-[400px]:text-[10.5px] sm:text-xs font-bold leading-tight tracking-tighter sm:tracking-tight truncate">
-              <span className="w-full truncate">{parts[0]}</span>
+            <div className="w-full flex flex-col items-center justify-center text-center text-[9.5px] min-[360px]:text-[10px] min-[400px]:text-[11px] sm:text-xs font-bold leading-tight tracking-tight">
+              <span>{parts[0]}</span>
               {parts.length > 1 ? (
-                <span className="w-full truncate">{parts.slice(1).join(' ')}</span>
+                <span>{parts.slice(1).join(' ')}</span>
               ) : (
                 <span className="invisible select-none" aria-hidden="true">
                   &nbsp;

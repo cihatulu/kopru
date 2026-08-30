@@ -20,9 +20,9 @@ describe('LoginTabs', () => {
     render(<LoginTabs active="member-manufacturer" onSelect={noop} />);
     for (const label of [
       'ÜYE ÜRETİCİ',
-      'ÜYE PERAKENDECİ',
+      'ÜYE MAĞAZA',
       'MİSAFİR ÜRETİCİ',
-      'MİSAFİR PERAKENDECİ',
+      'MİSAFİR MAĞAZA',
       'ADMIN',
     ]) {
       expect(screen.getByRole('tab', { name: label })).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('LoginTabs', () => {
   test('sekmeye basınca bildirilir', async () => {
     const onSelect = vi.fn();
     render(<LoginTabs active="member-manufacturer" onSelect={onSelect} />);
-    await userEvent.click(screen.getByRole('tab', { name: 'MİSAFİR PERAKENDECİ' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'MİSAFİR MAĞAZA' }));
     expect(onSelect).toHaveBeenCalledWith('guest-retailer');
   });
 });

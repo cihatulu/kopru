@@ -39,7 +39,7 @@ export const LOGIN_TABS: readonly LoginTab[] = [
   },
   {
     id: 'member-retailer',
-    label: 'ÜYE PERAKENDECİ',
+    label: 'ÜYE MAĞAZA',
     portal: ORG_KIND.retailer,
     mode: 'subscriber',
     hint: 'Katalog, sipariş ve cari takibi',
@@ -54,7 +54,7 @@ export const LOGIN_TABS: readonly LoginTab[] = [
   },
   {
     id: 'guest-retailer',
-    label: 'MİSAFİR PERAKENDECİ',
+    label: 'MİSAFİR MAĞAZA',
     portal: ORG_KIND.retailer,
     mode: 'guest',
     hint: 'Sizi ekleyen üreticinin vergi numarası ile',
