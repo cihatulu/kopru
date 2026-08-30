@@ -158,17 +158,27 @@ export function buildCustomerLedgers(
 
   const orderById = new Map(orders.map((o) => [o.id, o]));
 
+  const resolveRootOrder = (o: MinimalOrder): MinimalOrder => {
+    if (o.parentOrderId) {
+      const parent = orderById.get(o.parentOrderId);
+      if (parent) return resolveRootOrder(parent);
+    }
+    return o;
+  };
+
+  // 1. Ödemeler (Nakit, Bizim POS, Üretici POS)
   for (const t of transactions) {
     if (!t.order_id) continue;
-    const order = orderById.get(t.order_id);
-    if (!order) continue;
+    const rawOrder = orderById.get(t.order_id);
+    if (!rawOrder) continue;
+    const rootOrder = resolveRootOrder(rawOrder);
 
     const key = customerLedgerKey({
-      customer_name: cleanName(order.customerName),
-      customer_phone: cleanPhone(order.customerPhone),
-      customer_province: order.customerProvince,
-      customer_district: order.customerDistrict,
-      customer_address: order.customerAddress,
+      customer_name: cleanName(rootOrder.customerName),
+      customer_phone: cleanPhone(rootOrder.customerPhone),
+      customer_province: rootOrder.customerProvince,
+      customer_district: rootOrder.customerDistrict,
+      customer_address: rootOrder.customerAddress,
     });
     const entry = ledgers.get(key);
     if (!entry) continue;
@@ -183,25 +193,28 @@ export function buildCustomerLedgers(
     }
   }
 
-  // İadelerden kaynaklı alacak kayıtları
+  // 2. İadelerden kaynaklı alacak kayıtları
   if (returnRequests) {
     for (const rr of returnRequests) {
-      const order = orderById.get(rr.orderId);
-      if (!order) continue;
+      const rawOrder = orderById.get(rr.orderId);
+      if (!rawOrder) continue;
+      const rootOrder = resolveRootOrder(rawOrder);
 
       const key = customerLedgerKey({
-        customer_name: cleanName(order.customerName),
-        customer_phone: cleanPhone(order.customerPhone),
-        customer_province: order.customerProvince,
-        customer_district: order.customerDistrict,
-        customer_address: order.customerAddress,
+        customer_name: cleanName(rootOrder.customerName),
+        customer_phone: cleanPhone(rootOrder.customerPhone),
+        customer_province: rootOrder.customerProvince,
+        customer_district: rootOrder.customerDistrict,
+        customer_address: rootOrder.customerAddress,
       });
       const entry = ledgers.get(key);
       if (!entry) continue;
 
       let refundAmount = 0;
       for (const item of rr.items) {
-        const orderItem = order.items?.find((oi) => oi.id === item.orderItemId);
+        const orderItem =
+          rawOrder.items?.find((oi) => oi.id === item.orderItemId) ||
+          rootOrder.items?.find((oi) => oi.id === item.orderItemId);
         if (orderItem) {
           refundAmount += item.quantity * orderItem.retailUnitPrice;
         }
@@ -214,15 +227,16 @@ export function buildCustomerLedgers(
     }
   }
 
-  // İptallerden kaynaklı alacak kayıtları
+  // 3. İptallerden kaynaklı alacak kayıtları (kök ve çocuk siparişler)
   for (const o of orders) {
     if (o.status === 'cancelled') {
+      const rootOrder = resolveRootOrder(o);
       const key = customerLedgerKey({
-        customer_name: cleanName(o.customerName),
-        customer_phone: cleanPhone(o.customerPhone),
-        customer_province: o.customerProvince,
-        customer_district: o.customerDistrict,
-        customer_address: o.customerAddress,
+        customer_name: cleanName(rootOrder.customerName),
+        customer_phone: cleanPhone(rootOrder.customerPhone),
+        customer_province: rootOrder.customerProvince,
+        customer_district: rootOrder.customerDistrict,
+        customer_address: rootOrder.customerAddress,
       });
       const entry = ledgers.get(key);
       if (!entry) continue;
@@ -230,6 +244,13 @@ export function buildCustomerLedgers(
       entry.total_paid_amount += o.totalAmount;
       entry.remaining_balance -= o.totalAmount;
     }
+  }
+
+  // Kuruş yuvarlamaları
+  for (const entry of ledgers.values()) {
+    entry.total_order_amount = Math.round(entry.total_order_amount * 100) / 100;
+    entry.total_paid_amount = Math.round(entry.total_paid_amount * 100) / 100;
+    entry.remaining_balance = Math.round(entry.remaining_balance * 100) / 100;
   }
 
   return [...ledgers.values()].sort((a, b) => b.remaining_balance - a.remaining_balance);
