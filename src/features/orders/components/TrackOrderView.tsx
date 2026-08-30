@@ -25,6 +25,10 @@ function cleanPublicNote(note: string | null | undefined): string | null {
   if (/^iade reddedildi/i.test(trimmed)) {
     return 'İade talebi reddedildi.';
   }
+  // Müşteri teslimat notları Faz 1 B2B sevkiyat geçmişine karışmamalı, en alttaki Faz 2 kartında gösterilmeli
+  if (/^m[üu]şteri teslimat[ıi] planland[ıi]/i.test(trimmed)) {
+    return null;
+  }
   // İç yazışma veya toptan maliyet sızmasını engelle
   if (/\b(maliyet|toptan|al[ıi]ş fiyat[ıi]|tedarik fiyat[ıi])\b/i.test(trimmed)) {
     return null;
