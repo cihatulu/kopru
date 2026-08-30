@@ -61,7 +61,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
             inputMode="numeric"
             autoComplete="off"
             placeholder="10 haneli vergi numarası"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium transition-all shadow-xs"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0f172b] focus:outline-none focus:ring-2 focus:ring-[#0f172b]/15 font-medium transition-all shadow-xs"
             {...register('sponsorVkn')}
           />
           {errors.sponsorVkn && <p className="mt-1.5 text-xs font-semibold text-red-600">{errors.sponsorVkn.message}</p>}
@@ -182,7 +182,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
         type="submit"
         loading={pending}
         disabled={!email && !userType}
-        className="w-full py-3.5 text-sm font-black rounded-xl bg-[#0c1527] hover:bg-[#162238] active:bg-[#080d19] text-white shadow-lg shadow-slate-950/25 active:scale-[0.98] transition-all cursor-pointer"
+        className="w-full py-3.5 text-sm font-black rounded-xl bg-[#0f172b] hover:bg-[#1a2645] active:bg-[#090f1d] text-white shadow-lg shadow-slate-950/30 active:scale-[0.98] transition-all cursor-pointer"
       >
         Giriş Yap
       </Button>
