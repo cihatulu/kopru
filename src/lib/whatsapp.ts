@@ -22,10 +22,39 @@ export function normalizePhone(phone: string): string {
   return digits;
 }
 
-/** Masaüstü: web.whatsapp.com/send — ara ekran olmadan direkt sohbet açılır. */
-export function buildWhatsAppLink(params: { phone?: string | undefined; message: string }): string {
+/**
+ * Kullanıcının mobil cihazda olup olmadığını tespit eder.
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent ?? '',
+    ) ||
+    window.innerWidth < 768 ||
+    'ontouchstart' in window
+  );
+}
+
+/**
+ * WhatsApp derin bağlantısı.
+ *
+ * - Mobilde: `api.whatsapp.com/send` (cihazdaki yerel WhatsApp uygulamasını doğrudan açar).
+ * - Masaüstünde: `web.whatsapp.com/send` (tarayıcıda WhatsApp Web sohbetini doğrudan açar).
+ */
+export function buildWhatsAppLink(params: {
+  phone?: string | undefined;
+  message: string;
+}): string {
   const text = encodeURIComponent(params.message);
   const phone = params.phone ? normalizePhone(params.phone) : '';
+
+  if (isMobileDevice()) {
+    return phone
+      ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
+      : `https://api.whatsapp.com/send?text=${text}`;
+  }
+
   return phone
     ? `https://web.whatsapp.com/send?phone=${phone}&text=${text}`
     : `https://web.whatsapp.com/send?text=${text}`;

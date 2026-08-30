@@ -11,12 +11,12 @@ describe('normalizePhone', () => {
 describe('buildWhatsAppLink', () => {
   test('numara varsa doğrudan kişiye açılır', () => {
     expect(buildWhatsAppLink({ phone: '0532 111 2233', message: 'merhaba' })).toBe(
-      'https://web.whatsapp.com/send?phone=905321112233&text=merhaba',
+      'https://api.whatsapp.com/send?phone=905321112233&text=merhaba',
     );
   });
 
   test('numara yoksa kişi seçtiren link üretilir', () => {
-    expect(buildWhatsAppLink({ message: 'merhaba' })).toBe('https://web.whatsapp.com/send?text=merhaba');
+    expect(buildWhatsAppLink({ message: 'merhaba' })).toBe('https://api.whatsapp.com/send?text=merhaba');
   });
 
   test('mesaj URL için kodlanır', () => {
