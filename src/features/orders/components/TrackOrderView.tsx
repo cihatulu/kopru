@@ -32,6 +32,8 @@ function cleanPublicNote(note: string | null | undefined): string | null {
   return trimmed;
 }
 
+const CARD = 'rounded-xl border border-slate-200 bg-white p-4';
+
 /** İşaretli tutar: eksi fark indirimdir ve öyle okunmalıdır. */
 const signed = (n: number) => `${n > 0 ? '+' : '−'}${formatMoney(Math.abs(n))}`;
 

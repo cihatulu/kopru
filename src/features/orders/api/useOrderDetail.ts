@@ -48,6 +48,18 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
       const isRetailer = r.retailer_org_id === myOrgId;
       const items = Array.isArray(r.order_items) ? (r.order_items as unknown[]) : [];
 
+      let resolvedOrderToken = str(r.order_token);
+      if (!resolvedOrderToken && r.parent_order_id) {
+        const { data: pRow } = await supabase
+          .from('orders')
+          .select('order_token')
+          .eq('id', str(r.parent_order_id))
+          .maybeSingle();
+        if (pRow?.order_token) {
+          resolvedOrderToken = str(pRow.order_token);
+        }
+      }
+
       const shipments: ChildShipment[] = (childrenRes.data ?? []).map((c, idx) => ({
         id: str(c.id),
         shipmentNo: `Sevk-${idx + 1}`,
@@ -127,7 +139,7 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         customerPhone: nullable(r.customer_phone),
         customerAddress: nullable(r.customer_address),
         note: nullable(r.note),
-        orderToken: str(r.order_token),
+        orderToken: resolvedOrderToken || null,
         items: mappedItems,
         history,
         shipments,

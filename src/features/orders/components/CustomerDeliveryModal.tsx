@@ -139,12 +139,14 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
     if (!customerPhone) return;
 
     const formattedDate = deliveryDate ? formatDate(deliveryDate) : 'belirlenen tarihte';
+    const trackingUrl = order.orderToken ? `${window.location.origin}/takip/${order.orderToken}` : '';
     const message = `Merhaba Sayın ${customerName || 'Müşterimiz'},\n\n` +
       `${order.orderNo} numaralı mobilya siparişinizin adresinize teslimat & montaj randevusu planlanmıştır.\n\n` +
       `📅 *Teslimat Tarihi:* ${formattedDate}\n` +
       `⏰ *Saat Aralığı:* ${activeTimeSlot}\n` +
       `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n` +
-      (notes.trim() ? `📝 *Not:* ${notes.trim()}\n\n` : '\n') +
+      (notes.trim() ? `📝 *Not:* ${notes.trim()}\n` : '') +
+      (trackingUrl ? `\n🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '\n') +
       `Siparişinizi iyi günlerde kullanmanızı dileriz.`;
 
     const url = buildWhatsAppLink(customerPhone, message);
