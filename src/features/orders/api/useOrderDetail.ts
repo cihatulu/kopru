@@ -49,7 +49,7 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
       const items = Array.isArray(r.order_items) ? (r.order_items as unknown[]) : [];
 
       let resolvedOrderToken = str(r.order_token);
-      if (!resolvedOrderToken && r.parent_order_id) {
+      if (r.parent_order_id) {
         const { data: pRow } = await supabase
           .from('orders')
           .select('order_token')
