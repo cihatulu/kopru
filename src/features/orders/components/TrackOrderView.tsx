@@ -15,10 +15,28 @@ import {
   type TrackedShipment,
 } from '../domain/tracking';
 
+function normalizeTr(s: string): string {
+  return s
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
+    .replace(/ı/g, 'i')
+    .replace(/Ğ/g, 'g')
+    .replace(/ğ/g, 'g')
+    .replace(/Ü/g, 'u')
+    .replace(/ü/g, 'u')
+    .replace(/Ş/g, 's')
+    .replace(/ş/g, 's')
+    .replace(/Ö/g, 'o')
+    .replace(/ö/g, 'o')
+    .replace(/Ç/g, 'c')
+    .replace(/ç/g, 'c')
+    .toLowerCase();
+}
+
 function cleanPublicNote(note: string | null | undefined): string | null {
   if (!note) return null;
   const trimmed = note.trim();
-  const lower = trimmed.toLowerCase();
+  const lower = normalizeTr(trimmed);
 
   // İade onay/red/tutar notlarını gizle (yukarıdaki iade tablosu zaten tüm perakende detayını gösterir)
   if (lower.includes('iade onay') || lower.includes('iade redded') || lower.includes('iade')) {
@@ -26,7 +44,7 @@ function cleanPublicNote(note: string | null | undefined): string | null {
   }
 
   // Müşteri teslimat notları Faz 1 B2B sevkiyat geçmişine karışmamalı, en alttaki Faz 2 kartında gösterilmeli
-  if (lower.includes('teslimat planland') || lower.includes('müşteri teslimat') || lower.includes('musteri teslimat')) {
+  if (lower.includes('teslimat planland') || lower.includes('musteri teslimat')) {
     return null;
   }
 
@@ -36,7 +54,7 @@ function cleanPublicNote(note: string | null | undefined): string | null {
   }
 
   // İç yazışma veya toptan maliyet sızmasını engelle
-  if (/\b(maliyet|toptan|al[ıi]ş fiyat[ıi]|tedarik fiyat[ıi])\b/i.test(trimmed)) {
+  if (/\b(maliyet|toptan|alis fiyati|tedarik fiyati)\b/i.test(lower)) {
     return null;
   }
 
