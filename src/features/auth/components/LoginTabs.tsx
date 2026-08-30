@@ -19,7 +19,7 @@ export function LoginTabs({ active, onSelect }: Props) {
     <div
       role="tablist"
       aria-label="Giriş tipi"
-      className="grid grid-cols-5 border-b border-slate-200/80 bg-slate-50/80 p-1.5 gap-1"
+      className="grid grid-cols-5 border-b border-slate-200/90 bg-slate-100/75 p-2 gap-1.5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]"
     >
       {LOGIN_TABS.map((tab) => {
         const isActive = tab.id === active;
@@ -32,25 +32,25 @@ export function LoginTabs({ active, onSelect }: Props) {
             type="button"
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
-            className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer ${
               isActive
-                ? 'bg-white text-[#0c1527] font-extrabold shadow-sm border border-slate-200/80 ring-1 ring-slate-900/10'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent'
+                ? 'bg-white text-[#0f172b] font-extrabold shadow-[0_6px_16px_-2px_rgba(15,23,43,0.15),0_2px_4px_-1px_rgba(15,23,43,0.08)] border border-slate-200/90 ring-1 ring-slate-900/5 -translate-y-0.5'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-white/60 border border-transparent active:scale-95'
             }`}
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-[#0c1527]' : 'text-slate-400'}`}
+              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-[#0f172b]' : 'text-slate-400'}`}
               aria-hidden="true"
             >
               <path d={ICONS[tab.id]} />
             </svg>
-            <div className="flex flex-col items-center text-center text-[10.5px] sm:text-xs font-semibold leading-tight tracking-tight">
+            <div className="flex flex-col items-center text-center text-[10.5px] sm:text-xs font-bold leading-tight tracking-tight">
               <span>{parts[0]}</span>
               {parts.length > 1 ? (
                 <span>{parts.slice(1).join(' ')}</span>

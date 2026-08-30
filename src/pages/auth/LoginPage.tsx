@@ -139,8 +139,8 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Orta: Giriş Formu Kartı */}
-        <div className="w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-lg shadow-slate-200/70 border border-slate-200/80 transition-all">
+        {/* Orta: Giriş Formu Kartı (3D Elevated Card) */}
+        <div className="w-full overflow-hidden rounded-3xl bg-white shadow-[0_20px_50px_-12px_rgba(15,23,43,0.18),0_10px_20px_-5px_rgba(15,23,43,0.10)] border border-slate-200/90 ring-1 ring-slate-900/[0.05] transition-all relative before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white before:to-transparent">
           <LoginTabs
             active={tabId}
             onSelect={(id) => {
@@ -149,7 +149,7 @@ export default function LoginPage() {
             }}
           />
 
-          <div className="px-4 py-3 sm:px-8 sm:py-5">
+          <div className="px-4 py-3.5 sm:px-8 sm:py-6">
             <LoginFormFields
               key={tabId}
               tab={tab}
