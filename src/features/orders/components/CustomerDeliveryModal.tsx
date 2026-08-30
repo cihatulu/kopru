@@ -38,6 +38,11 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
   const [customTimeSlot, setCustomTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
+  const [successInfo, setSuccessInfo] = useState<{
+    message: string;
+    date: string;
+    timeSlot: string;
+  } | null>(null);
 
   // Sipariş detayı yüklendiğinde formu gerçek verilerle doldur
   useEffect(() => {
@@ -95,12 +100,6 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
 
   const items = order.items;
   const activeTimeSlot = customTimeSlot.trim() || timeSlot;
-
-  const [successInfo, setSuccessInfo] = useState<{
-    message: string;
-    date: string;
-    timeSlot: string;
-  } | null>(null);
 
   const totalItemsToDeliver = items.reduce(
     (sum, i) => sum + (selectedQuantities[i.id] ?? 0),
