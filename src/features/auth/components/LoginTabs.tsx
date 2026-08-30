@@ -19,7 +19,7 @@ export function LoginTabs({ active, onSelect }: Props) {
     <div
       role="tablist"
       aria-label="Giriş tipi"
-      className="grid grid-cols-5 border-b border-slate-200"
+      className="grid grid-cols-5 border-b border-white/10 bg-slate-950/40 p-1 gap-1"
     >
       {LOGIN_TABS.map((tab) => {
         const isActive = tab.id === active;
@@ -32,10 +32,10 @@ export function LoginTabs({ active, onSelect }: Props) {
             type="button"
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
-            className={`flex flex-col items-center justify-center gap-1.5 border-b-2 px-1 py-3 transition-colors ${
+            className={`flex flex-col items-center justify-center gap-1.5 px-1 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer ${
               isActive
-                ? 'border-brand-600 text-brand-700 bg-brand-50/20'
-                : 'border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50/50'
+                ? 'bg-white/10 text-blue-400 font-extrabold shadow-inner border border-white/10'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
             }`}
           >
             <svg
@@ -45,12 +45,12 @@ export function LoginTabs({ active, onSelect }: Props) {
               strokeWidth={1.8}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-5 shrink-0"
+              className={`size-4.5 shrink-0 transition-transform ${isActive ? 'scale-110 text-blue-400' : ''}`}
               aria-hidden="true"
             >
               <path d={ICONS[tab.id]} />
             </svg>
-            <div className="flex flex-col items-center text-center text-[10px] font-bold leading-tight tracking-wider uppercase">
+            <div className="flex flex-col items-center text-center text-[9.5px] sm:text-[10px] font-extrabold leading-tight tracking-wider uppercase">
               <span>{parts[0]}</span>
               {parts.length > 1 ? (
                 <span>{parts.slice(1).join(' ')}</span>

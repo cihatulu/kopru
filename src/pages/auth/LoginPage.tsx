@@ -128,7 +128,7 @@ export default function LoginPage() {
         </div>
 
         {/* Orta: Giriş Formu Kartı */}
-        <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-white/10">
+        <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-slate-900/85 backdrop-blur-2xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/10 transition-all">
           <LoginTabs
             active={tabId}
             onSelect={(id) => {
@@ -137,7 +137,7 @@ export default function LoginPage() {
             }}
           />
 
-          <div className="px-8 py-7">
+          <div className="px-6 sm:px-8 py-7">
             <LoginFormFields
               key={tabId}
               tab={tab}

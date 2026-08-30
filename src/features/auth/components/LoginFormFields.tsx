@@ -23,7 +23,7 @@ interface Props {
 export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props) {
   const email = usesEmail(tab);
   const guest = isGuestTab(tab);
-  const [userType, setUserType] = useState<'owner' | 'staff' | null>(null);
+  const [userType, setUserType] = useState<'owner' | 'staff' | null>('owner');
 
   const {
     register,
@@ -48,12 +48,12 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
   };
 
   return (
-    <form onSubmit={(e) => void handleSubmit(submit)(e)} className="space-y-4">
-      <p className="text-center text-sm text-slate-500">{tab.hint}</p>
+    <form onSubmit={(e) => void handleSubmit(submit)(e)} className="space-y-4 text-left">
+      <p className="text-center text-xs font-medium text-slate-400 mb-1">{tab.hint}</p>
 
       {guest && tab.sponsorLabel && (
         <div>
-          <label className="label uppercase tracking-wide" htmlFor="sponsorVkn">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5" htmlFor="sponsorVkn">
             {tab.sponsorLabel}
           </label>
           <input
@@ -61,16 +61,16 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
             inputMode="numeric"
             autoComplete="off"
             placeholder="10 haneli vergi numarası"
-            className="input"
+            className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium transition-all shadow-inner"
             {...register('sponsorVkn')}
           />
-          {errors.sponsorVkn && <p className="field-error">{errors.sponsorVkn.message}</p>}
+          {errors.sponsorVkn && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.sponsorVkn.message}</p>}
         </div>
       )}
 
       {email ? (
         <div>
-          <label className="label uppercase tracking-wide" htmlFor="email">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5" htmlFor="email">
             E-posta
           </label>
           <input
@@ -78,15 +78,15 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
             type="email"
             autoComplete="username"
             placeholder="admin@ornek.com"
-            className="input"
+            className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium transition-all shadow-inner"
             {...register('email')}
           />
-          {errors.email && <p className="field-error">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.email.message}</p>}
         </div>
       ) : (
         <>
           <div>
-            <label className="label uppercase tracking-wide" htmlFor="userCode">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5" htmlFor="userCode">
               Vergi No / Kullanıcı Kodu
             </label>
             <input
@@ -94,15 +94,21 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
               inputMode="numeric"
               autoComplete="username"
               placeholder="Vergi numaranız veya T.C. kimlik numaranız"
-              className="input"
+              className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium transition-all shadow-inner"
               {...register('userCode')}
             />
-            {errors.userCode && <p className="field-error">{errors.userCode.message}</p>}
+            {errors.userCode && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.userCode.message}</p>}
           </div>
 
-          {/* Yetkili / Personel Seçim Tik Alanı */}
-          <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100/80 flex justify-around items-center">
-            <label className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer select-none">
+          {/* Yetkili / Personel Seçim Alanı — Modern Segmented Switch */}
+          <div className="bg-slate-950/70 p-1 rounded-2xl border border-white/10 grid grid-cols-2 gap-1 shadow-inner">
+            <label
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-extrabold cursor-pointer transition-all duration-200 select-none ${
+                userType === 'owner'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/40 border border-blue-400/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
+              }`}
+            >
               <input
                 type="radio"
                 name="userType"
@@ -112,11 +118,21 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
                   setUserType('owner');
                   clearErrors('root');
                 }}
-                className="h-4.5 w-4.5 text-slate-800 rounded border-slate-300 focus:ring-slate-850 cursor-pointer"
+                className="sr-only"
               />
+              <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
               <span>Yetkili Girişi</span>
             </label>
-            <label className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer select-none">
+
+            <label
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-extrabold cursor-pointer transition-all duration-200 select-none ${
+                userType === 'staff'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/40 border border-blue-400/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
+              }`}
+            >
               <input
                 type="radio"
                 name="userType"
@@ -126,33 +142,37 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
                   setUserType('staff');
                   clearErrors('root');
                 }}
-                className="h-4.5 w-4.5 text-slate-800 rounded border-slate-300 focus:ring-slate-850 cursor-pointer"
+                className="sr-only"
               />
+              <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
               <span>Personel Girişi</span>
             </label>
           </div>
-          {errors.root?.message && <p className="field-error text-center">{errors.root.message}</p>}
+          {errors.root?.message && <p className="mt-1.5 text-xs font-semibold text-red-400 text-center">{errors.root.message}</p>}
         </>
       )}
 
       <div>
-        <label className="label uppercase tracking-wide" htmlFor="password">
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5" htmlFor="password">
           Şifre
         </label>
         <input
           id="password"
           type="password"
           autoComplete="current-password"
-          className="input"
+          placeholder="••••••••"
+          className="w-full rounded-xl border border-white/15 bg-slate-950/70 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium transition-all shadow-inner"
           {...register('password')}
         />
-        {errors.password && <p className="field-error">{errors.password.message}</p>}
+        {errors.password && <p className="mt-1.5 text-xs font-semibold text-red-400">{errors.password.message}</p>}
       </div>
 
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-100"
+          className="rounded-xl bg-red-950/50 border border-red-500/30 px-4 py-3 text-xs font-semibold text-red-300 shadow-lg backdrop-blur-md"
         >
           {errorMessage}
         </div>
@@ -162,7 +182,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
         type="submit"
         loading={pending}
         disabled={!email && !userType}
-        className="w-full py-3"
+        className="w-full py-3.5 text-sm font-black rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-900/40 active:scale-[0.98] transition-all cursor-pointer"
       >
         Giriş Yap
       </Button>
