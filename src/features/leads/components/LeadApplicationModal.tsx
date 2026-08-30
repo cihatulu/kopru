@@ -110,55 +110,55 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
   return (
     <Modal
       label={`${roleTitle} Başvurusu`}
-      panelClassName="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl"
+      panelClassName="w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-8 shadow-2xl"
       onClose={onClose}
       closeDisabled={pending}
     >
       {success ? (
-        <div className="space-y-5 text-center py-3">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">
+        <div className="space-y-4 text-center py-2">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-2xl">
             ✅
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-800">
+            <h2 className="text-lg sm:text-xl font-black text-slate-800">
               Başvurunuz Başarıyla Alındı!
             </h2>
-            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+            <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
               Bilgileriniz yetkili ekibimize iletilmiştir. WhatsApp üzerinden de doğrudan görüşme başlatabilirsiniz.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-800 space-y-1 text-left">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5 text-xs text-emerald-800 space-y-1 text-left">
             <div className="font-bold">Firma: {companyName}</div>
             <div>Başvuru: {roleTitle}</div>
             <div>Telefon: {phone}</div>
             {email.trim() && <div>E-posta: {email.trim()}</div>}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
             <a
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
             >
               <span>💬 WhatsApp ile Mesaj Gönder</span>
             </a>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
               Kapat
             </Button>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{isManufacturer ? '🏭' : '🏬'}</span>
-              <h2 className="text-xl font-black text-slate-900">
+              <span className="text-xl sm:text-2xl">{isManufacturer ? '🏭' : '🏬'}</span>
+              <h2 className="text-lg sm:text-xl font-black text-slate-900">
                 {roleTitle} Başvuru Formu
               </h2>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500">
               KÖPRÜ platformuna katılmak için lütfen bilgilerinizi doldurunuz.
             </p>
           </div>
@@ -169,7 +169,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                 Firma Adı <span className="text-red-500">*</span>
@@ -198,7 +198,7 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                   İl
@@ -253,14 +253,20 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={pending}
+              className="w-full sm:w-auto"
+            >
               İptal
             </Button>
             <Button
               type="submit"
               loading={pending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
             >
               💬 WhatsApp ile Başvuruyu İlet
             </Button>
