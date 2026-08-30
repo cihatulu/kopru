@@ -5,7 +5,11 @@ import { Spinner } from '@/components/ui/Spinner';
 import { formatDate } from '@/lib/format';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
 import { useOrderDetail } from '../api/useOrderDetail';
-import { useScheduleCustomerDelivery } from '../api/useOrderMutations';
+import {
+  useScheduleCustomerDelivery,
+  useCancelCustomerDelivery,
+  useUpdateCustomerDelivery,
+} from '../api/useOrderMutations';
 
 interface Props {
   orderId: string;
@@ -23,6 +27,8 @@ const TIME_SLOTS = [
 export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Props) {
   const { data: order, isPending: isLoadingDetail, isError } = useOrderDetail(orderId, orgId);
   const scheduleMutation = useScheduleCustomerDelivery();
+  const cancelMutation = useCancelCustomerDelivery();
+  const updateMutation = useUpdateCustomerDelivery();
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -43,6 +49,13 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
     date: string;
     timeSlot: string;
   } | null>(null);
+
+  // Plan düzenleme ve iptal durumları
+  const [editingDeliveryId, setEditingDeliveryId] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editSlot, setEditSlot] = useState('13:00 - 17:00');
+  const [editNotes, setEditNotes] = useState('');
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
 
   // Sipariş detayı yüklendiğinde formu gerçek verilerle doldur
   useEffect(() => {
@@ -173,6 +186,64 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
       `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n\n` +
       itemsText +
       (notes.trim() ? `📝 *Not:* ${notes.trim()}\n\n` : '') +
+      (trackingUrl ? `🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '') +
+      `Siparişinizi iyi günlerde kullanmanızı dileriz.`;
+
+    const url = buildWhatsAppLink({ phone: customerPhone, message });
+    window.open(url, '_blank');
+  };
+
+  const handleCancelDelivery = async (deliveryId: string) => {
+    try {
+      await cancelMutation.mutateAsync({ deliveryId });
+      setCancelConfirmId(null);
+    } catch (err) {
+      console.error('Plan iptal hatası:', err);
+    }
+  };
+
+  const handleStartEdit = (d: { id: string; delivery_date: string; time_slot: string; notes?: string | null }) => {
+    setEditingDeliveryId(d.id);
+    setEditDate(d.delivery_date);
+    setEditSlot(d.time_slot || '13:00 - 17:00');
+    setEditNotes(d.notes || '');
+  };
+
+  const handleSaveEdit = async (deliveryId: string) => {
+    try {
+      await updateMutation.mutateAsync({
+        deliveryId,
+        deliveryDate: editDate,
+        timeSlot: editSlot,
+        notes: editNotes.trim() || undefined,
+      });
+      setEditingDeliveryId(null);
+    } catch (err) {
+      console.error('Plan güncelleme hatası:', err);
+    }
+  };
+
+  const handleSendPlanWhatsApp = (plan: {
+    delivery_date: string;
+    time_slot: string;
+    notes?: string | null;
+    items?: Array<{ order_item_id?: string; name: string; quantity: number }>;
+  }) => {
+    if (!customerPhone) return;
+    const formattedDate = plan.delivery_date ? formatDate(plan.delivery_date) : 'belirlenen tarihte';
+    const trackingUrl = order.orderToken ? `${window.location.origin}/takip/${order.orderToken}` : '';
+
+    const planItemsText = Array.isArray(plan.items) && plan.items.length > 0
+      ? `📦 *Teslim Edilecek Ürünler:*\n${plan.items.map((i) => `• ${i.quantity} Adet ${i.name}`).join('\n')}\n\n`
+      : '';
+
+    const message = `Merhaba Sayın ${customerName || 'Müşterimiz'},\n\n` +
+      `${order.orderNo} numaralı mobilya siparişinizin adresinize teslimat & montaj randevusu güncellenmiştir.\n\n` +
+      `📅 *Teslimat Tarihi:* ${formattedDate}\n` +
+      `⏰ *Saat Aralığı:* ${plan.time_slot}\n` +
+      `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n\n` +
+      planItemsText +
+      (plan.notes?.trim() ? `📝 *Not:* ${plan.notes.trim()}\n\n` : '') +
       (trackingUrl ? `🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '') +
       `Siparişinizi iyi günlerde kullanmanızı dileriz.`;
 
@@ -504,6 +575,208 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
             </div>
           </div>
         )}
+
+        {/* Aktif / Oluşturulmuş Teslimat Planları (İptal ve Tarih Değiştirme) */}
+        {(() => {
+          const activeDeliveries = (order.customerDeliveries || []).filter((d) => d.status !== 'cancelled');
+          if (activeDeliveries.length === 0) return null;
+
+          return (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <h3 className="text-xs font-black uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                  <span>📋</span> Oluşturulmuş Teslimat Planları ({activeDeliveries.length} Plan)
+                </h3>
+                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Müşteri Takip Linkinde Aktif
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {activeDeliveries.map((d) => {
+                  const isEditing = editingDeliveryId === d.id;
+                  const isCancelling = cancelConfirmId === d.id;
+                  const planItems = Array.isArray(d.items) ? d.items : [];
+
+                  return (
+                    <div
+                      key={d.id}
+                      className="rounded-xl border border-emerald-200/80 bg-white p-3.5 space-y-2.5 shadow-2xs"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono font-bold text-xs bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200">
+                            Plan No: #{d.id.slice(0, 8)}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            📅 {formatDate(d.delivery_date)}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">
+                            ({d.time_slot})
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {customerPhone && (
+                            <button
+                              type="button"
+                              title="Bu plan için müşteriye WhatsApp bildirimi gönder"
+                              onClick={() => handleSendPlanWhatsApp(d)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              💬 WhatsApp
+                            </button>
+                          )}
+
+                          {!isEditing && (
+                            <button
+                              type="button"
+                              title="Müşteri talebine göre randevu tarih ve saatini güncelle"
+                              onClick={() => handleStartEdit(d)}
+                              className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              ✏️ Tarih Değiştir
+                            </button>
+                          )}
+
+                          {!isCancelling ? (
+                            <button
+                              type="button"
+                              title="Planı iptal et ve ürünleri tekrar teslim edilebilir stoğa al"
+                              onClick={() => setCancelConfirmId(d.id)}
+                              className="px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              🗑️ Planı İptal Et
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1 bg-red-100/90 p-1 rounded-lg border border-red-300">
+                              <span className="text-[10px] font-bold text-red-900 px-1">İptal edilsin mi?</span>
+                              <button
+                                type="button"
+                                disabled={cancelMutation.isPending}
+                                onClick={() => handleCancelDelivery(d.id)}
+                                className="px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold hover:bg-red-700 cursor-pointer disabled:opacity-50"
+                              >
+                                {cancelMutation.isPending ? 'İptal...' : 'Evet, İptal'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCancelConfirmId(null)}
+                                className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-bold hover:bg-slate-300 cursor-pointer"
+                              >
+                                Vazgeç
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Planlanan Ürünler */}
+                      {planItems.length > 0 && (
+                        <div className="text-xs text-slate-700 flex flex-wrap items-center gap-1.5">
+                          <span className="font-semibold text-slate-400">Ürünler:</span>
+                          {planItems.map((pi, piIdx) => (
+                            <span
+                              key={piIdx}
+                              className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-0.5 font-bold text-slate-800 border border-slate-200/80 text-[11px]"
+                            >
+                              <strong>{pi.quantity} Adet</strong> {pi.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {d.notes && (
+                        <p className="text-[11px] text-slate-600 italic bg-slate-50 p-2 rounded-lg border border-slate-100">
+                          📝 {d.notes}
+                        </p>
+                      )}
+
+                      {/* Tarih Değiştirme Düzenleme Alanı */}
+                      {isEditing && (
+                        <div className="mt-2 p-3 rounded-xl bg-blue-50/80 border border-blue-200 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-blue-950">
+                              ✏️ Randevu Tarih & Saatini Güncelle
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setEditingDeliveryId(null)}
+                              className="text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                            >
+                              ✕ Kapat
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                                Yeni Teslimat Tarihi
+                              </label>
+                              <input
+                                type="date"
+                                value={editDate}
+                                onChange={(e) => setEditDate(e.target.value)}
+                                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-800"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                                Saat Aralığı
+                              </label>
+                              <select
+                                value={editSlot}
+                                onChange={(e) => setEditSlot(e.target.value)}
+                                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-800"
+                              >
+                                {TIME_SLOTS.map((s) => (
+                                  <option key={s.value} value={s.value}>
+                                    {s.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                              Not (Opsiyonel)
+                            </label>
+                            <input
+                              type="text"
+                              value={editNotes}
+                              onChange={(e) => setEditNotes(e.target.value)}
+                              placeholder="Not güncellemesi..."
+                              className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-800"
+                            />
+                          </div>
+
+                          <div className="flex justify-end gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setEditingDeliveryId(null)}
+                              className="px-3 py-1 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                            >
+                              Vazgeç
+                            </button>
+                            <button
+                              type="button"
+                              disabled={!editDate || updateMutation.isPending}
+                              onClick={() => handleSaveEdit(d.id)}
+                              className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                            >
+                              {updateMutation.isPending ? 'Kaydediliyor...' : '✓ Randevuyu Güncelle'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* 4. Montaj & Sevkiyat Ekibine Not */}
         <div>

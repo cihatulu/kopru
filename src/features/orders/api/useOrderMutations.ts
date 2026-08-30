@@ -185,3 +185,48 @@ export function useScheduleCustomerDelivery() {
     onSuccess: invalidate,
   });
 }
+
+export function useCancelCustomerDelivery() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: { deliveryId: string; reason?: string }) => {
+      const { data, error } = await supabase.rpc('cancel_customer_delivery', rpcArgs({
+        p_delivery_id: input.deliveryId,
+        p_reason: input.reason ?? undefined,
+      }));
+
+      if (error) {
+        console.error('cancel_customer_delivery error:', error);
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateCustomerDelivery() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: {
+      deliveryId: string;
+      deliveryDate: string;
+      timeSlot: string;
+      notes?: string;
+    }) => {
+      const { data, error } = await supabase.rpc('update_customer_delivery', rpcArgs({
+        p_delivery_id: input.deliveryId,
+        p_delivery_date: input.deliveryDate,
+        p_time_slot: input.timeSlot,
+        p_notes: input.notes ?? undefined,
+      }));
+
+      if (error) {
+        console.error('update_customer_delivery error:', error);
+        throw error;
+      }
+      return data;
+    },
+    onSuccess: invalidate,
+  });
+}
