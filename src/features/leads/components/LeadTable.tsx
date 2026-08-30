@@ -9,11 +9,12 @@ interface Props {
   busyId?: string | undefined;
   onAdvance: (l: Lead) => void;
   onReject: (l: Lead) => void;
+  onConvertToOrg?: (l: Lead) => void;
 }
 
 const TD = 'px-4 py-3 align-middle';
 
-export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
+export function LeadTable({ leads, busyId, onAdvance, onReject, onConvertToOrg }: Props) {
   if (leads.length === 0) {
     return (
       <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-inset ring-slate-200">
@@ -59,13 +60,34 @@ export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
                     {meta.label}
                   </span>
                   {l.matchedOrgId && (
-                    <span className="mt-1 block text-xs text-emerald-700">Sisteme kayıtlı</span>
+                    <span className="mt-1 block text-xs text-emerald-700 font-semibold">✓ Sisteme kayıtlı</span>
                   )}
                 </td>
                 <td className={`${TD} text-xs text-slate-500`}>{formatDate(l.createdAt)}</td>
                 <td className={`${TD} text-right`}>
                   {!isClosedLead(l.status) && (
-                    <div className="inline-flex gap-1.5">
+                    <div className="inline-flex items-center gap-1.5">
+                      {onConvertToOrg && (
+                        <button
+                          type="button"
+                          onClick={() => onConvertToOrg(l)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs active:scale-95 transition-all cursor-pointer"
+                        >
+                          <span>+</span>
+                          <span>
+                            {l.kind === 'manufacturer'
+                              ? 'Üretici Ekle'
+                              : l.kind === 'retailer'
+                                ? 'Perakendeci Ekle'
+                                : 'Üye Yap'}
+                          </span>
+                        </button>
+                      )}
+                      {next && (
+                        <Button loading={busyId === l.id} onClick={() => onAdvance(l)}>
+                          {LEAD_STATUS_META[next].label}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         disabled={busyId === l.id}
@@ -73,11 +95,6 @@ export function LeadTable({ leads, busyId, onAdvance, onReject }: Props) {
                       >
                         Olumsuz
                       </Button>
-                      {next && (
-                        <Button loading={busyId === l.id} onClick={() => onAdvance(l)}>
-                          {LEAD_STATUS_META[next].label}
-                        </Button>
-                      )}
                     </div>
                   )}
                 </td>

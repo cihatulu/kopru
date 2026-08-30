@@ -8,8 +8,10 @@ import {
   useAddLead,
   useLeads,
   useSetLeadStatus,
+  type Lead,
   type LeadStatus,
 } from '@/features/leads';
+import { CreateOrgDialog, useCreateOrg, type CreateOrgForm } from '@/features/admin';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 
@@ -27,15 +29,34 @@ export default function AdminLeadsPage() {
   const [filter, setFilter] = useState<LeadStatus | 'all'>('all');
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
+  const [convertingLead, setConvertingLead] = useState<Lead | null>(null);
   const [busyId, setBusyId] = useState<string | undefined>(undefined);
 
   const list = useLeads(filter, search);
   const add = useAddLead();
   const setStatus = useSetLeadStatus();
+  const createOrg = useCreateOrg();
 
   const change = (id: string, status: LeadStatus) => {
     setBusyId(id);
     setStatus.mutate({ id, status }, { onSettled: () => setBusyId(undefined) });
+  };
+
+  const handleConvertSubmit = (values: CreateOrgForm) => {
+    if (!convertingLead) return;
+    const targetKind = convertingLead.kind ?? 'retailer';
+    createOrg.mutate(
+      {
+        kind: targetKind,
+        ...values,
+      },
+      {
+        onSuccess: () => {
+          setStatus.mutate({ id: convertingLead.id, status: 'converted' });
+          setConvertingLead(null);
+        },
+      }
+    );
   };
 
   return (
@@ -44,7 +65,7 @@ export default function AdminLeadsPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Adaylar</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Henüz platformda olmayan firmalar. VKN girilen bir aday sisteme kaydolduğunda otomatik
+            Henüz platformda olmayan firmalar. VKN girilen bir aday sisteme kaydolduğunda veya 'Üye Ekle' butonuyla eklendiğinde otomatik
             olarak müşteriye dönüşür.
           </p>
         </div>
@@ -84,6 +105,7 @@ export default function AdminLeadsPage() {
             if (to) change(l.id, to);
           }}
           onReject={(l) => change(l.id, 'rejected')}
+          onConvertToOrg={(l) => setConvertingLead(l)}
         />
       )}
 
@@ -108,6 +130,29 @@ export default function AdminLeadsPage() {
             add.reset();
           }}
           onSubmit={(v) => add.mutate(v, { onSuccess: () => setCreating(false) })}
+        />
+      )}
+
+      {convertingLead && (
+        <CreateOrgDialog
+          kind={convertingLead.kind ?? 'retailer'}
+          initialValues={{
+            companyName: convertingLead.companyName,
+            vknTc: convertingLead.vknTc ?? '',
+            phone: convertingLead.phone ?? '',
+            email: convertingLead.email ?? '',
+          }}
+          pending={createOrg.isPending}
+          errorMessage={
+            createOrg.isError
+              ? (createOrg.error as any)?.message || 'Organizasyon oluşturulamadı.'
+              : undefined
+          }
+          onClose={() => {
+            setConvertingLead(null);
+            createOrg.reset();
+          }}
+          onSubmit={handleConvertSubmit}
         />
       )}
     </div>

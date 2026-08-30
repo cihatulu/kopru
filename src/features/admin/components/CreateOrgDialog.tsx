@@ -7,20 +7,31 @@ import { createOrgSchema, type CreateOrgForm } from '../domain/orgSchema';
 
 interface Props {
   kind: OrgKind;
+  initialValues?: Partial<CreateOrgForm> | undefined;
   pending: boolean;
   errorMessage?: string | undefined;
   onClose: () => void;
   onSubmit: (values: CreateOrgForm) => void;
 }
 
-export function CreateOrgDialog({ kind, pending, errorMessage, onClose, onSubmit }: Props) {
+export function CreateOrgDialog({
+  kind,
+  initialValues,
+  pending,
+  errorMessage,
+  onClose,
+  onSubmit,
+}: Props) {
   const noun = kind === ORG_KIND.manufacturer ? 'Üretici' : 'Perakendeci';
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateOrgForm>({ resolver: zodResolver(createOrgSchema) });
+  } = useForm<CreateOrgForm>({
+    resolver: zodResolver(createOrgSchema),
+    ...(initialValues ? { defaultValues: initialValues as CreateOrgForm } : {}),
+  });
 
   return (
     <Modal
