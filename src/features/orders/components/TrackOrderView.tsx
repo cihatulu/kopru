@@ -101,7 +101,26 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   // İptal edilen sevkiyatları finansal hesaptan düş
   const activeSources = sources.filter((s) => s.status !== 'cancelled');
   const activeOriginal = aggregate(activeSources, 'original');
-  const effectiveTotal = linesTotal(activeOriginal);
+  const activeTotal = linesTotal(activeOriginal);
+
+  const childShipments = order.shipments ?? [];
+
+  // Siparişteki tüm onaylı iade tutarı (perakende satış fiyatları üzerinden)
+  const allReturnedItems = [
+    ...(order.returned_items ?? []),
+    ...childShipments.flatMap((s) => s.returned_items ?? []),
+  ];
+
+  const totalReturnAmount = Math.round(
+    allReturnedItems.reduce((sum, r) => {
+      if (r.total_price && r.total_price > 0) return sum + r.total_price;
+      const matched = original.find((o) => (r.productId && o.key.startsWith(r.productId)) || o.name === r.name);
+      const unitP = r.unit_price && r.unit_price > 0 ? r.unit_price : (matched?.unitPrice ?? 0);
+      return sum + (unitP * r.quantity);
+    }, 0) * 100
+  ) / 100;
+
+  const effectiveTotal = Math.round(Math.max(0, activeTotal - totalReturnAmount) * 100) / 100;
   const paid = Math.round(
     order.payments
       .filter(isCustomerPayment)
@@ -111,7 +130,6 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
   const changed = remaining.length !== original.length ||
     remaining.some((r, i) => r.quantity !== original[i]?.quantity);
 
-  const childShipments = order.shipments ?? [];
   const allShipments: TrackedShipment[] = [...childShipments];
 
   // Ana sipariş sevk edildiyse veya teslim edildiyse, ana siparişte kalan ürünler de sevk edilmiştir.
@@ -220,20 +238,42 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
 
       {originalTotal > 0 && (
         <div className={CARD}>
-          {effectiveTotal !== originalTotal && (
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-slate-400">Sipariş Tutarı</span>
+          {/* Orijinal Tutar (İptal veya İade Varsa Üstü Çizili Göster) */}
+          {(originalTotal !== activeTotal || totalReturnAmount > 0) && (
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-slate-400">İlk Sipariş Tutarı</span>
               <span className="font-semibold text-slate-400 line-through">{formatMoney(originalTotal)}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-500">{effectiveTotal !== originalTotal ? 'İptal Sonrası Tutar' : 'Sipariş Tutarı'}</span>
-            <span className="font-semibold text-slate-800">{formatMoney(effectiveTotal)}</span>
+
+          {/* İptal Edilen Tutar */}
+          {originalTotal !== activeTotal && (
+            <div className="flex justify-between text-sm mb-1.5 text-red-600">
+              <span>İptal Edilen Tutar</span>
+              <span className="font-semibold font-mono">−{formatMoney(originalTotal - activeTotal)}</span>
+            </div>
+          )}
+
+          {/* İade Edilen Tutar */}
+          {totalReturnAmount > 0 && (
+            <div className="flex justify-between text-sm mb-1.5 text-amber-800">
+              <span>İade Edilen Tutar</span>
+              <span className="font-semibold font-mono">−{formatMoney(totalReturnAmount)}</span>
+            </div>
+          )}
+
+          <div className={`flex justify-between text-sm ${(originalTotal !== activeTotal || totalReturnAmount > 0) ? 'pt-1.5 border-t border-slate-100' : ''}`}>
+            <span className="text-slate-700 font-bold">
+              {(originalTotal !== activeTotal || totalReturnAmount > 0) ? 'Güncel Sipariş Tutarı' : 'Sipariş Tutarı'}
+            </span>
+            <span className="font-bold text-slate-900">{formatMoney(effectiveTotal)}</span>
           </div>
+
           <div className="flex justify-between text-sm mt-2">
             <span className="text-slate-500">Ödenen</span>
             <span className="font-semibold text-emerald-600">{formatMoney(paid)}</span>
           </div>
+
           <div className="flex justify-between text-sm mt-2 border-t border-slate-100 pt-2">
             <span className="font-bold text-slate-800">Kalan Bakiye</span>
             <span className="font-bold text-slate-900">{formatMoney(balance)}</span>
