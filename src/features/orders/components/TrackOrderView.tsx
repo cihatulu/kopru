@@ -18,25 +18,28 @@ import {
 function cleanPublicNote(note: string | null | undefined): string | null {
   if (!note) return null;
   const trimmed = note.trim();
-  // "İade onaylandı: 100000.00 TL" gibi üretici toptan maliyet/onay loglarını müşteri diline çevir
-  if (/^iade onayland[ıi]/i.test(trimmed)) {
-    return 'İade talebi onaylandı ve işleme alındı.';
-  }
-  if (/^iade reddedildi/i.test(trimmed)) {
-    return 'İade talebi reddedildi.';
-  }
-  // Müşteri teslimat notları Faz 1 B2B sevkiyat geçmişine karışmamalı, en alttaki Faz 2 kartında gösterilmeli
-  if (/^m[üu]şteri teslimat[ıi] planland[ıi]/i.test(trimmed)) {
+  const lower = trimmed.toLowerCase();
+
+  // İade onay/red/tutar notlarını gizle (yukarıdaki iade tablosu zaten tüm perakende detayını gösterir)
+  if (lower.includes('iade onay') || lower.includes('iade redded') || lower.includes('iade')) {
     return null;
   }
+
+  // Müşteri teslimat notları Faz 1 B2B sevkiyat geçmişine karışmamalı, en alttaki Faz 2 kartında gösterilmeli
+  if (lower.includes('teslimat planland') || lower.includes('müşteri teslimat') || lower.includes('musteri teslimat')) {
+    return null;
+  }
+
   // "105000", "140000.00 TL", "50000" gibi sadece rakam veya ham tutar içeren toptan maliyet notlarını gizle
   if (/^\d+([.,]\d+)?(\s*(tl|₺|lira))?$/i.test(trimmed)) {
     return null;
   }
+
   // İç yazışma veya toptan maliyet sızmasını engelle
   if (/\b(maliyet|toptan|al[ıi]ş fiyat[ıi]|tedarik fiyat[ıi])\b/i.test(trimmed)) {
     return null;
   }
+
   return trimmed;
 }
 
