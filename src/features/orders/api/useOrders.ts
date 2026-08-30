@@ -13,8 +13,7 @@ const ORDER_LIST_COLUMNS =
   'manufacturer_org_id, retailer_org_id, relationship_id, parent_order_id, ' +
   'manufacturer:manufacturer_org_id(company_name), retailer:retailer_org_id(company_name), ' +
   'order_items(id, product_id, quantity, supplier_unit_price, order_item_retail_prices(retail_unit_price), products:product_id(retail_prices(retail_price))), ' +
-  'return_requests(approved_amount, status, items), ' +
-  'customer_deliveries(id, delivery_date, time_slot, status, customer_name, customer_phone, customer_address, notes, items, created_at)';
+  'return_requests(approved_amount, status, items)';
 
 /** Sipariş listesi — keyset sayfalama (A17). */
 export function useOrders(myOrgId: string, status?: OrderStatus | 'all') {

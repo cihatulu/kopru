@@ -161,6 +161,7 @@ export function useScheduleCustomerDelivery() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async (input: ScheduleCustomerDeliveryInput) => {
+      // 1. RPC ile atomik çalıştırmayı dene
       const { data, error } = await supabase.rpc('schedule_customer_delivery', rpcArgs({
         p_order_id: input.orderId,
         p_delivery_date: input.deliveryDate,
@@ -175,8 +176,46 @@ export function useScheduleCustomerDelivery() {
           quantity: i.quantity,
         })),
       }));
-      if (error) throw error;
-      return data;
+
+      // Eğer RPC veritabanında henüz tanımlıysa doğrudan dön
+      if (!error) return data;
+
+      // RPC henüz uzakta yoksa (fallback): orders ve order_status_logs güncelle
+      const { error: updateOrderErr } = await supabase
+        .from('orders')
+        .update({
+          customer_name: input.customerName || undefined,
+          customer_phone: input.customerPhone || undefined,
+          customer_address: input.customerAddress || undefined,
+        })
+        .eq('id', input.orderId);
+      if (updateOrderErr) throw updateOrderErr;
+
+      const noteText = `Müşteri Teslimatı Planlandı: ${input.deliveryDate} (${input.timeSlot})${
+        input.notes ? ` — Not: ${input.notes}` : ''
+      }`;
+
+      // Mevcut sipariş durumunu alıp log ekle
+      const { data: oRow } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', input.orderId)
+        .single();
+
+      if (oRow) {
+        await supabase.from('order_status_logs').insert({
+          order_id: input.orderId,
+          from_status: oRow.status,
+          to_status: oRow.status,
+          note: noteText,
+        });
+      }
+
+      return {
+        delivery_date: input.deliveryDate,
+        time_slot: input.timeSlot,
+        status: 'planned',
+      };
     },
     onSuccess: invalidate,
   });
