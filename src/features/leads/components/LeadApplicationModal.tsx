@@ -22,7 +22,6 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [whatsappLink, setWhatsappLink] = useState('');
 
   const isManufacturer = kind === 'manufacturer';
   const roleTitle = isManufacturer ? 'Üye Üretici' : 'Üye Perakendeci';
@@ -83,7 +82,6 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
         message,
       });
 
-      setWhatsappLink(link);
       setSuccess(true);
 
       // WhatsApp'ı yeni pencerede aç
@@ -97,7 +95,6 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
         phone: SUPPORT_WHATSAPP_PHONE,
         message: `Merhaba, KÖPRÜ B2B platformuna ${roleTitle} olarak başvurmak istiyorum. Firma: ${companyName.trim()}, Tel: ${phone.trim()}`,
       });
-      setWhatsappLink(link);
       setSuccess(true);
       if (typeof window !== 'undefined') {
         window.open(link, '_blank', 'noopener,noreferrer');
@@ -120,11 +117,11 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             ✅
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-slate-800">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-800">
               Başvurunuz Başarıyla Alındı!
             </h2>
             <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Bilgileriniz yetkili ekibimize iletilmiştir. WhatsApp üzerinden de doğrudan görüşme başlatabilirsiniz.
+              Bilgileriniz yetkili ekibimize iletilmiş ve WhatsApp sohbetiniz başlatılmıştır.
             </p>
           </div>
 
@@ -135,18 +132,14 @@ export function LeadApplicationModal({ kind, onClose }: Props) {
             {email.trim() && <div>E-posta: {email.trim()}</div>}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full rounded-xl bg-slate-900 px-4 py-3 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              <span>💬 WhatsApp ile Mesaj Gönder</span>
-            </a>
-            <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
               Kapat
-            </Button>
+            </button>
           </div>
         </div>
       ) : (
