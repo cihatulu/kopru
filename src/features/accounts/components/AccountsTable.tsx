@@ -43,9 +43,20 @@ export function AccountsTable({ rows, isManufacturer, onOpen }: Props) {
               {/* Kart Başlığı: Firma Adı & Bakiye Rozeti */}
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 text-sm truncate" title={r.companyName}>
-                    {r.companyName}
-                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-bold text-slate-900 text-sm truncate" title={r.companyName}>
+                      {r.companyName}
+                    </p>
+                    {r.counterpartyIsSubscriber ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                        ÜYE
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                        MİSAFİR
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-0.5 font-mono text-xs text-slate-400 font-medium">{r.vknTc}</p>
                 </div>
 
@@ -136,7 +147,18 @@ export function AccountsTable({ rows, isManufacturer, onOpen }: Props) {
               return (
                 <tr key={r.relationshipId} className="transition-colors hover:bg-slate-50/40">
                   <td className="whitespace-nowrap px-6 py-3">
-                    <p className="font-bold text-slate-800">{r.companyName}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-slate-800">{r.companyName}</p>
+                      {r.counterpartyIsSubscriber ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                          ÜYE
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                          MİSAFİR
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 font-mono text-xs text-slate-400">{r.vknTc}</p>
                   </td>
                   <td className="whitespace-nowrap px-6 py-3 text-right font-bold text-red-600">
