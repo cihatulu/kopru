@@ -165,6 +165,19 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         }
       }
 
+      const mappedDeliveries: CustomerDeliverySummary[] = (deliveriesRes.data ?? []).map((rawD) => ({
+        id: str(rawD.id),
+        deliveryDate: str(rawD.delivery_date),
+        timeSlot: str(rawD.time_slot),
+        status: (rawD.status ?? 'planned') as 'planned' | 'shipped' | 'delivered' | 'cancelled',
+        customerName: str(rawD.customer_name),
+        customerPhone: str(rawD.customer_phone),
+        customerAddress: str(rawD.customer_address),
+        notes: nullable(rawD.notes),
+        items: Array.isArray(rawD.items) ? (rawD.items as Array<{ order_item_id?: string; name: string; quantity: number }>) : [],
+        createdAt: str(rawD.created_at),
+      }));
+
       return {
         ...toRow(r, myOrgId),
         customerPhone: nullable(r.customer_phone),
@@ -174,8 +187,8 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         items: mappedItems,
         history,
         shipments,
-        customerDeliveries: deliveriesRes.data ?? [],
-        latestDelivery: (deliveriesRes.data?.[0] as unknown as typeof r.latestDelivery) ?? null,
+        customerDeliveries: mappedDeliveries,
+        latestDelivery: mappedDeliveries[0] ?? null,
         hasUnfulfilledBalance,
         returnTotalAmount,
       };

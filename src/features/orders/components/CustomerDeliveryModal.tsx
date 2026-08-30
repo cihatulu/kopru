@@ -202,10 +202,13 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
     }
   };
 
-  const handleStartEdit = (d: { id: string; delivery_date: string; time_slot: string; notes?: string | null }) => {
+  const handleStartEdit = (d: { id: string; deliveryDate?: string; delivery_date?: string; timeSlot?: string; time_slot?: string; notes?: string | null }) => {
+    const rawDate = d.deliveryDate || d.delivery_date || '';
+    const dateVal = rawDate ? rawDate.slice(0, 10) : defaultDateStr;
+    const slotVal = d.timeSlot || d.time_slot || '13:00 - 17:00';
     setEditingDeliveryId(d.id);
-    setEditDate(d.delivery_date);
-    setEditSlot(d.time_slot || '13:00 - 17:00');
+    setEditDate(dateVal);
+    setEditSlot(slotVal);
     setEditNotes(d.notes || '');
   };
 
@@ -224,13 +227,17 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
   };
 
   const handleSendPlanWhatsApp = (plan: {
-    delivery_date: string;
-    time_slot: string;
+    deliveryDate?: string;
+    delivery_date?: string;
+    timeSlot?: string;
+    time_slot?: string;
     notes?: string | null;
     items?: Array<{ order_item_id?: string; name: string; quantity: number }>;
   }) => {
     if (!customerPhone) return;
-    const formattedDate = plan.delivery_date ? formatDate(plan.delivery_date) : 'belirlenen tarihte';
+    const rawDate = plan.deliveryDate || plan.delivery_date;
+    const rawSlot = plan.timeSlot || plan.time_slot || '13:00 - 17:00';
+    const formattedDate = rawDate ? formatDate(rawDate) : 'belirlenen tarihte';
     const trackingUrl = order.orderToken ? `${window.location.origin}/takip/${order.orderToken}` : '';
 
     const planItemsText = Array.isArray(plan.items) && plan.items.length > 0
@@ -240,7 +247,7 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
     const message = `Merhaba Sayın ${customerName || 'Müşterimiz'},\n\n` +
       `${order.orderNo} numaralı mobilya siparişinizin adresinize teslimat & montaj randevusu güncellenmiştir.\n\n` +
       `📅 *Teslimat Tarihi:* ${formattedDate}\n` +
-      `⏰ *Saat Aralığı:* ${plan.time_slot}\n` +
+      `⏰ *Saat Aralığı:* ${rawSlot}\n` +
       `📍 *Teslimat Adresi:* ${customerAddress || 'Kayıtlı Adresiniz'}\n\n` +
       planItemsText +
       (plan.notes?.trim() ? `📝 *Not:* ${plan.notes.trim()}\n\n` : '') +
@@ -597,6 +604,8 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
                   const isEditing = editingDeliveryId === d.id;
                   const isCancelling = cancelConfirmId === d.id;
                   const planItems = Array.isArray(d.items) ? d.items : [];
+                  const planDate = d.deliveryDate || (d as unknown as Record<string, string>).delivery_date || '';
+                  const planSlot = d.timeSlot || (d as unknown as Record<string, string>).time_slot || '13:00 - 17:00';
 
                   return (
                     <div
@@ -609,10 +618,10 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
                             Plan No: #{d.id.slice(0, 8)}
                           </span>
                           <span className="text-xs font-bold text-slate-800">
-                            📅 {formatDate(d.delivery_date)}
+                            📅 {formatDate(planDate)}
                           </span>
                           <span className="text-xs font-medium text-slate-500">
-                            ({d.time_slot})
+                            ({planSlot})
                           </span>
                         </div>
 
