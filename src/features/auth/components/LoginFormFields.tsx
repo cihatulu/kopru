@@ -48,8 +48,8 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
   };
 
   return (
-    <form onSubmit={(e) => void handleSubmit(submit)(e)} className="space-y-4 text-left">
-      <p className="text-center text-xs font-medium text-slate-400 mb-1">{tab.hint}</p>
+    <form onSubmit={(e) => void handleSubmit(submit)(e)} className="space-y-3 sm:space-y-4 text-left">
+      <p className="text-center text-xs font-medium text-slate-400 mb-0.5">{tab.hint}</p>
 
       {guest && tab.sponsorLabel && (
         <div>
