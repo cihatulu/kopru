@@ -5,7 +5,7 @@ import { formatDate, formatMoney } from '@/lib/format';
 import type { OrderStatus } from '../domain/status';
 import type { OrderRow } from '../domain/orderMapping';
 import type { OrgKind } from '@/constants';
-import { useFinanceTransactions } from '@/features/finance';
+import { useAllOrders, useApprovedReturnRequests, useCustomerLedgers } from '@/features/finance';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { OrderStatusCell } from './OrderStatusCell';
 import { OrderExpandedDetail } from './OrderExpandedDetail';
@@ -36,18 +36,24 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, OrderStatus>>({});
   const [deliveryOrderId, setDeliveryOrderId] = useState<string | null>(null);
 
-  const { data: transactions } = useFinanceTransactions();
+  const { data: allFinanceOrders } = useAllOrders();
+  const { data: approvedReturns } = useApprovedReturnRequests();
+  const customerLedgers = useCustomerLedgers(allFinanceOrders, approvedReturns);
 
-  // Sipariş bazında müşteriden tahsil edilen tutarlar (income)
-  const paidByOrderId = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const t of transactions ?? []) {
-      if (t.type === 'income' && t.order_id) {
-        map.set(t.order_id, (map.get(t.order_id) ?? 0) + Number(t.amount || 0));
+  // Müşterinin toplam cari bakiyesini sipariş ID ve müşteri adı ile haritala
+  const { customerBalanceByOrderId, customerBalanceByName } = useMemo(() => {
+    const byId = new Map<string, number>();
+    const byName = new Map<string, number>();
+    for (const l of customerLedgers ?? []) {
+      for (const id of l.order_ids) {
+        byId.set(id, l.remaining_balance);
+      }
+      if (l.customer_name) {
+        byName.set(l.customer_name.trim().toLowerCase(), l.remaining_balance);
       }
     }
-    return map;
-  }, [transactions]);
+    return { customerBalanceByOrderId: byId, customerBalanceByName: byName };
+  }, [customerLedgers]);
 
   if (orders.length === 0) {
     return (
@@ -148,8 +154,12 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
 
               {/* Nihai Müşteriye Teslimat & Montaj Butonu (Mağaza Görünümü) */}
               {!isMfr && (o.status === 'delivered' || o.latestDelivery) && (() => {
-                const paidAmount = (paidByOrderId.get(o.id) ?? 0) + (o.parentOrderId ? (paidByOrderId.get(o.parentOrderId) ?? 0) : 0);
-                const remainingDebt = Math.max(0, Math.round((o.totalAmount - paidAmount) * 100) / 100);
+                const customerBalance =
+                  customerBalanceByOrderId.get(o.id) ??
+                  (o.parentOrderId ? customerBalanceByOrderId.get(o.parentOrderId) : undefined) ??
+                  (o.customerName ? customerBalanceByName.get(o.customerName.trim().toLowerCase()) : undefined) ??
+                  0;
+                const remainingDebt = Math.max(0, Math.round(customerBalance * 100) / 100);
                 const hasDebt = remainingDebt > 0;
 
                 return (
@@ -158,7 +168,7 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                       <button
                         type="button"
                         disabled
-                        title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
+                        title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan toplam cari borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
                         className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-amber-50/90 border border-amber-300 text-amber-900 opacity-80 cursor-not-allowed shadow-xs select-none"
                       >
                         <span>🔒</span>
@@ -293,8 +303,12 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
 
                     {/* Nihai Müşteriye Teslimat Sütunu (Mağaza Görünümü) */}
                     {!isMfr && (() => {
-                      const paidAmount = (paidByOrderId.get(o.id) ?? 0) + (o.parentOrderId ? (paidByOrderId.get(o.parentOrderId) ?? 0) : 0);
-                      const remainingDebt = Math.max(0, Math.round((o.totalAmount - paidAmount) * 100) / 100);
+                      const customerBalance =
+                        customerBalanceByOrderId.get(o.id) ??
+                        (o.parentOrderId ? customerBalanceByOrderId.get(o.parentOrderId) : undefined) ??
+                        (o.customerName ? customerBalanceByName.get(o.customerName.trim().toLowerCase()) : undefined) ??
+                        0;
+                      const remainingDebt = Math.max(0, Math.round(customerBalance * 100) / 100);
                       const hasDebt = remainingDebt > 0;
 
                       return (
@@ -304,7 +318,7 @@ export function OrderTable({ orders, myKind, myOrgId, onUpdateStatus, updatingOr
                               <button
                                 type="button"
                                 disabled
-                                title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
+                                title={`Müşterinin ₺${formatMoney(remainingDebt)} kalan toplam cari borcu bulunmaktadır. Teslimat başlatmak için borcun kapatılması gerekir.`}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50/90 border border-amber-300 text-amber-900 opacity-80 cursor-not-allowed shadow-xs select-none"
                               >
                                 <span>🔒</span>

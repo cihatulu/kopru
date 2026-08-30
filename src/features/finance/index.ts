@@ -4,6 +4,7 @@ export {
   useFinanceTransactions,
   useAllOrders,
   useManufacturers,
+  useApprovedReturnRequests,
   useFinanceStats,
   useCustomerLedgers,
 } from './api/useFinance';
