@@ -66,6 +66,8 @@ as $$
       select jsonb_agg(
         jsonb_build_object(
           'id', d.id,
+          'order_id', d.order_id,
+          'order_no', coalesce((select o.order_no from public.orders o where o.id = d.order_id), r.order_no),
           'delivery_date', d.delivery_date,
           'time_slot', d.time_slot,
           'customer_name', d.customer_name,
