@@ -130,8 +130,8 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
 
       onSuccess?.();
       onClose();
-    } catch {
-      // Hata mutation state'inde gösterilir
+    } catch (err) {
+      console.error('Teslimat planlama hatası:', err);
     }
   };
 
@@ -149,7 +149,7 @@ export function CustomerDeliveryModal({ orderId, orgId, onClose, onSuccess }: Pr
       (trackingUrl ? `\n🔗 *Sipariş Takip Linkiniz:*\n${trackingUrl}\n\n` : '\n') +
       `Siparişinizi iyi günlerde kullanmanızı dileriz.`;
 
-    const url = buildWhatsAppLink(customerPhone, message);
+    const url = buildWhatsAppLink({ phone: customerPhone, message });
     window.open(url, '_blank');
   };
 
