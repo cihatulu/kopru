@@ -1,11 +1,7 @@
 @import 'tailwindcss';
 
-/*
-  Yazı tipleri npm'den gelir ve bundle'a girer — Google Fonts'a çalışma
-  anında istek ATILMAZ. Sebep: panel her açılışta dış bir hosta bağlanırsa
-  hem ilk boyama gecikir hem de kurumsal ağlarda font düşer, arayüz
-  fallback ile bambaşka görünür.
-*/
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/inter';
 @import '@fontsource-variable/ibm-plex-sans';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
@@ -14,12 +10,11 @@
 /* Tailwind v4 — CSS-first tema. Ayrı tailwind.config.js yoktur. */
 @theme {
   /*
-    IBM Plex — kurumsal arayüz için tasarlanmış aile. Rakamları eşit
-    genişlikte ve birbirinden ayırt edilebilir (0/O, 1/l), ERP'nin her
-    ekranında sayı okunduğu için bu belirleyici oldu.
+    Plus Jakarta Sans + Inter — ultra modern, pürüzsüz ve estetik tipografi.
+    Türkçe karakterleri (İ, Ğ, Ş, Ü, Ö, Ç) kusursuz ve çağdaş bir SaaS görünümünde sunar.
   */
   --font-sans:
-    'IBM Plex Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Model kodu, VKN, sipariş no gibi "insan okumaz, eşleştirir" alanlar. */
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 

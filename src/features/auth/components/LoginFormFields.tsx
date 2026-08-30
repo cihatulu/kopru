@@ -53,7 +53,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
 
       {guest && tab.sponsorLabel && (
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" htmlFor="sponsorVkn">
+          <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="sponsorVkn">
             {tab.sponsorLabel}
           </label>
           <input
@@ -70,7 +70,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
 
       {email ? (
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" htmlFor="email">
+          <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="email">
             E-posta
           </label>
           <input
@@ -86,7 +86,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
       ) : (
         <>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" htmlFor="userCode">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="userCode">
               Vergi No / Kullanıcı Kodu
             </label>
             <input
@@ -103,7 +103,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
           {/* Yetkili / Personel Seçim Alanı — Modern Segmented Switch */}
           <div className="bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-1 shadow-inner">
             <label
-              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-extrabold cursor-pointer transition-all duration-200 select-none ${
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 select-none ${
                 userType === 'owner'
                   ? 'bg-white text-slate-900 shadow-sm border border-slate-200/70'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 border border-transparent'
@@ -127,7 +127,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
             </label>
 
             <label
-              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-extrabold cursor-pointer transition-all duration-200 select-none ${
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 select-none ${
                 userType === 'staff'
                   ? 'bg-white text-slate-900 shadow-sm border border-slate-200/70'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-white/40 border border-transparent'
@@ -155,7 +155,7 @@ export function LoginFormFields({ tab, pending, errorMessage, onSubmit }: Props)
       )}
 
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" htmlFor="password">
+        <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="password">
           Şifre
         </label>
         <input

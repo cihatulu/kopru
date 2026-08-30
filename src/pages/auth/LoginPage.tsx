@@ -69,7 +69,7 @@ export default function LoginPage() {
             <span className="size-1.5 sm:size-2 rounded-full bg-emerald-500 animate-pulse" />
             B2B Mobilya Ekosistemi
           </div>
-          <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center justify-center gap-2">
+          <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center justify-center gap-2">
             <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
               KÖPRÜ
             </span>
@@ -88,7 +88,7 @@ export default function LoginPage() {
               setOpenManufacturer(next);
               if (next) setOpenRetailer(false);
             }}
-            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-black text-xs sm:text-sm text-blue-700 hover:text-blue-800 bg-blue-50/60 hover:bg-blue-50/90 transition-colors cursor-pointer select-none"
+            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-blue-700 hover:text-blue-800 bg-blue-50/60 hover:bg-blue-50/90 transition-colors cursor-pointer select-none"
           >
             <span>MOBİLYA ÜRETİCİSİYSEN TIKLA!</span>
             <svg
@@ -106,11 +106,11 @@ export default function LoginPage() {
 
           {openManufacturer && (
             <div className="p-3 sm:p-4 border-t border-slate-100 text-left bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-xs leading-relaxed text-slate-600 font-medium">
+              <p className="text-xs leading-relaxed text-slate-600 font-normal">
                 Kendi mobilya markanızı dijitalleştirin, bayilerinizden anında sipariş toplayın ve fabrikanızı büyütün.
               </p>
 
-              <ul className="mt-2 space-y-1 text-xs text-slate-700 font-semibold">
+              <ul className="mt-2 space-y-1 text-xs text-slate-700 font-medium">
                 <li className="flex items-center gap-1.5">
                   <span className="text-blue-600 font-bold">✓</span>
                   <span>Sınırsız Dijital Ürün Kataloğu</span>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setApplyKind('manufacturer')}
-                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-xs sm:text-sm font-extrabold text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 active:scale-95"
+                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 active:scale-95"
                 >
                   <span>Üretici Olarak Katıl</span>
                   <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>
@@ -169,7 +169,7 @@ export default function LoginPage() {
               setOpenRetailer(next);
               if (next) setOpenManufacturer(false);
             }}
-            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-black text-xs sm:text-sm text-emerald-700 hover:text-emerald-800 bg-emerald-50/60 hover:bg-emerald-50/90 transition-colors cursor-pointer select-none"
+            className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-emerald-700 hover:text-emerald-800 bg-emerald-50/60 hover:bg-emerald-50/90 transition-colors cursor-pointer select-none"
           >
             <span>MOBİLYA MAĞAZASIYSAN TIKLA!</span>
             <svg
@@ -187,11 +187,11 @@ export default function LoginPage() {
 
           {openRetailer && (
             <div className="p-3 sm:p-4 border-t border-slate-100 text-left bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-xs leading-relaxed text-slate-600 font-medium">
+              <p className="text-xs leading-relaxed text-slate-600 font-normal">
                 Yüzlerce üretici kataloğuna tek tıkla erişin, özel toptan iskontolarla sipariş verin ve finansınızı yönetin.
               </p>
 
-              <ul className="mt-2 space-y-1 text-xs text-slate-700 font-semibold">
+              <ul className="mt-2 space-y-1 text-xs text-slate-700 font-medium">
                 <li className="flex items-center gap-1.5">
                   <span className="text-emerald-600 font-bold">✓</span>
                   <span>Tüm Fabrikaların Güncel Kataloğu</span>
@@ -210,7 +210,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setApplyKind('retailer')}
-                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs sm:text-sm font-extrabold text-white shadow-sm transition-all hover:from-emerald-700 hover:to-teal-700 active:scale-95"
+                  className="group/btn relative inline-flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:from-emerald-700 hover:to-teal-700 active:scale-95"
                 >
                   <span>Perakendeci Olarak Katıl</span>
                   <span className="transition-transform duration-200 group-hover/btn:translate-x-1">→</span>

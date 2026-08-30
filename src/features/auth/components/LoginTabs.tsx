@@ -50,7 +50,7 @@ export function LoginTabs({ active, onSelect }: Props) {
             >
               <path d={ICONS[tab.id]} />
             </svg>
-            <div className="flex flex-col items-center text-center text-[9.5px] sm:text-[10px] font-extrabold leading-tight tracking-wider uppercase">
+            <div className="flex flex-col items-center text-center text-[10.5px] sm:text-xs font-semibold leading-tight tracking-tight">
               <span>{parts[0]}</span>
               {parts.length > 1 ? (
                 <span>{parts.slice(1).join(' ')}</span>
