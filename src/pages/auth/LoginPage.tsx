@@ -56,27 +56,28 @@ export default function LoginPage() {
   return (
     <main
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      className="relative flex min-h-[100dvh] h-full flex-col items-center justify-between sm:justify-center bg-slate-100/70 px-3 py-2.5 sm:px-6 sm:py-6 overflow-y-auto no-scrollbar font-sans select-none"
+      className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-slate-100/70 px-3 py-4 sm:px-6 sm:py-6 overflow-y-auto no-scrollbar font-sans select-none"
     >
       {/* Arka plan yumuşak ortam ışığı */}
       <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-blue-400/10 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 right-1/4 size-[500px] rounded-full bg-emerald-400/10 blur-[130px]" />
 
-      {/* Üst Logo ve Marka Başlığı */}
-      <div className="relative z-10 mb-2 sm:mb-4 text-center shrink-0">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-slate-700 shadow-xs backdrop-blur-md">
-          <span className="size-1.5 sm:size-2 rounded-full bg-emerald-500 animate-pulse" />
-          B2B Mobilya Ekosistemi
+      <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center mx-auto my-auto">
+        {/* Üst Logo ve Marka Başlığı */}
+        <div className="mb-3 sm:mb-4 text-center shrink-0">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-slate-700 shadow-xs backdrop-blur-md">
+            <span className="size-1.5 sm:size-2 rounded-full bg-emerald-500 animate-pulse" />
+            B2B Mobilya Ekosistemi
+          </div>
+          <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center justify-center gap-2">
+            <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
+              KÖPRÜ
+            </span>
+          </h1>
         </div>
-        <h1 className="mt-1 sm:mt-1.5 text-2xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center justify-center gap-2">
-          <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-            KÖPRÜ
-          </span>
-        </h1>
-      </div>
 
-      {/* Dikey Hizalı Giriş & Başvuru Kolonu (Web ve Mobil Uyumlu) */}
-      <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center gap-2 sm:gap-3.5 mx-auto">
+        {/* Dikey Hizalı Giriş & Başvuru Kolonu (Web ve Mobil Uyumlu) */}
+        <div className="flex w-full flex-col items-center justify-center gap-2.5 sm:gap-3.5">
         
         {/* Üst: Üye Üretici Başvuru Butonu & Akordeonu */}
         <div className="w-full flex flex-col rounded-2xl border border-blue-200/80 bg-white shadow-sm overflow-hidden transition-all duration-300">
@@ -218,6 +219,8 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+
+      </div>
 
       </div>
 
