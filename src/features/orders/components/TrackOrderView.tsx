@@ -15,7 +15,22 @@ import {
   type TrackedShipment,
 } from '../domain/tracking';
 
-const CARD = 'rounded-xl border border-slate-200 bg-white p-4';
+function cleanPublicNote(note: string | null | undefined): string | null {
+  if (!note) return null;
+  const trimmed = note.trim();
+  // "İade onaylandı: 100000.00 TL" gibi üretici toptan maliyet/onay loglarını müşteri diline çevir
+  if (/^iade onayland[ıi]/i.test(trimmed)) {
+    return 'İade talebi onaylandı ve işleme alındı.';
+  }
+  if (/^iade reddedildi/i.test(trimmed)) {
+    return 'İade talebi reddedildi.';
+  }
+  // İç yazışma veya toptan maliyet sızmasını engelle
+  if (/\b(maliyet|toptan|al[ıi]ş fiyat[ıi]|tedarik fiyat[ıi])\b/i.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
 
 /** İşaretli tutar: eksi fark indirimdir ve öyle okunmalıdır. */
 const signed = (n: number) => `${n > 0 ? '+' : '−'}${formatMoney(Math.abs(n))}`;
@@ -498,11 +513,15 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                                 </span>
                                 <span className="font-mono text-slate-400 text-[10px]">{formatDateTime(h.created_at)}</span>
                               </div>
-                              {h.note && (
-                                <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px] break-words break-all [overflow-wrap:anywhere]">
-                                  {h.note}
-                                </p>
-                              )}
+                              {(() => {
+                                const publicNote = cleanPublicNote(h.note);
+                                if (!publicNote) return null;
+                                return (
+                                  <p className="mt-1 text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2 leading-relaxed whitespace-pre-line font-medium text-[11px] break-words break-all [overflow-wrap:anywhere]">
+                                    {publicNote}
+                                  </p>
+                                );
+                              })()}
                             </div>
                           );
                         })}
@@ -510,12 +529,16 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                     </div>
                   )}
 
-                  {s.note && (!s.history || s.history.length === 0) && (
-                    <div className="mt-2 text-xs bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-2">
-                      <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px] block mb-0.5">Açıklama / Sevk Kodu</span>
-                      <p className="text-slate-650 leading-relaxed font-medium whitespace-pre-line break-words break-all [overflow-wrap:anywhere]">{s.note}</p>
-                    </div>
-                  )}
+                  {s.note && (!s.history || s.history.length === 0) && (() => {
+                    const publicNote = cleanPublicNote(s.note);
+                    if (!publicNote) return null;
+                    return (
+                      <div className="mt-2 text-xs bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-2">
+                        <span className="font-bold text-slate-500 uppercase tracking-wider text-[9px] block mb-0.5">Açıklama / Sevk Kodu</span>
+                        <p className="text-slate-650 leading-relaxed font-medium whitespace-pre-line break-words break-all [overflow-wrap:anywhere]">{publicNote}</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -545,6 +568,8 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                 ? (h.note?.includes('Kısmi') ? 'Kısmi İade' : 'İade Edildi')
                 : (meta?.label ?? h.status);
 
+              const publicNote = cleanPublicNote(h.note);
+
               return (
                 <div key={`${h.created_at}-${i}`} className="relative min-w-0">
                   <span className={`absolute -left-[31px] top-1.5 size-2.5 rounded-full ${dotColor} ring-4`} />
@@ -563,9 +588,9 @@ export function TrackOrderView({ order }: { order: TrackedOrder }) {
                         </span>
                       )}
                     </div>
-                    {h.note && (
+                    {publicNote && (
                       <p className="mt-1 text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-lg p-2.5 leading-relaxed whitespace-pre-line font-medium break-words break-all [overflow-wrap:anywhere]">
-                        {h.note}
+                        {publicNote}
                       </p>
                     )}
                   </div>
