@@ -14,24 +14,22 @@ security definer
 stable
 set search_path = public
 as $$
-  select coalesce(
-    jsonb_agg(
-      jsonb_build_object(
-        'productId', oi.product_id,
-        'orderItemId', oi.id,
-        'name', coalesce(oi.product_snapshot->>'name', p.name, 'Ürün'),
-        'quantity', (item->>'quantity')::numeric,
-        'unit_price', coalesce(rp.unit_price, oi.supplier_unit_price + oi.price_difference),
-        'total_price', round(coalesce(rp.unit_price, oi.supplier_unit_price + oi.price_difference) * (item->>'quantity')::numeric, 2),
-        'custom_description', oi.custom_description
-      )
-    ),
-    '[]'::jsonb
-  )
+  -- 15 Kas 2026 düzeltmesi: ilk sürüm olmayan `rp.unit_price` kolonuna
+  -- başvurduğu için bu migration hiç uygulanamamıştı. Gövde canlıda çalışan
+  -- sürümle aynıdır (kolon adı `retail_unit_price`, eksik kalemlere dayanıklı).
+  select coalesce(jsonb_agg(
+    jsonb_build_object(
+      'orderItemId', item->>'order_item_id',
+      'productId', coalesce(oi.product_id::text, item->>'productId'),
+      'name', coalesce(oi.product_snapshot->>'name', item->>'name', 'Ürün'),
+      'quantity', coalesce((item->>'quantity')::numeric, 0),
+      'unit_price', coalesce(rp.retail_unit_price, oi.supplier_unit_price + coalesce(oi.price_difference, 0), 0),
+      'total_price', round(coalesce(rp.retail_unit_price, oi.supplier_unit_price + coalesce(oi.price_difference, 0), 0) * coalesce((item->>'quantity')::numeric, 0), 2)
+    )
+  ), '[]'::jsonb)
   from public.return_requests rr
   cross join lateral jsonb_array_elements(coalesce(rr.items, '[]'::jsonb)) as item
-  join public.order_items oi on oi.id = (item->>'order_item_id')::uuid
-  left join public.products p on p.id = oi.product_id
+  left join public.order_items oi on oi.id = nullif(item->>'order_item_id', '')::uuid
   left join public.order_item_retail_prices rp on rp.order_item_id = oi.id
   where rr.order_id = p_order_id and rr.status = 'approved';
 $$;
@@ -129,7 +127,7 @@ begin
   -- Detaylı iade notu oluşturma (Ürün Adı, Adet, Birim Fiyat)
   select string_agg(
     (ri.value->>'quantity')::text || ' Adet ' || coalesce(oi.product_snapshot->>'name', p.name, 'Ürün') ||
-    ' (Birim: ' || (oi.supplier_unit_price + oi.price_difference)::text || ' TL)',
+    ' (Birim: ' || (oi.supplier_unit_price + coalesce(oi.price_difference, 0))::text || ' TL)',
     ', '
   ) into v_items_summary
   from jsonb_array_elements(v_req.items) ri

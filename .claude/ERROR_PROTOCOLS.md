@@ -283,8 +283,14 @@ ilk migration yalnız iki ay açmıştı.
 `maintain-log-partitions` (bu ay + 3 ay ileri, 90 gün retention `drop_old_log_partitions()`).
 **Kontrol:** `select jobname, active from cron.job;` ve system_logs partition listesinde
 içinde bulunulan ay + 3 ay ileri var mı.
-**Tuzak — migration geçmişi:** 23–31 Ağustos'taki 12 migration SQL Editor'den elle uygulanmış,
-`schema_migrations`'ta kaydı yok; 4 fonksiyonun (`confirm_return_atomic`, `set_retailer_stock`,
-`submit_lead_application`, `track_order_returns`) canlı gövdesi dosyadan FARKLI. Bu çözülene dek
-`db push` KÖR çalıştırılmaz — önce `--dry-run`. Tek dosya için:
+### 35. Migration geçmişi kayması — `db push` beklenmedik eski migration'ları uygulamak ister
+**Belirti:** `db push --dry-run` çoktan canlıda olan migration'ları "bekleyen" listeler.
+**Sebep (Ağustos 2026):** 12 migration SQL Editor'den elle uygulanmış, `schema_migrations`'a
+kaydı düşmemişti. İkisi (`20260828210000`, `20260830151000`) aslında hiç uygulanmamıştı;
+`20260828210000` olmayan kolona (`rp.unit_price`) başvurduğu için çalıştırılınca düşüyordu.
+**Çözüm (15 Kas 2026'da yapıldı):** her fonksiyonun canlı `prosrc`'unu dosyalardaki her sürümle
+boşluk-normalize karşılaştır → hangi dosyanın canlıda olduğunu bul; uygulanmamışları düzeltip
+tek tek uygula, sonra `migration repair --status applied <sürümler> --linked --yes`.
+**Kural:** `db push`'tan önce DAİMA `--dry-run`. Tek dosya uygulamak için:
 `npx supabase@latest db query --remote -f <dosya>` + `migration repair --status applied <sürüm>`.
+Elle SQL Editor kullanımı kilitli kural 1 ihlalidir — bu kaymanın kaynağı odur.

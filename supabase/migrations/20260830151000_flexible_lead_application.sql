@@ -1,6 +1,7 @@
 -- ============================================================
 -- Flexible Public Lead Application RPC
--- Başvurularda e-posta ve VKN esnekliği (WhatsApp başvurularını tıkamaz)
+-- Başvurularda e-posta ve VKN isteğe bağlı (WhatsApp başvurularını tıkamaz);
+-- girilen VKN yine de sağlama kontrolünden geçer.
 -- ============================================================
 
 create or replace function public.submit_lead_application(
@@ -42,6 +43,11 @@ begin
   end if;
 
   v_vkn := nullif(btrim(p_vkn_tc), '');
+  -- VKN isteğe bağlı, ama girildiyse sağlaması doğru olmalı (kilitli kural 18):
+  -- hatalı VKN'li aday üyeye dönüştürülürken organizations CHECK'ine takılır.
+  if v_vkn is not null and not public.is_valid_vkn_tc(v_vkn) then
+    raise exception 'Geçersiz VKN veya TCKN numarası.';
+  end if;
 
   insert into public.leads (
     company_name,
