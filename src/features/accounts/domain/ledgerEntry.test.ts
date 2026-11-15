@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { toEntry } from './ledgerEntry';
+import { entryState, isEditableEntry, ledgerRowView, reversedIds, toEntry } from './ledgerEntry';
 
 describe('toEntry — DB satırı → ekstre satırı', () => {
   test('alanları eşler ve bakiyeyi balance_after değerinden okur (A18)', () => {
@@ -106,5 +106,51 @@ describe('toEntry — ürün anlık görüntüsü', () => {
 
   test('items_snapshot dizi değilse yok sayılır', () => {
     expect(toEntry({ items_snapshot: 'bozuk' }).itemsSnapshot).toBeUndefined();
+  });
+});
+
+describe('ters kayıt durumu (kural 7)', () => {
+  const original = toEntry({ id: 'a', type: 'credit', amount: 100 });
+  const reversal = toEntry({ id: 'b', type: 'debit', amount: 100, reverses_transaction_id: 'a' });
+  const untouched = toEntry({ id: 'c', type: 'credit', amount: 50 });
+  const orderRow = toEntry({ id: 'd', type: 'debit', amount: 10, order_id: 'o-1' });
+  const all = [reversal, untouched, original, orderRow];
+  const reversed = reversedIds(all);
+
+  test('iptal satırı hangi kaydı geri aldığını taşır', () => {
+    expect(reversal.reversesId).toBe('a');
+    expect(original.reversesId).toBeNull();
+  });
+
+  test('iptal edilen kayıtlar toplanır', () => {
+    expect([...reversed]).toEqual(['a']);
+  });
+
+  test('her satırın durumu ayrışır', () => {
+    expect(entryState(original, reversed)).toBe('reversed');
+    expect(entryState(reversal, reversed)).toBe('reversal');
+    expect(entryState(untouched, reversed)).toBe('active');
+  });
+
+  test('yalnız siparişsiz ve geçerli kayıt düzeltilebilir', () => {
+    expect(isEditableEntry(untouched, reversed)).toBe(true);
+    expect(isEditableEntry(original, reversed)).toBe(false);
+    expect(isEditableEntry(reversal, reversed)).toBe(false);
+    expect(isEditableEntry(orderRow, reversed)).toBe(false);
+  });
+});
+
+describe('ledgerRowView', () => {
+  const debit = toEntry({ id: 'x', type: 'debit', amount: 10 });
+
+  test('perakendeci borcu borç kolonunda, üretici alacak kolonunda görür', () => {
+    expect(ledgerRowView(debit, false)).toMatchObject({ showDebit: true, showCredit: false });
+    expect(ledgerRowView(debit, true)).toMatchObject({ showDebit: false, showCredit: true });
+  });
+
+  test('detay yalnız siparişe bağlı ya da kalemli satırda vardır', () => {
+    expect(ledgerRowView(debit, false).hasDetails).toBe(false);
+    expect(ledgerRowView(toEntry({ order_id: 'o-1' }), false).hasDetails).toBe(true);
+    expect(ledgerRowView(toEntry({ items_snapshot: [{ name: 'A' }] }), false).hasDetails).toBe(true);
   });
 });

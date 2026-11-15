@@ -223,6 +223,43 @@ describe('public takip — jeton bilen görür, fiyat görmez', () => {
   });
 });
 
+describe('manuel kayıt düzeltme/silme — ters kayıt (kural 7)', () => {
+  const WRITES = /(update\s+public\.transactions|delete\s+from\s+public\.transactions)/i;
+
+  test.each(['update_manual_transaction', 'delete_manual_transaction'])(
+    '%s deftere yalnız INSERT yapar',
+    (fn) => {
+      const body = fnBody(fn);
+      expect(body, `${fn} bulunamadı`).not.toBe('');
+      expect(body).not.toMatch(WRITES);
+      expect(body).toMatch(/insert\s+into\s+public\.transactions/i);
+    },
+  );
+
+  test('silme ters yönde, iptal ettiği kayda bağlı bir satır ekler', () => {
+    const body = fnBody('delete_manual_transaction');
+    expect(body).toMatch(/reverses_transaction_id/);
+    expect(body).toMatch(/ALREADY_REVERSED/);
+    expect(body).toMatch(/CANNOT_REVERSE_REVERSAL/);
+    // Rol: kayıt eklemedeki kuralın aynısı.
+    expect(body).toMatch(/get_my_org_role\(\)\s+not\s+in\s+\('owner',\s*'accountant'\)/i);
+  });
+
+  test('silme istemciye kapalı; yalnız talep/onay akışı çağırır', () => {
+    expect(sql).toMatch(
+      /revoke execute on function public\.delete_manual_transaction\(uuid\) from public, anon, authenticated/i,
+    );
+  });
+
+  test('bir kayıt en fazla bir kez iptal edilebilir (unique index)', () => {
+    expect(sql).toMatch(/create unique index[\s\S]{0,80}\(reverses_transaction_id\)/i);
+  });
+
+  test('bakiyeleri baştan yazan fonksiyon kaldırıldı', () => {
+    expect(sql).toMatch(/drop function if exists public\.recalculate_relationship_balances\(uuid\)/i);
+  });
+});
+
 describe('cari tutarı yuvarlama (16 Kas 2026 — 1 kuruş kayması)', () => {
   // amount numeric(14,2) yazılırken yuvarlanır; bakiye ham p_amount ile
   // hesaplanırsa iki sayı ayrışır ve fark carinin tüm geleceğine taşınır.

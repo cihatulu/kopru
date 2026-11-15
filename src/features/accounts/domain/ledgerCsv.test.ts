@@ -14,6 +14,7 @@ function entry(over: Partial<LedgerEntry> = {}): LedgerEntry {
     description: 'Sipariş #1',
     createdAt: '2026-08-10T09:30:00.000Z',
     orderId: null,
+    reversesId: null,
     ...over,
   };
 }

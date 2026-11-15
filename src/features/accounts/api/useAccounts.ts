@@ -16,7 +16,8 @@ import { toEntry } from '../domain/ledgerEntry';
 // Dışa aktarım da aynı kolonları çeker; iki liste ayrışırsa dosya ekrandan
 // farklı veri gösterirdi.
 export const TX_COLUMNS =
-  'id, type, amount, balance_after, description, created_at, order_id, relationship_id, items_snapshot, order:order_id(order_no)';
+  'id, type, amount, balance_after, description, created_at, order_id, relationship_id, items_snapshot, ' +
+  'reverses_transaction_id, order:order_id(order_no)';
 
 /** Cari ekstre — keyset sayfalama (A17). */
 export function useLedger(relationshipId: string | null) {

@@ -1728,6 +1728,204 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs_202610: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
+      system_logs_202611: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
+      system_logs_202612: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
+      system_logs_202701: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
+      system_logs_202702: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
+      system_logs_202703: {
+        Row: {
+          action: string
+          actor_org_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          entity: string | null
+          entity_id: string | null
+          id: string
+          meta: Json
+        }
+        Insert: {
+          action: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Update: {
+          action?: string
+          actor_org_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          meta?: Json
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -1742,6 +1940,7 @@ export type Database = {
           order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          reverses_transaction_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Insert: {
@@ -1757,6 +1956,7 @@ export type Database = {
           order_id?: string | null
           relationship_id: string
           retailer_org_id: string
+          reverses_transaction_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Update: {
@@ -1772,6 +1972,7 @@ export type Database = {
           order_id?: string | null
           relationship_id?: string
           retailer_org_id?: string
+          reverses_transaction_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [
@@ -1815,6 +2016,13 @@ export type Database = {
             columns: ["retailer_org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_reverses_transaction_id_fkey"
+            columns: ["reverses_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -1928,6 +2136,7 @@ export type Database = {
           order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          reverses_transaction_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         SetofOptions: {
@@ -2272,6 +2481,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      drop_old_log_partitions: { Args: never; Returns: undefined }
       ensure_log_partition: { Args: { p_month: string }; Returns: undefined }
       get_my_org_id: { Args: never; Returns: string }
       get_my_org_is_subscriber: { Args: never; Returns: boolean }
@@ -2323,6 +2533,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      maintain_log_partitions: { Args: never; Returns: undefined }
       manufacturer_may_manage_products: { Args: never; Returns: boolean }
       manufacturer_may_write_stock: { Args: never; Returns: boolean }
       manufacturer_summary: {
@@ -2349,10 +2560,6 @@ export type Database = {
         Returns: string
       }
       product_in_my_scope: { Args: { p_managed_by: string }; Returns: boolean }
-      recalculate_relationship_balances: {
-        Args: { p_relationship_id: string }
-        Returns: undefined
-      }
       relationship_has_module: {
         Args: { p_module: string; p_relationship_id: string }
         Returns: boolean
@@ -2689,6 +2896,7 @@ export type Database = {
           order_id: string | null
           relationship_id: string
           retailer_org_id: string
+          reverses_transaction_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         SetofOptions: {

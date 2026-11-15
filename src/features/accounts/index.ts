@@ -12,10 +12,7 @@ export {
   type PendingRequest,
   type PendingDeleteRequest,
 } from './api/useManualTransactionRequests';
-export {
-  useUpdateManualTransaction,
-  useDeleteManualTransaction,
-} from './api/useManualTransactionEdits';
+export { useUpdateManualTransaction } from './api/useManualTransactionEdits';
 export { toEntry } from './domain/ledgerEntry';
 export type { LedgerEntry, LedgerItemSnapshot } from './domain/ledgerEntry';
 

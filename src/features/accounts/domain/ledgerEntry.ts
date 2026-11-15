@@ -35,6 +35,36 @@ export interface LedgerEntry {
   orderId: string | null;
   orderNo?: string | null;
   itemsSnapshot?: LedgerItemSnapshot[] | undefined;
+  /** Doluysa bu satır bir İPTAL kaydıdır ve gösterilen kaydı geri alır. */
+  reversesId: string | null;
+}
+
+/**
+ * Defterde satır silinmez/değiştirilmez (kural 7): düzeltme ve silme, ters
+ * yönde bir iptal satırı ekler. Bir satırın durumu buradan okunur.
+ */
+export type LedgerEntryState = 'active' | 'reversed' | 'reversal';
+
+/**
+ * İptal edilmiş kayıtların kimlikleri.
+ *
+ * İptal satırı her zaman iptal ettiği kayıttan YENİDİR ve ekstre yeniden
+ * eskiye yüklenir; yani bir kayıt ekrandaysa onun iptal satırı da yüklenmiştir.
+ */
+export function reversedIds(entries: LedgerEntry[]): Set<string> {
+  const ids = new Set<string>();
+  for (const e of entries) if (e.reversesId) ids.add(e.reversesId);
+  return ids;
+}
+
+export function entryState(entry: LedgerEntry, reversed: Set<string>): LedgerEntryState {
+  if (entry.reversesId) return 'reversal';
+  return reversed.has(entry.id) ? 'reversed' : 'active';
+}
+
+/** Yalnız siparişe bağlı olmayan ve hâlâ geçerli kayıt düzeltilebilir. */
+export function isEditableEntry(entry: LedgerEntry, reversed: Set<string>): boolean {
+  return !entry.orderId && entryState(entry, reversed) === 'active';
 }
 
 /**
@@ -91,5 +121,18 @@ export function toEntry(raw: unknown): LedgerEntry {
     orderId: typeof r.order_id === 'string' ? r.order_id : null,
     orderNo,
     itemsSnapshot: itemsSnapshot.length > 0 ? itemsSnapshot : undefined,
+    reversesId: typeof r.reverses_transaction_id === 'string' ? r.reverses_transaction_id : null,
+  };
+}
+
+/**
+ * Satırın hangi kolonda görüneceği ve açılır detayının olup olmadığı.
+ * Üretici aynı hareketi ters kolonda görür: perakendecinin borcu onun alacağıdır.
+ */
+export function ledgerRowView(entry: LedgerEntry, isManufacturer: boolean) {
+  return {
+    showDebit: isManufacturer ? entry.type === 'credit' : entry.type === 'debit',
+    showCredit: isManufacturer ? entry.type === 'debit' : entry.type === 'credit',
+    hasDetails: (entry.itemsSnapshot?.length ?? 0) > 0 || !!entry.orderId,
   };
 }
