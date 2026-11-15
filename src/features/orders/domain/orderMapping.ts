@@ -7,26 +7,13 @@
  * döndürmez; hesap da bu yüzden tek yerde durmak zorunda (A4).
  */
 import type { OrderStatus } from './status';
+import { nested, nullable, num, round2, str, type Row } from './rowHelpers';
+import { getReturnedTotal, retailAllIn } from './retailPricing';
+import { toCustomerDeliveries, type CustomerDeliverySummary } from './customerDeliveryMapping';
 
-type Row = Record<string, unknown>;
-
-export const str = (v: unknown): string => (typeof v === 'string' ? v : '');
-export const num = (v: unknown): number => Number(v ?? 0);
-export const nullable = (v: unknown): string | null => (typeof v === 'string' ? v : null);
-export const nested = (v: unknown): Row => (v && typeof v === 'object' ? (v as Row) : {});
-
-export interface CustomerDeliverySummary {
-  id: string;
-  deliveryDate: string;
-  timeSlot: string;
-  status: 'planned' | 'shipped' | 'delivered' | 'cancelled';
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
-  notes: string | null;
-  items: Array<{ order_item_id?: string; name: string; quantity: number }>;
-  createdAt: string;
-}
+// Eski import yolları bozulmasın diye yeniden dışa aktarılır.
+export { nested, nullable, num, str } from './rowHelpers';
+export type { CustomerDeliverySummary } from './customerDeliveryMapping';
 
 export interface OrderRow {
   id: string;
@@ -91,88 +78,13 @@ export interface OrderDetail extends OrderRow {
   customerPhone: string | null;
   customerAddress: string | null;
   note: string | null;
-  orderToken: string;
+  orderToken: string | null;
   items: OrderItemRow[];
   history: OrderStatusLogItem[];
   shipments: ChildShipment[];
   hasUnfulfilledBalance: boolean;
   /** Onaylanmış iade toplamı (perakende fiyatı üzerinden, TL). */
   returnTotalAmount: number;
-}
-
-/**
- * Gömülü tek kaydı okur.
- *
- * PostgREST bire-bir gömmeyi kimi yerde tek elemanlı DİZİ, kimi yerde doğrudan
- * NESNE döndürür (ilişkiyi tekil algıladığında). Yalnız diziyi karşılamak,
- * `order_item_retail_prices` nesne geldiğinde kaydı görünmez yapıyordu: sipariş
- * listesi ve detayı sipariş anındaki fiyat yerine ürünün GÜNCEL perakende
- * fiyatına düşüyor, özel talep farkı da böylece ekranda kayboluyordu.
- */
-function firstOf(v: unknown): Row | undefined {
-  if (Array.isArray(v)) {
-    const arr = v as unknown[];
-    return arr.length > 0 ? nested(arr[0]) : undefined;
-  }
-  return v && typeof v === 'object' ? (v as Row) : undefined;
-}
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
-
-/**
- * Kalemin HER ŞEY DAHİL perakende birim fiyatı (taban + özel talep farkı).
- *
- * İki kaynak farklı şey tutar ve karıştırılmamalıdır:
- *   · `order_item_retail_prices.retail_unit_price` — sipariş anında donmuş,
- *     fark ZATEN İÇİNDE.
- *   · `products.retail_prices.retail_price` — ürünün güncel liste fiyatı, fark
- *     İÇERMEZ; kayıt yoksa buna düşülür ve fark elle eklenir.
- *
- * Hiçbiri yoksa undefined — çağıran üretici fiyatını kullanır.
- */
-function retailAllIn(item: Row, diff: number): number | undefined {
-  const recorded = firstOf(item.order_item_retail_prices);
-  if (recorded) {
-    const price = num(recorded.retail_unit_price);
-    if (price > 0) return price;
-  }
-
-  const current = firstOf(nested(item.products).retail_prices);
-  if (current) {
-    const price = num(current.retail_price);
-    if (price > 0) return round2(price + diff);
-  }
-
-  return undefined;
-}
-
-function getReturnedTotal(r: Row, iAmManufacturer: boolean): number {
-  const returns = Array.isArray(r.return_requests) ? r.return_requests : [];
-  let total = 0;
-  for (const retRaw of returns) {
-    const ret = nested(retRaw);
-    if (ret.status !== 'approved') continue;
-    if (iAmManufacturer) {
-      total += num(ret.approved_amount);
-    } else {
-      // Perakendeci için perakende fiyatları üzerinden iade toplamı hesapla
-      const retItems = Array.isArray(ret.items) ? ret.items : [];
-      const orderItems = Array.isArray(r.order_items) ? (r.order_items as unknown[]) : [];
-      for (const retItemRaw of retItems) {
-        const retItem = nested(retItemRaw);
-        const retItemId = str(retItem.order_item_id);
-        const orderItemRaw = orderItems.find(oi => str(nested(oi).id) === retItemId);
-        if (orderItemRaw) {
-          const orderItem = nested(orderItemRaw);
-          const diff = num(orderItem.price_difference);
-          const price = retailAllIn(orderItem, diff);
-          const unitPrice = price !== undefined && price > 0 ? price : (num(orderItem.supplier_unit_price) + diff);
-          total += unitPrice * num(retItem.quantity);
-        }
-      }
-    }
-  }
-  return round2(total);
 }
 
 export function toRow(raw: unknown, myOrgId: string): OrderRow {
@@ -213,22 +125,7 @@ export function toRow(raw: unknown, myOrgId: string): OrderRow {
     totalAmount = round2(totalAmount - returnedTotal);
   }
 
-  const rawDeliveries = Array.isArray(r.customer_deliveries) ? r.customer_deliveries : [];
-  const customerDeliveries: CustomerDeliverySummary[] = rawDeliveries.map((rawD) => {
-    const d = nested(rawD);
-    return {
-      id: str(d.id),
-      deliveryDate: str(d.delivery_date),
-      timeSlot: str(d.time_slot),
-      status: (d.status ?? 'planned') as 'planned' | 'shipped' | 'delivered' | 'cancelled',
-      customerName: str(d.customer_name),
-      customerPhone: str(d.customer_phone),
-      customerAddress: str(d.customer_address),
-      notes: nullable(d.notes),
-      items: Array.isArray(d.items) ? (d.items as Array<{ order_item_id?: string; name: string; quantity: number }>) : [],
-      createdAt: str(d.created_at),
-    };
-  });
+  const customerDeliveries = toCustomerDeliveries(r.customer_deliveries);
   const latestDelivery = customerDeliveries[0] ?? null;
 
   return {

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
@@ -98,6 +98,69 @@ export type Database = {
           {
             foreignKeyName: "announcements_target_retailer_org_id_fkey"
             columns: ["target_retailer_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_deliveries: {
+        Row: {
+          created_at: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          delivery_date: string
+          id: string
+          items: Json
+          notes: string | null
+          order_id: string
+          retailer_org_id: string
+          status: string
+          time_slot: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          delivery_date: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_id: string
+          retailer_org_id: string
+          status?: string
+          time_slot: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string
+          customer_name?: string
+          customer_phone?: string
+          delivery_date?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_id?: string
+          retailer_org_id?: string
+          status?: string
+          time_slot?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_deliveries_retailer_org_id_fkey"
+            columns: ["retailer_org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
@@ -2003,6 +2066,10 @@ export type Database = {
         Returns: Json
       }
       bulk_update_stock: { Args: { p_rows: Json }; Returns: Json }
+      cancel_customer_delivery: {
+        Args: { p_delivery_id: string; p_reason?: string }
+        Returns: Json
+      }
       cancel_order_atomic: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -2033,6 +2100,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      check_staff_password_conflict: {
+        Args: {
+          p_exclude_user_id?: string
+          p_org_id: string
+          p_password: string
+        }
+        Returns: boolean
       }
       confirm_return_atomic: {
         Args: { p_approve: boolean; p_note?: string; p_return_id: string }
@@ -2096,43 +2171,19 @@ export type Database = {
         Args: { p_items: Json; p_order_id: string; p_reason?: string }
         Returns: string
       }
-      create_ssh_request:
-        | {
-            Args: {
-              p_customer?: Json
-              p_description?: string
-              p_order_id?: string
-              p_product_id?: string
-              p_relationship_id: string
-              p_title: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_customer?: Json
-              p_description?: string
-              p_order_id?: string
-              p_product_id?: string
-              p_quantity?: number
-              p_relationship_id: string
-              p_title: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_customer?: Json
-              p_description?: string
-              p_items?: Json
-              p_order_id?: string
-              p_product_id?: string
-              p_quantity?: number
-              p_relationship_id: string
-              p_title: string
-            }
-            Returns: string
-          }
+      create_ssh_request: {
+        Args: {
+          p_customer?: Json
+          p_description?: string
+          p_items?: Json
+          p_order_id?: string
+          p_product_id?: string
+          p_quantity?: number
+          p_relationship_id: string
+          p_title: string
+        }
+        Returns: string
+      }
       current_balance: { Args: { p_relationship_id: string }; Returns: number }
       dashboard_summary: { Args: never; Returns: Json }
       decide_delete_manual_transaction: {
@@ -2404,6 +2455,19 @@ export type Database = {
         }
         Returns: string
       }
+      schedule_customer_delivery: {
+        Args: {
+          p_customer_address: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_delivery_date: string
+          p_items?: Json
+          p_notes?: string
+          p_order_id: string
+          p_time_slot: string
+        }
+        Returns: Json
+      }
       set_catalog_permission: {
         Args: { p_can_edit: boolean; p_relationship_id: string }
         Returns: undefined
@@ -2554,10 +2618,22 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      submit_lead_application: {
+        Args: {
+          p_city?: string
+          p_company_name: string
+          p_email?: string
+          p_kind?: string
+          p_phone?: string
+          p_vkn_tc?: string
+        }
+        Returns: Json
+      }
       track_order: {
         Args: { p_token: string }
         Returns: {
           created_at: string
+          customer_deliveries: Json
           customer_name: string
           history: Json
           items: Json
@@ -2583,6 +2659,15 @@ export type Database = {
           p_phone?: string
         }
         Returns: undefined
+      }
+      update_customer_delivery: {
+        Args: {
+          p_delivery_date: string
+          p_delivery_id: string
+          p_notes?: string
+          p_time_slot: string
+        }
+        Returns: Json
       }
       update_manual_transaction: {
         Args: {
@@ -2724,12 +2809,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2753,11 +2838,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2778,11 +2863,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2803,11 +2888,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2820,11 +2905,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

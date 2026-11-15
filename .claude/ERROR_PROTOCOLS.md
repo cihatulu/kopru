@@ -257,3 +257,18 @@ Ard arda iki yanlış şifre denemesi IP yasağı doğurur → Dashboard → Dat
 **Ders:** `db push` iki ayrı kimlik ister — hesap jetonu (`supabase login`) ve **veritabanı
 şifresi**. Biri çözülünce diğeri karşına çıkar; "login başarılı" bağlantının kurulacağı
 anlamına gelmez.
+
+### 33. Vercel deploy'ları sessizce ERROR — canlı site eski commit'te kalıyor
+**Belirti:** Push'lar başarılı, ama özellik canlıda yok. `vercel ls <proje> --prod` veya
+`/v6/deployments` son deploy'ları `ERROR` gösterir; canlı site son `READY` commit'te kalır.
+**Sebep (Kasım 2026 örneği):** migration ile yeni tablo (`customer_deliveries`) eklendi ama
+`npm run gen:types` çalıştırılmadı → `tsc` 28 hata verdi, `npm run build` kırıldı. Aynı
+commit'ler bütçeyi aşan dosyalar (831 satır bileşen) da bıraktı; hook artık o dosyalara
+tek satırlık düzeltmeyi bile yazdırmaz (bkz. #19).
+**Çözüm:** (1) tipleri üret, (2) bloklanan dosyaları böl, sonra düzelt, (3) `npm run build` yeşil
+olmadan push etme. Bölmenin görünümü bozmadığını doğrulamak için eski/yeni bileşeni
+gerçek veriyle `renderToStaticMarkup` edip HTML'i karşılaştır.
+**Tuzaklar:** `gen:types` betiği `--linked` ister; link yoksa
+`npx supabase@latest gen types typescript --project-id <ref>` kullan. PowerShell'de `>` UTF-16
+yazar — çıktıyı Bash'te yönlendir. Hesap jetonu 401 dönüyorsa yenile (Dashboard → Account →
+Access Tokens, yalnız proje kapsamlı, süreli).

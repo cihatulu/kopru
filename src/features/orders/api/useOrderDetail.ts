@@ -2,16 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { STALE_TIME } from '@/constants';
 import type { OrderStatus } from '../domain/status';
-import {
-  nullable,
-  num,
-  str,
-  toItem,
-  toRow,
-  type ChildShipment,
-  type OrderDetail,
-} from '../domain/orderMapping';
+import { nullable, num, str, toItem, toRow, type ChildShipment, type OrderDetail } from '../domain/orderMapping';
+import { plannedQuantities } from '../domain/customerDeliveryMapping';
 import { buildHistory } from '../domain/orderHistory';
+import { fetchCustomerDeliveries, fetchReturnedQuantities } from './fetchOrderDeliveryData';
 
 // Açık kolon listesi (kilitli kural 19). Gizli fiyat katmanları yok (A4).
 const ORDER_DETAIL_COLUMNS =
@@ -84,50 +78,9 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         .in('order_id', [orderId ?? '', ...shipments.map((s) => s.id)])
         .order('created_at', { ascending: true });
 
-      // Onaylı iade talepleri — items JSONB [{order_item_id, quantity}] formatında.
-      const returnsRes = await supabase
-        .from('return_requests')
-        .select('id, items')
-        .eq('order_id', orderId ?? '')
-        .eq('status', 'approved');
-
-      // order_item_id → iade adedi haritası
-      const returnedQtyMap = new Map<string, number>();
-      if (!returnsRes.error && returnsRes.data) {
-        for (const rr of returnsRes.data) {
-          const rItems = Array.isArray(rr.items) ? rr.items : [];
-          for (const ri of rItems as Array<{ order_item_id: string; quantity: number }>) {
-            const prev = returnedQtyMap.get(ri.order_item_id) ?? 0;
-            returnedQtyMap.set(ri.order_item_id, prev + Number(ri.quantity));
-          }
-        }
-      }
-
-      // Müşteri teslimatları — SADECE bu sipariş/sevkiyat için planlanan ürün miktarları
-      const deliveriesRes = await supabase
-        .from('customer_deliveries')
-        .select('id, delivery_date, time_slot, status, customer_name, customer_phone, customer_address, notes, items, created_at')
-        .eq('order_id', orderId ?? '')
-        .neq('status', 'cancelled')
-        .order('created_at', { ascending: false });
-
-      const plannedQtyMap = new Map<string, number>();
-      const plannedByNameMap = new Map<string, number>();
-      if (!deliveriesRes.error && deliveriesRes.data) {
-        for (const cd of deliveriesRes.data) {
-          const dItems = Array.isArray(cd.items) ? cd.items : [];
-          for (const di of dItems as Array<{ order_item_id?: string; name?: string; quantity: number }>) {
-            if (di.order_item_id) {
-              const prev = plannedQtyMap.get(di.order_item_id) ?? 0;
-              plannedQtyMap.set(di.order_item_id, prev + Number(di.quantity));
-            }
-            if (di.name) {
-              const prev = plannedByNameMap.get(di.name) ?? 0;
-              plannedByNameMap.set(di.name, prev + Number(di.quantity));
-            }
-          }
-        }
-      }
+      const returnedQtyMap = await fetchReturnedQuantities(orderId ?? '');
+      const customerDeliveries = await fetchCustomerDeliveries(orderId ?? '');
+      const planned = plannedQuantities(customerDeliveries);
 
       const history = buildHistory(logsRes.data ?? [], shipments, orderId ?? '');
       if (history.length === 0 && r.created_at) {
@@ -153,7 +106,7 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
           : {};
         const itemName = typeof snap.name === 'string' ? snap.name : '';
         const returnedQty = returnedQtyMap.get(itemId) ?? 0;
-        const plannedQty = plannedQtyMap.get(itemId) ?? (itemName ? (plannedByNameMap.get(itemName) ?? 0) : 0);
+        const plannedQty = planned.byItemId.get(itemId) ?? (itemName ? (planned.byName.get(itemName) ?? 0) : 0);
         return toItem(item, isRetailer, returnedQty, plannedQty);
       });
 
@@ -165,18 +118,6 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         }
       }
 
-      const mappedDeliveries: CustomerDeliverySummary[] = (deliveriesRes.data ?? []).map((rawD) => ({
-        id: str(rawD.id),
-        deliveryDate: str(rawD.delivery_date),
-        timeSlot: str(rawD.time_slot),
-        status: (rawD.status ?? 'planned') as 'planned' | 'shipped' | 'delivered' | 'cancelled',
-        customerName: str(rawD.customer_name),
-        customerPhone: str(rawD.customer_phone),
-        customerAddress: str(rawD.customer_address),
-        notes: nullable(rawD.notes),
-        items: Array.isArray(rawD.items) ? (rawD.items as Array<{ order_item_id?: string; name: string; quantity: number }>) : [],
-        createdAt: str(rawD.created_at),
-      }));
 
       return {
         ...toRow(r, myOrgId),
@@ -187,8 +128,8 @@ export function useOrderDetail(orderId: string | null, myOrgId: string) {
         items: mappedItems,
         history,
         shipments,
-        customerDeliveries: mappedDeliveries,
-        latestDelivery: mappedDeliveries[0] ?? null,
+        customerDeliveries,
+        latestDelivery: customerDeliveries[0] ?? null,
         hasUnfulfilledBalance,
         returnTotalAmount,
       };
