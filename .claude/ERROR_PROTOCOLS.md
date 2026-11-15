@@ -272,3 +272,19 @@ gerçek veriyle `renderToStaticMarkup` edip HTML'i karşılaştır.
 `npx supabase@latest gen types typescript --project-id <ref>` kullan. PowerShell'de `>` UTF-16
 yazar — çıktıyı Bash'te yönlendir. Hesap jetonu 401 dönüyorsa yenile (Dashboard → Account →
 Access Tokens, yalnız proje kapsamlı, süreli).
+
+### 34. RPC 400 — "no partition of relation system_logs found for row"
+**Belirti:** Ayın ilk gününden itibaren `system_logs`'a yazan her RPC 400 döner ve tüm
+işlemi geri alır (Kasım 2026: `add_counterparty` → misafir karşı taraf açılamıyor, iki yönde de;
+`downgrade_org_to_guest`). Edge Function'lar log hatasını yutar, o yüzden giriş/şifre çalışır.
+**Sebep:** Partition'ları açan `ensure_log_partition()` hiç zamanlanmamıştı (pg_cron kapalı);
+ilk migration yalnız iki ay açmıştı.
+**Çözüm:** `20261115230000_log_partition_schedule.sql` — eksik aylar + `pg_cron` gece görevi
+`maintain-log-partitions` (bu ay + 3 ay ileri, 90 gün retention `drop_old_log_partitions()`).
+**Kontrol:** `select jobname, active from cron.job;` ve system_logs partition listesinde
+içinde bulunulan ay + 3 ay ileri var mı.
+**Tuzak — migration geçmişi:** 23–31 Ağustos'taki 12 migration SQL Editor'den elle uygulanmış,
+`schema_migrations`'ta kaydı yok; 4 fonksiyonun (`confirm_return_atomic`, `set_retailer_stock`,
+`submit_lead_application`, `track_order_returns`) canlı gövdesi dosyadan FARKLI. Bu çözülene dek
+`db push` KÖR çalıştırılmaz — önce `--dry-run`. Tek dosya için:
+`npx supabase@latest db query --remote -f <dosya>` + `migration repair --status applied <sürüm>`.
