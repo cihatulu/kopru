@@ -294,3 +294,17 @@ tek tek uygula, sonra `migration repair --status applied <sürümler> --linked -
 **Kural:** `db push`'tan önce DAİMA `--dry-run`. Tek dosya uygulamak için:
 `npx supabase@latest db query --remote -f <dosya>` + `migration repair --status applied <sürüm>`.
 Elle SQL Editor kullanımı kilitli kural 1 ihlalidir — bu kaymanın kaynağı odur.
+
+### 36. SECURITY DEFINER iç yardımcı anon'dan çağrılabiliyor
+**Belirti:** Advisor `anon_security_definer_function_executable` uyarısı; publishable anahtarla
+`/rest/v1/rpc/<iç_fonksiyon>` 200 dönüyor.
+**Sebep:** Postgres her yeni fonksiyona PUBLIC'e EXECUTE verir; PostgREST public şemadaki her
+fonksiyonu yayınlar. Gövdesinde kimlik kontrolü olmayan iç yardımcı (başka RPC'nin içinden
+çağrılan) bu yüzden herkese açık kalır. Kasım 2026'da 10 tane bulundu — biri
+(`check_staff_password_conflict`) login kilidini atlayan bir şifre tahmin kapısıydı.
+**Çözüm:** İç yardımcı yazarken migration'a hemen ekle:
+`revoke execute on function public.<ad>(<tipler>) from public, anon, authenticated;`
+SECURITY DEFINER çağıranlar sahip yetkisiyle çalıştığı için etkilenmez; Edge Function
+çağırıyorsa `grant execute ... to service_role`. Kapatmadan önce view/politika/invoker
+fonksiyonlarda kullanılmadığını doğrula (onlar çağıranın yetkisiyle çalışır).
+**Kontrol:** anon anahtarıyla curl → `42501 permission denied` beklenir.
