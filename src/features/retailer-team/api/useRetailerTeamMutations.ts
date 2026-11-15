@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { edgeErrorCode } from '@/lib/edgeError';
-import { STAFF_ERROR_MESSAGES } from '@/features/team/domain/staff';
+import { edgeErrorCode, type EdgeError } from '@/lib/edgeError';
+import { STAFF_ERROR_MESSAGES } from '@/features/team';
 import type { RetailerTeamRole } from '../domain/retailerTeam';
 
 // ─── Üye Ekle ────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ export function useAddRetailerMember() {
           password: vars.password,
           role: vars.role === 'retailer_accountant' ? 'accountant' : 'staff',
         },
-      })) as { error: any };
+      })) as { error: EdgeError | null };
       if (error) {
         const code = await edgeErrorCode(error);
         throw new Error(STAFF_ERROR_MESSAGES[code] ?? STAFF_ERROR_MESSAGES.DEFAULT);
@@ -107,7 +107,7 @@ export function useUpdateRetailerMemberPassword() {
           userId: vars.id,
           updates: { password: vars.password },
         },
-      })) as { error: any };
+      })) as { error: EdgeError | null };
       if (error) {
         const code = await edgeErrorCode(error);
         throw new Error(STAFF_ERROR_MESSAGES[code] ?? STAFF_ERROR_MESSAGES.DEFAULT);

@@ -56,7 +56,8 @@ function isDismissed(raw: unknown): boolean {
   // Dizide gelen formatta da desteklenir.
   const myRead = r.myRead;
   if (!myRead) return false;
-  const read = Array.isArray(myRead) ? myRead[0] : myRead;
+  // Array.isArray `unknown`'ı any[]'e daraltır; öğeyi açıkça unknown tut.
+  const read: unknown = Array.isArray(myRead) ? (myRead as unknown[])[0] : myRead;
   if (!read || typeof read !== 'object') return false;
   return (read as Row).dismissed === true;
 }

@@ -1,5 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { edgeErrorCode, type EdgeResult } from '@/lib/edgeError';
+
+/** Edge Function 200 gövdesi; hata kodu 200 içinde de gelebilir. */
+interface SelfPasswordResponse {
+  ok?: boolean;
+  error?: string;
+}
 
 export interface ChangeSelfPasswordInput {
   currentPassword: string;
@@ -24,26 +31,14 @@ const ERROR_MESSAGES: Record<string, string> = {
 export function useChangeSelfPassword() {
   return useMutation({
     mutationFn: async ({ currentPassword, newPassword }: ChangeSelfPasswordInput) => {
-      const { data, error } = await supabase.functions.invoke('update-user-password', {
-        body: {
-          mode: 'self',
-          currentPassword,
-          newPassword,
-        },
-      });
+      const { data, error } = (await supabase.functions.invoke<SelfPasswordResponse>(
+        'update-user-password',
+        { body: { mode: 'self', currentPassword, newPassword } },
+      )) as EdgeResult<SelfPasswordResponse>;
 
       if (error) {
-        let code = 'UPDATE_FAILED';
-        try {
-          // FunctionsHttpError contains response json
-          const ctx = (error as any).context;
-          if (ctx && typeof ctx.json === 'function') {
-            const body = await ctx.json();
-            if (body?.error) code = body.error;
-          }
-        } catch {
-          // ignore
-        }
+        // 4xx gövdesindeki kod (ör. WRONG_CURRENT_PASSWORD); okunamazsa genel hata.
+        const code = await edgeErrorCode(error, 'UPDATE_FAILED');
         throw new ChangePasswordError(code, ERROR_MESSAGES[code] ?? 'Şifre güncellenemedi.');
       }
 

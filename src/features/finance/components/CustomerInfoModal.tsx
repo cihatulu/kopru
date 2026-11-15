@@ -114,7 +114,7 @@ export function CustomerInfoModal({ customer, onClose }: Props) {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => handleCopyLink(order.id, order.orderToken!)}
+                        onClick={() => void handleCopyLink(order.id, order.orderToken!)}
                         className={`gap-1.5 text-xs font-semibold ${
                           isCopied
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'

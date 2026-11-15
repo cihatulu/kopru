@@ -140,8 +140,8 @@ export function Modal({
         <div
           ref={(el) => {
             // İki ref'i birleştir
-            (nodeRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-            (panelRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+            nodeRef.current = el;
+            panelRef.current = el;
           }}
           role="dialog"
           aria-modal="true"
