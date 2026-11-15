@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { rpcArgs } from '@/lib/rpc';
 import { supabase } from '@/lib/supabase';
+import { provisionOwner } from './provisionOwner';
 
 export interface UpgradeInput {
   orgId: string;
@@ -12,18 +13,6 @@ export interface UpgradeResult {
   tempPassword?: string;
   userCode?: string;
   ownerCreated: boolean;
-}
-
-interface ProvisionResponse {
-  created: boolean;
-  userCode: string;
-  tempPassword?: string;
-}
-
-// supabase-js `error` alanını `any` olarak tipler; sonucu açıkça daraltıyoruz.
-interface ProvisionInvokeResult {
-  data: ProvisionResponse | null;
-  error: unknown;
 }
 
 function invalidate(queryClient: ReturnType<typeof useQueryClient>) {
@@ -50,12 +39,9 @@ export function useUpgradeOrg() {
       }));
       if (error) throw error;
 
-      const { data, error: provisionError } = (await supabase.functions.invoke<ProvisionResponse>(
-        'admin-provision-owner',
-        { body: { orgId } },
-      )) as ProvisionInvokeResult;
+      const data = await provisionOwner(orgId);
       // Yükseltme başarılı; owner sağlama ayrıca denenebilir, yükseltmeyi geri almayız.
-      if (provisionError || !data) return { ownerCreated: false };
+      if (!data) return { ownerCreated: false };
 
       return {
         ownerCreated: data.created,

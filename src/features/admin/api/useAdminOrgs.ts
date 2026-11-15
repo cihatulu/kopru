@@ -70,9 +70,11 @@ export function useAdminOrgs(kind: OrgKind) {
 
     submitCreate: (v: CreateOrgForm) =>
       create.mutate(toCreateOrgInput(kind, v), {
-        onSuccess: () => {
+        onSuccess: (r) => {
           setCreating(false);
           create.reset();
+          // Geçici şifre yalnız şimdi görünür; "Şifre yenile" ile aynı pencere.
+          if (r.credentials) setCredentials({ ...r.credentials, companyName: r.companyName });
         },
       }),
 
