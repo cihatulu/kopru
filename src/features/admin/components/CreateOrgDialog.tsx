@@ -42,7 +42,7 @@ export function CreateOrgDialog({
     >
       <h2 className="text-lg font-bold text-slate-900">{noun} oluştur</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Kayıt <strong>misafir</strong> olarak açılır. Aboneye yükseltme ayrı bir adımdır.
+        Kayıt <strong>üye</strong> olarak açılır ve giriş hesabı oluşturulur.
       </p>
 
       <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="mt-5 space-y-4">

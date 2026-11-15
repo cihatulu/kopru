@@ -60,7 +60,11 @@ export function LeadTable({ leads, busyId, onAdvance, onReject, onConvertToOrg }
                     {meta.label}
                   </span>
                   {l.matchedOrgId && (
-                    <span className="mt-1 block text-xs text-emerald-700 font-semibold">✓ Sisteme kayıtlı</span>
+                    <span className="mt-1 block text-xs text-emerald-700 font-semibold">
+                      ✓ Kayıtlı
+                      {l.matchedOrg &&
+                        `: ${l.matchedOrg.companyName} (${l.matchedOrg.isSubscriber ? 'üye' : 'misafir'})`}
+                    </span>
                   )}
                 </td>
                 <td className={`${TD} text-xs text-slate-500`}>{formatDate(l.createdAt)}</td>

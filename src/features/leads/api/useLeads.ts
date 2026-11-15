@@ -5,7 +5,9 @@ import type { LeadStatus } from '../domain/lead';
 
 const COLUMNS =
   'id, company_name, vkn_tc, kind, city, phone, email, website, source, note, ' +
-  'status, matched_org_id, last_contacted_at, created_at';
+  'status, matched_org_id, last_contacted_at, created_at, ' +
+  // Eşleşen firmanın adı: aday "kayıtlı" olduğunda kime bağlandığı görünsün.
+  'matched_org:organizations!leads_matched_org_id_fkey(company_name, is_subscriber)';
 
 type Row = Record<string, unknown>;
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
@@ -22,7 +24,15 @@ export interface Lead {
   note: string | null;
   status: LeadStatus;
   matchedOrgId: string | null;
+  /** Eşleşen firma; yoksa null. */
+  matchedOrg: { companyName: string; isSubscriber: boolean } | null;
   createdAt: string;
+}
+
+function toMatchedOrg(raw: unknown): Lead['matchedOrg'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Row;
+  return { companyName: str(o.company_name), isSubscriber: o.is_subscriber === true };
 }
 
 function toLead(raw: unknown): Lead {
@@ -38,6 +48,7 @@ function toLead(raw: unknown): Lead {
     note: nul(r.note),
     status: r.status as LeadStatus,
     matchedOrgId: nul(r.matched_org_id),
+    matchedOrg: toMatchedOrg(r.matched_org),
     createdAt: str(r.created_at),
   };
 }

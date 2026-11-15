@@ -28,6 +28,28 @@ export interface CreateOrgResult {
  * `vkn_tc` UNIQUE olduğu için aynı numarayla ikinci kayıt DB tarafından
  * reddedilir — yakınsama anahtarı budur (A3).
  */
+/**
+ * Aynı VKN'li firma zaten var (A3 — kopya açılmaz). Ham Postgres mesajı
+ * (`organizations_vkn_tc_key`) yerine mevcut firmayı ve yapılacak işi söyler.
+ */
+async function duplicateVknError(vknTc: string): Promise<Error> {
+  const { data } = await supabase
+    .from('organizations')
+    .select('company_name, kind, is_subscriber')
+    .eq('vkn_tc', vknTc)
+    .maybeSingle();
+  if (!data) return new Error('Bu VKN / T.C. No ile kayıtlı bir firma zaten var.');
+
+  const list = data.kind === 'manufacturer' ? 'Üretici Yönet' : 'Perakendeci Yönet';
+  return new Error(
+    `Bu VKN ile kayıtlı bir firma zaten var: ${data.company_name} ` +
+      `(${data.is_subscriber ? 'üye' : 'misafir'}). ` +
+      (data.is_subscriber
+        ? 'Yeni kayıt açılmaz.'
+        : `Üye yapmak için ${list} listesinde "Üyeliğe yükselt" düğmesini kullanın.`),
+  );
+}
+
 export function useCreateOrg() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -42,7 +64,12 @@ export function useCreateOrg() {
         is_subscriber: true,
         plan: 'basic',
       }).select('id').single();
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505' && error.message.includes('vkn_tc')) {
+          throw await duplicateVknError(input.vknTc);
+        }
+        throw error;
+      }
 
       // Org kaydı geri alınmaz; hesap açılamazsa "Şifre yenile" tekrar dener.
       const owner = await provisionOwner(org.id);
