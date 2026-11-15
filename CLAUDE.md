@@ -126,7 +126,10 @@ RPC değişikliği sonrası (SQL Editor): `NOTIFY pgrst, 'reload schema';`
     kayıtlar için yapılabilir: admin'in cascade RPC'si ile ya da kaydın sahibi org
     tarafından (yalnız `owner` rolü). Aktif kayıt hiçbir yoldan silinemez.
 17. **`system_logs`** aylık partition + 90 gün retention (eski partition DROP edilir).
-    **Storage** bucket'ları private; public listing kapalı.
+    **Storage:** public listing her bucket'ta kapalı. Gizli içerik (`service-photos`)
+    private + imzalı URL. Yalnız katalog/duyuru görselleri (`product-images`,
+    `announcement-images`) public adresle sunulur — gizli olan fiyattır, görsel değil;
+    bu bucket'larda SELECT politikası sahibin kendi klasörüyle sınırlıdır.
 18. **VKN/TCKN** `organizations.vkn_tc` UNIQUE NOT NULL; `src/lib/tckn.ts` checksum
     doğrulaması hem formda hem DB CHECK'te uygulanır.
 19. **Sorgu şekli.** Liste sorguları **keyset (cursor) pagination** kullanır; `OFFSET`
