@@ -222,3 +222,18 @@ describe('public takip — jeton bilen görür, fiyat görmez', () => {
     expect(sql).toMatch(/grant execute on function public\.track_order\(uuid\) to anon/i);
   });
 });
+
+describe('cari tutarı yuvarlama (16 Kas 2026 — 1 kuruş kayması)', () => {
+  // amount numeric(14,2) yazılırken yuvarlanır; bakiye ham p_amount ile
+  // hesaplanırsa iki sayı ayrışır ve fark carinin tüm geleceğine taşınır.
+  const writers = ['add_finance_transaction', 'add_manual_transaction', 'request_manual_transaction'];
+
+  test.each(writers)('%s tutarı her kullanımdan ÖNCE 2 haneye yuvarlar', (fn) => {
+    const body = fnBody(fn);
+    const rounding = body.search(/p_amount\s*:=\s*round\(\s*p_amount\s*,\s*2\s*\)/i);
+    expect(rounding, `${fn} içinde yuvarlama yok`).toBeGreaterThan(-1);
+    // Doğrulama ve bakiye hesabı yuvarlanmış değeri görmeli.
+    expect(rounding).toBeLessThan(body.search(/if\s+p_amount\s+is\s+null/i));
+    expect(rounding).toBeLessThan(body.search(/balance_after|coalesce\(v_prev/i));
+  });
+});
